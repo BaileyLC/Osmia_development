@@ -38,7 +38,11 @@
   sampleID <- samples$sampleID
   nesting_tube <- samples$nesting_tube
   sample_or_control <- samples$sample_or_control
-  sampleinfo <- data.frame(extractionID = extractionID, sample_type = sample_type, sampleID = sampleID, nesting_tube = nesting_tube, sample_or_control = sample_or_control)
+  sampleinfo <- data.frame(extractionID = extractionID, 
+                           sample_type = sample_type, 
+                           sampleID = sampleID, 
+                           nesting_tube = nesting_tube, 
+                           sample_or_control = sample_or_control)
   rownames(sampleinfo) <- samples.out
 
 # Format your data to work with phyloseq
@@ -83,13 +87,13 @@
   ps.neg <- prune_samples(sample_data(ps1)$sample_or_control == "control", ps1)
 
 # Calculate taxa abundance in samples from sample counts
-  ps.neg.presence <- transform_sample_counts(ps.neg, function(abund) 1*(abund > 0))
+  ps.neg.presence <- transform_sample_counts(ps.neg, function(abund) 1 * (abund > 0))
 
 # Make phyloseq object of presence-absence in true positive samples
   ps.pos <- prune_samples(sample_data(ps1)$sample_or_control == "sample", ps1)
 
 # Calculate taxa abundance in samples from sample counts
-  ps.pos.presence <- transform_sample_counts(ps.pos, function(abund) 1*(abund > 0))
+  ps.pos.presence <- transform_sample_counts(ps.pos, function(abund) 1 * (abund > 0))
 
 # Make data.frame of prevalence in positive and negative samples
   df.pres <- data.frame(prevalence.pos = taxa_sums(ps.pos.presence), 
@@ -269,7 +273,8 @@
     xlab("Treatment") +
     theme_bw() + 
     theme(text = element_text(size = 16)) +
-    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + 
+    theme(panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank()) + 
     theme(legend.justification = "left", 
           legend.title = element_text(size = 16, colour = "black"), 
           legend.text = element_text(size = 14, colour = "black")) + 
