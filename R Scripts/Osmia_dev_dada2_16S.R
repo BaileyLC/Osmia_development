@@ -3,6 +3,7 @@
 #### Ownership: Bailey Crowley & Robert N. Schaeffer
 
 ### Purpose: Quality control of 16S rRNA data using the DADA2 pipeline
+### Resource: https://benjjneb.github.io/dada2/tutorial_1_8.html
 
 ## Prepare work space ----
 
@@ -11,19 +12,6 @@
 
 # Load necessary packages
   library(dada2) # Version: 1.28.0
-  library(DECIPHER) # Version 2.28.0
-  library(Biostrings) # Version 2.68.1
-  library(ggplot2) # Version 3.4.3
-  library(phyloseq) # Version 1.44.0
-  library(vegan) # Version 2.6-4
-  library(magrittr) # Version 2.0.3
-  library(decontam) # Version 1.20.0
-  library(nlme) # Version 3.1-163
-  library(grDevices) # Version 4.3.1
-  library(RColorBrewer) # Version 1.1-3
-  library(unikn) # Version 0.9.0
-  library(ShortRead) # Version 1.58.0
-  library(dplyr) # Version 1.1.3
 
 ## Prepare samples for quality control ----
 
