@@ -199,30 +199,33 @@
   bactrich$sample_type <- factor(bactrich$sample_type, levels = c("initial provision", "final provision", "larva", "pre-wintering adult", "dead"))
   
 # Boxplot of Shannon richness
-  ggplot(bactrich, aes(x = sample_type, y = Shannon, fill = sample_type)) + 
+  ggplot(bactrich, aes(x = sample_type, y = Shannon, color = sample_type)) + 
     geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(width = 0.1)) +
+    geom_jitter(size = 1, alpha = 0.9) +
     theme_bw() +
-    scale_fill_manual(name = "Developmental Stage",
+    scale_color_manual(name = "Developmental Stage",
                       values = c("#FDD835", "#E4511E", "#43A047", "#0288D1", "#616161")) +
     labs(title = "") +
     xlab("Developmental Stage") +
     ylab("Shannon richness")
   
 # Boxplot of Simpson richness
-  ggplot(bactrich, aes(x = sample_type, y = Simpson, fill = sample_type)) + 
+  ggplot(bactrich, aes(x = sample_type, y = Simpson, color = sample_type)) + 
     geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(width = 0.1)) +
+    geom_jitter(size = 1, alpha = 0.9) +
     theme_bw() +
-    scale_fill_manual(name = "Developmental Stage",
+    scale_color_manual(name = "Developmental Stage",
                       values = c("#FDD835", "#E4511E", "#43A047", "#0288D1", "#616161")) +
     labs(title = "") +
     xlab("Developmental Stage") +
     ylab("Simpson richness")
   
 # Boxplot of Observed richness
-  ggplot(bactrich, aes(x = sample_type, y = Observed, fill = sample_type)) + 
+  ggplot(bactrich, aes(x = sample_type, y = Observed, color = sample_type)) + 
     geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(width = 0.1)) +
+    geom_jitter(size = 1, alpha = 0.9) +
     theme_bw() +
-    scale_fill_manual(name = "Developmental Stage",
+    scale_color_manual(name = "Developmental Stage",
                       values = c("#FDD835", "#E4511E", "#43A047", "#0288D1", "#616161")) +
     labs(title = "") +
     xlab("Developmental Stage") +
