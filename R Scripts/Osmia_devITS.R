@@ -177,28 +177,31 @@
   fungrich$sample_type <- factor(fungrich$sample_type, levels = c("initial provision", "final provision", "larva", "pre-wintering adult", "emerged", "dead"))
 
 # Boxplot of Shannon richness
-  ggplot(fungrich, aes(x = sample_type, y = Shannon, fill = sample_type)) + 
+  ggplot(fungrich, aes(x = sample_type, y = Shannon, color = sample_type)) + 
     geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(width = 0.1)) +
+    geom_jitter(size = 1, alpha = 0.9) +
     theme_bw() +
-    scale_fill_manual(name = "Developmental Stage",
+    scale_color_manual(name = "Developmental Stage",
                       values = c("#FDD835", "#E4511E", "#43A047", "#0288D1","#9575CD", "#616161")) +
     labs(title = "") +
     xlab("Developmental Stage") +
     ylab("Shannon richness")
 
 # Boxplot of Simpson richness
-  ggplot(fungrich, aes(x = sample_type, y = Simpson, fill = sample_type)) + 
-    geom_boxplot() +
+  ggplot(fungrich, aes(x = sample_type, y = Simpson, color = sample_type)) + 
+    geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(width = 0.1)) +
+    geom_jitter(size = 1, alpha = 0.9) +
     theme_bw() +
-    scale_fill_manual(values = c("#FDD835", "#E4511E", "#43A047", "#0288D1","#9575CD", "#616161")) +
+    scale_color_manual(values = c("#FDD835", "#E4511E", "#43A047", "#0288D1","#9575CD", "#616161")) +
     labs(title = "Simpson richness") +
     xlab("Developmental Stage")
 
 # Boxplot of Observed richness
-  ggplot(fungrich, aes(x = sample_type, y = Observed, fill = sample_type)) + 
-    geom_boxplot() +
+  ggplot(fungrich, aes(x = sample_type, y = Observed, color = sample_type)) + 
+    geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(width = 0.1)) +
+    geom_jitter(size = 1, alpha = 0.9) +
     theme_bw() +
-    scale_fill_manual(values = c("#FDD835", "#E4511E", "#43A047", "#0288D1","#9575CD", "#616161")) +
+    scale_color_manual(values = c("#FDD835", "#E4511E", "#43A047", "#0288D1","#9575CD", "#616161")) +
     labs(title = "Observed richness") +
     xlab("Developmental Stage")
 
