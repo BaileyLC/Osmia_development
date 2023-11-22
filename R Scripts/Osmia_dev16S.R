@@ -204,7 +204,7 @@
     geom_jitter(size = 1, alpha = 0.9) +
     theme_bw() +
     scale_color_manual(name = "Developmental Stage",
-                      values = c("#FDD835", "#E4511E", "#43A047", "#0288D1", "#616161")) +
+                       values = c("#FDD835", "#E4511E", "#43A047", "#0288D1", "#616161")) +
     labs(title = "") +
     xlab("Developmental Stage") +
     ylab("Shannon richness")
@@ -215,7 +215,7 @@
     geom_jitter(size = 1, alpha = 0.9) +
     theme_bw() +
     scale_color_manual(name = "Developmental Stage",
-                      values = c("#FDD835", "#E4511E", "#43A047", "#0288D1", "#616161")) +
+                       values = c("#FDD835", "#E4511E", "#43A047", "#0288D1", "#616161")) +
     labs(title = "") +
     xlab("Developmental Stage") +
     ylab("Simpson richness")
@@ -226,7 +226,7 @@
     geom_jitter(size = 1, alpha = 0.9) +
     theme_bw() +
     scale_color_manual(name = "Developmental Stage",
-                      values = c("#FDD835", "#E4511E", "#43A047", "#0288D1", "#616161")) +
+                       values = c("#FDD835", "#E4511E", "#43A047", "#0288D1", "#616161")) +
     labs(title = "") +
     xlab("Developmental Stage") +
     ylab("Observed richness")
@@ -247,7 +247,27 @@
   bact_bray <- phyloseq::distance(rareps, method = "bray")
   samplebact <- data.frame(sample_data(rareps))
   adonis2(bact_bray ~ sample_type, data = samplebact)
+
+## Test for homogeneity of multivariate dispersion ----
+
+# Calculate the average distance of group members to the group centroid
+  disp_bact <- betadisper(bact_bray, samplebact$sample_type)
+  disp_bact
   
+# Do any of the group dispersions differ?
+  disp_bact_an <- anova(disp_bact)
+  disp_bact_an
+  
+# Which group dispersions differ?
+  disp_bact_ttest <- permutest(disp_bact, 
+                               control = permControl(nperm = 999),
+                               pairwise = TRUE)
+  disp_bact_ttest
+  
+# Which group dispersions differ?
+  disp_bact_tHSD <- TukeyHSD(disp_bact)
+  disp_bact_tHSD
+                                             
 ## Ordination ----
   
 # Calculate the relative abundance of each otu  
