@@ -178,30 +178,38 @@
 
 # Boxplot of Shannon richness
   ggplot(fungrich, aes(x = sample_type, y = Shannon, color = sample_type)) + 
-    geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(width = 0.1)) +
+    geom_boxplot(outlier.shape = NA, 
+                 width = 0.5, 
+                 position = position_dodge(width = 0.1)) +
     geom_jitter(size = 1, alpha = 0.9) +
     theme_bw() +
     scale_color_manual(name = "Developmental Stage",
-                      values = c("#FDD835", "#E4511E", "#43A047", "#0288D1","#9575CD", "#616161")) +
+                       values = c("#FDD835", "#E4511E", "#43A047", "#0288D1","#9575CD", "#616161")) +
     labs(title = "") +
     xlab("Developmental Stage") +
     ylab("Shannon richness")
 
 # Boxplot of Simpson richness
   ggplot(fungrich, aes(x = sample_type, y = Simpson, color = sample_type)) + 
-    geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(width = 0.1)) +
+    geom_boxplot(outlier.shape = NA, 
+                 width = 0.5, 
+                 position = position_dodge(width = 0.1)) +
     geom_jitter(size = 1, alpha = 0.9) +
     theme_bw() +
-    scale_color_manual(values = c("#FDD835", "#E4511E", "#43A047", "#0288D1","#9575CD", "#616161")) +
+    scale_color_manual(name = "Developmental Stage",
+                       values = c("#FDD835", "#E4511E", "#43A047", "#0288D1","#9575CD", "#616161")) +
     labs(title = "Simpson richness") +
     xlab("Developmental Stage")
 
 # Boxplot of Observed richness
   ggplot(fungrich, aes(x = sample_type, y = Observed, color = sample_type)) + 
-    geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(width = 0.1)) +
+    geom_boxplot(outlier.shape = NA, 
+                 width = 0.5, 
+                 position = position_dodge(width = 0.1)) +
     geom_jitter(size = 1, alpha = 0.9) +
     theme_bw() +
-    scale_color_manual(values = c("#FDD835", "#E4511E", "#43A047", "#0288D1","#9575CD", "#616161")) +
+    scale_color_manual(name = "Developmental Stage",
+                       values = c("#FDD835", "#E4511E", "#43A047", "#0288D1","#9575CD", "#616161")) +
     labs(title = "Observed richness") +
     xlab("Developmental Stage")
 
@@ -222,6 +230,26 @@
   samplefung <- data.frame(sample_data(rareps))
   adonis2(fung_bray ~ sample_type, data = samplefung)
 
+## Test for homogeneity of multivariate dispersion ----
+  
+# Calculate the average distance of group members to the group centroid
+  disp_fung <- betadisper(fung_bray, samplefung$sample_type)
+  disp_fung
+  
+# Do any of the group dispersions differ?
+  disp_fung_an <- anova(disp_fung)
+  disp_fung_an
+  
+# Which group dispersions differ?
+  disp_fung_ttest <- permutest(disp_fung, 
+                               control = permControl(nperm = 999),
+                               pairwise = TRUE)
+  disp_fung_ttest
+  
+# Which group dispersions differ?
+  disp_fung_tHSD <- TukeyHSD(disp_fung)
+  disp_fung_tHSD
+                                             
 ## Ordination ----
 
 # Calculate the relative abundance of each otu
