@@ -10,6 +10,7 @@
   setwd("~/Downloads")
 
 # Load necessary packages
+  library(Biostrings) # Version 2.68.1
   library(ggplot2) # Version 3.4.3
   library(phyloseq) # Version 1.44.0
   library(vegan) # Version 2.6-4
@@ -19,8 +20,8 @@
   library(grDevices) # Version 4.3.1
   library(RColorBrewer) # Version 1.1-3
   library(unikn) # Version 0.9.0
-  library(ShortRead) # Version 1.58.0
   library(dplyr) # Version 1.1.3
+  library(RVAideMemoire) # Version 0.9-83-7
   library(DESeq2) # Version 1.40.2
 
 # Import data
@@ -239,14 +240,23 @@
   tab <- t(tab)
   rare <- rarecurve(tab, step = 50, label = FALSE)
   
-# Rarefy  
+# Set seed and rarefy 
   set.seed(1234)
   rareps <- rarefy_even_depth(ps3, sample.size = 20)
   
-# Perform PERMANOVA to test effects of developmental stage on bacterial community composition
+# Create a distance matrix using Bray Curtis dissimilarity
   bact_bray <- phyloseq::distance(rareps, method = "bray")
+
+# Conver to data frame
   samplebact <- data.frame(sample_data(rareps))
-  adonis2(bact_bray ~ sample_type, data = samplebact)
+
+# Perform the PERMANOVA to test effects of developmental stage on bacterial community composition
+  bact_perm <- adonis2(bact_bray ~ sample_type, data = samplebact)
+  bact_perm
+
+# Which group means differ?
+  bact_perm_BH <- pairwise.perm.manova(bact_bray, samplebact$sample_type, p.method = "BH", nperm = 9999)
+  bact_perm_BH
 
 ## Test for homogeneity of multivariate dispersion ----
 
