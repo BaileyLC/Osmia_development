@@ -221,15 +221,20 @@
   tab <- t(tab)
   rare <- rarecurve(tab, step = 20, label = FALSE)
 
-# Rarefy
+# Set seed and rarefy
   set.seed(1234)
   rareps <- rarefy_even_depth(ps2, sample.size = 20)
 
-# Perform PERMANOVA to test effects of developmental stage on bacterial community composition
+# Create a distance matrix using Bray Curtis dissimilarity
   fung_bray <- phyloseq::distance(rareps, method = "bray")
-  samplefung <- data.frame(sample_data(rareps))
-  adonis2(fung_bray ~ sample_type, data = samplefung)
 
+# Convert to data frame
+  samplefung <- data.frame(sample_data(rareps))
+
+# Perform the PERMANOVA to test effects of developmental stage on fungal community composition
+  fung_perm <- adonis2(fung_bray ~ sample_type, data = samplefung)
+  fung_perm
+                                             
 ## Test for homogeneity of multivariate dispersion ----
   
 # Calculate the average distance of group members to the group centroid
