@@ -413,9 +413,9 @@
 # Set significance factor  
   alpha <- 0.05
   
-# Initial vs final provision
+# Initial vs final provisions
   
-# Extract results from differential abundance table for initial vs final provision
+# Extract results from differential abundance table for initial vs final provisions
   init_final <- results(desq_dds, contrast = c("sample_type", "initial provision", "final provision"))
   
 # Order differential abundances by their padj value
@@ -427,9 +427,75 @@
 # Check to see if any padj is below alpha
   init_final_p05
   
-# Final provision vs larva
+# Initial provisions vs larvae
   
-# Extract results from differential abundance table for final provision vs larva
+# Extract results from differential abundance table for initial provisions vs larvae
+  init_larva <- results(desq_dds, contrast = c("sample_type", "initial provision", "larva"))
+  
+# Order differential abundances by their padj value
+  init_larva <- init_larva[order(init_larva$padj, na.last = NA), ]
+  
+# Filter data to only include padj < alpha and remove NAs
+  init_larva_p05 <- init_larva[(init_larva$padj < alpha & !is.na(init_larva$padj)), ]
+  
+# Check to see if any padj is below alpha
+  init_larva_p05
+  
+# Combine filtered differential abundance data with taxonomic names from phyloseq obj
+  init_larva_p05 <- cbind(as(init_larva_p05, "data.frame"),
+                         as(tax_table(ps2)[rownames(init_larva_p05), ], "matrix"))
+  
+# Plot
+  ggplot(init_larva_p05, aes(y = Genus, x = log2FoldChange, color = Phylum)) +
+    geom_vline(xintercept = 0.0, color = "gray", size = 0.5) +
+    geom_point(size = 3) +
+    theme(axis.text.x = element_text(angle = -90, hjust = 0, vjust = 0.5)) +
+    theme_bw() +
+    ggtitle("Initial provision vs. Larvae")
+  
+# Initial provisions vs pre-wintering adults
+  
+# Extract results from differential abundance table for initial provisions vs pre-wintering adults
+  init_pre <- results(desq_dds, contrast = c("sample_type", "initial provision", "pre.wintering.adult"))
+  
+# Order differential abundances by their padj value
+  init_pre <- init_pre[order(init_pre$padj, na.last = NA), ]
+  
+# Filter data to only include padj < alpha and remove NAs
+  init_pre_p05 <- init_pre[(init_pre$padj < alpha & !is.na(init_pre$padj)), ]
+  
+# Check to see if any padj is below alpha
+  init_pre_p05
+  
+# Initial provisions vs dead adults
+  
+# Extract results from differential abundance table for initial provisions vs dead adults
+  init_dead <- results(desq_dds, contrast = c("sample_type", "initial provision", "dead"))
+  
+# Order differential abundances by their padj value
+  init_dead <- init_dead[order(init_dead$padj, na.last = NA), ]
+  
+# Filter data to only include padj < alpha and remove NAs
+  init_dead_p05 <- init_dead[(init_dead$padj < alpha & !is.na(init_dead$padj)), ]
+  
+# Check to see if any padj is below alpha
+  init_dead_p05
+  
+# Combine filtered differential abundance data with taxonomic names from phyloseq obj
+  init_dead_p05 <- cbind(as(init_dead_p05, "data.frame"),
+                          as(tax_table(ps2)[rownames(init_dead_p05), ], "matrix"))
+  
+# Plot
+  ggplot(init_dead_p05, aes(y = Genus, x = log2FoldChange, color = Phylum)) +
+    geom_vline(xintercept = 0.0, color = "gray", size = 0.5) +
+    geom_point(size = 3) +
+    theme(axis.text.x = element_text(angle = -90, hjust = 0, vjust = 0.5)) +
+    theme_bw() +
+    ggtitle("Initial provision vs. Dead adults")  
+
+# Final provisions vs larvae
+  
+# Extract results from differential abundance table for final provisions vs larvae
   final_larva <- results(desq_dds, contrast = c("sample_type", "final provision", "larva"))
   
 # Order differential abundances by their padj value
@@ -441,9 +507,49 @@
 # Check to see if any padj is below alpha
   final_larva_p05
   
-# Larva vs pre-wintering adult
+# Final provisions vs pre-wintering adults
   
-# Extract results from differential abundance table for larva vs pre-wintering adult
+# Extract results from differential abundance table for final provisions vs pre-wintering adults
+  final_pre <- results(desq_dds, contrast = c("sample_type", "final provision", "pre.wintering.adult"))
+  
+# Order differential abundances by their padj value
+  final_pre <- final_pre[order(final_pre$padj, na.last = NA), ]
+  
+# Filter data to only include padj < alpha and remove NAs
+  final_pre_p05 <- final_pre[(final_pre$padj < alpha & !is.na(final_pre$padj)), ]
+  
+# Check to see if any padj is below alpha
+  final_pre_p05
+  
+# Combine filtered differential abundance data with taxonomic names from phyloseq obj
+  final_pre_p05 <- cbind(as(final_pre_p05, "data.frame"),
+                         as(tax_table(ps2)[rownames(final_pre_p05), ], "matrix"))
+  
+  # Plot
+  ggplot(final_pre_p05, aes(y = Genus, x = log2FoldChange, color = Phylum)) +
+    geom_vline(xintercept = 0.0, color = "gray", size = 0.5) +
+    geom_point(size = 3) +
+    theme(axis.text.x = element_text(angle = -90, hjust = 0, vjust = 0.5)) +
+    theme_bw() +
+    ggtitle("Final provision vs. Pre-wintering adults") 
+  
+# Final provisions vs dead adults
+  
+# Extract results from differential abundance table for final provisions vs dead adults
+  final_dead <- results(desq_dds, contrast = c("sample_type", "final provision", "dead"))
+  
+# Order differential abundances by their padj value
+  final_dead <- final_dead[order(final_dead$padj, na.last = NA), ]
+  
+# Filter data to only include padj < alpha and remove NAs
+  final_dead_p05 <- final_dead[(final_dead$padj < alpha & !is.na(final_dead$padj)), ]
+  
+# Check to see if any padj is below alpha
+  final_dead_p05
+  
+# Larvae vs pre-wintering adults
+  
+# Extract results from differential abundance table for larvae vs pre-wintering adults
   larva_pre <- results(desq_dds, contrast = c("sample_type", "larva", "pre.wintering.adult"))
   
 # Order differential abundances by their padj value
@@ -451,6 +557,9 @@
   
 # Filter data to only include padj < alpha and remove NAs
   larva_pre_p05 <- larva_pre[(larva_pre$padj < alpha & !is.na(larva_pre$padj)), ]
+  
+# Check to see if any padj is below alpha
+  larva_pre_p05
   
 # Combine filtered differential abundance data with taxonomic names from phyloseq obj
   larva_pre_p05 <- cbind(as(larva_pre_p05, "data.frame"),
@@ -461,11 +570,26 @@
     geom_vline(xintercept = 0.0, color = "gray", size = 0.5) +
     geom_point(size = 3) +
     theme(axis.text.x = element_text(angle = -90, hjust = 0, vjust = 0.5)) +
-    theme_bw()
+    theme_bw() +
+    ggtitle("Larvae vs Pre-wintering adults")
   
-# Pre-wintering adult vs emerged
+# Larvae vs dead adults
   
-# Extract results from differential abundance table for pre-wintering adult vs emerged
+# Extract results from differential abundance table for larvae vs dead adults
+  larva_dead <- results(desq_dds, contrast = c("sample_type", "larva", "dead"))
+  
+# Order differential abundances by their padj value
+  larva_dead <- larva_dead[order(larva_dead$padj, na.last = NA), ]
+  
+# Filter data to only include padj < alpha and remove NAs
+  larva_dead_p05 <- larva_dead[(larva_dead$padj < alpha & !is.na(larva_dead$padj)), ]
+  
+# Check to see if any padj is below alpha
+  larva_dead_p05
+  
+# Pre-wintering vs emerged adults
+  
+# Extract results from differential abundance table for pre-wintering vs emerged adults
   pre_emerg <- results(desq_dds, contrast = c("sample_type", "pre.wintering.adult", "emerged"))
   
 # Order differential abundances by their padj value
@@ -477,6 +601,32 @@
 # Check to see if any padj is below alpha
   pre_emerg_p05
   
+# Pre-wintering vs dead adults
+  
+# Extract results from differential abundance table for pre-wintering vs dead adults
+  pre_dead <- results(desq_dds, contrast = c("sample_type", "pre.wintering.adult", "dead"))
+  
+# Order differential abundances by their padj value
+  pre_dead<- pre_dead[order(pre_dead$padj, na.last = NA), ]
+  
+# Filter data to only include padj < alpha and remove NAs
+  pre_dead_p05 <- pre_dead[(pre_dead$padj < alpha & !is.na(pre_dead$padj)), ]
+  
+# Check to see if any padj is below alpha
+  pre_dead_p05
+  
+# Combine filtered differential abundance data with taxonomic names from phyloseq obj
+  pre_dead_p05 <- cbind(as(pre_dead_p05, "data.frame"),
+                         as(tax_table(ps2)[rownames(pre_dead_p05), ], "matrix"))
+  
+# Plot
+  ggplot(pre_dead_p05, aes(y = Genus, x = log2FoldChange, color = Phylum)) +
+    geom_vline(xintercept = 0.0, color = "gray", size = 0.5) +
+    geom_point(size = 3) +
+    theme(axis.text.x = element_text(angle = -90, hjust = 0, vjust = 0.5)) +
+    theme_bw() +
+    ggtitle("Pre-wintering vs Dead adults")
+
 # Emerged vs dead
   
 # Extract results from differential abundance table for emerged vs dead
