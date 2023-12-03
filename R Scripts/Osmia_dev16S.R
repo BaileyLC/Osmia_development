@@ -284,10 +284,10 @@
   ps.prop <- transform_sample_counts(rareps, function(otu) otu/sum(otu))
   
 # PCoA using Bray-Curtis distance
-  ord.pcoa.bray <- ordinate(rareps, method = "PCoA", distance = "bray")  
+  ord.pcoa.bray <- ordinate(ps.prop, method = "PCoA", distance = "bray")  
   
 # Plot ordination
-  plot_ordination(rareps, ord.pcoa.bray, color = "sample_type") + 
+  plot_ordination(ps.prop, ord.pcoa.bray, color = "sample_type") + 
     theme_bw() +
     theme(text = element_text(size = 16)) +
     theme(legend.justification = "left", 
