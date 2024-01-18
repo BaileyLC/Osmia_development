@@ -18,7 +18,7 @@
 ## Prepare samples for quality control ----
 
 # Specify the path where your FASTQ files are located
-  path <- "seqs/Osmia_devITS"
+  path <- "Osmia_dev_ITS"
   list.files(path)
   
 # Sort files to ensure forward and reverse reads are in the same order
@@ -68,7 +68,7 @@
 ## Remove primers ----
  
 # Specify the path where cutadapt is located 
-  cutadapt <- "/usr/local/bin/cutadapt"
+  cutadapt <- "/Users/baileycrowley/miniconda3/bin/cutadapt"
   system2(cutadapt, args = "--version") # Run shell commands from R
   
 # Create a new file path to store cutadapt-ed files
@@ -111,33 +111,28 @@
 ## Check the quality of your clean reads ----  
   
 # Plot average quality scores for forward reads
-  plotQualityProfile(fnFs[1:2]) # Use Q30 to determine where to cut
+  plotQualityProfile(cutFs[1:2]) # Use Q30 to determine where to cut
   
 # Plot average quality scores for reverse reads
-  plotQualityProfile(fnRs[1:2]) # Use Q30 to determine where to cut
+  plotQualityProfile(cutRs[1:2]) # Use Q30 to determine where to cut
   
 ##  Prepare a path for your filtered reads ----  
   
-# Create a new file path to store filtered and trimmed reads
-  filt_path <- file.path(path, "filtered") # Place filtered files in filtered subdirectory
-  
 # Rename filtered files and place them in the filtered subdirectory
-  filtFs <- file.path(filt_path, paste0(sample.names, "_F_filt.fastq.gz"))
-  filtRs <- file.path(filt_path, paste0(sample.names, "_R_filt.fastq.gz"))
-  names(filtFs) <- sample.names
-  names(filtRs) <- sample.names
+  filtFs <- file.path(path.cut, "filtered", basename(cutFs))
+  filtRs <- file.path(path.cut, "filtered", basename(cutRs))
   
-## Clean your reads ----   
+  ## Clean your reads ----   
   
 # Quality filtering and trimming
-  out <- filterAndTrim(fnFs, filtFs, fnRs, filtRs,  # specify object that contains your unfiltered reads, followed by the object that contains your unfiltered reads
-            truncLen = c(130, 180), # truncates reads a specified base (forward, reverse) 
-            maxN = 0, # set the maximum number of ambiguous bps allowed (must be zero for DADA2)
-            maxEE = c(2, 2), # set the maximum number of estimated errors allowed for an individual read
-            truncQ = 2, # truncates reads at the first instance of a Q score less than or equal to the specified value
-            rm.phix = TRUE, # removes reads identified as belonging to the phiX phage
-            compress = TRUE, # zips FASTQ files
-            multithread = TRUE) # allows FASTQ files to be processed in parallel
+  out <- filterAndTrim(cutFs, filtFs, cutRs, filtRs, 
+                       maxN = 0, 
+                       maxEE = c(2, 2), 
+                       truncQ = 2,
+                       minLen = 50, 
+                       rm.phix = TRUE, 
+                       compress = TRUE, 
+                       multithread = TRUE)  # on windows, set multithread = FALSE
   
   head(out)
   
@@ -159,7 +154,7 @@
 ## Merge reads ----  
   
 # Merge denoised reads
-  mergers <- mergePairs(dadaFs, filtFs, dadaRs, filtRs, verbose = TRUE) # can add maxMismatch option if you loose a lot of reads; minOverlap can be added to lower the overlap needed
+  mergers <- mergePairs(dadaFs, filtFs, dadaRs, filtRs, verbose = TRUE)
   
 # Inspect the merger data.frame from the first sample
   head(mergers[[1]])
@@ -189,13 +184,12 @@
   rownames(track) <- sample.names
   head(track)
   
-## Assign taxonomy ----  
-  
-# Assign taxonomy using a reference database  
-  unite.ref <- "refseqs/sh_general_release_dynamic_s_25.07.2023.fasta"
+## Assign taxonomy ----    
+  unite.ref <- "sh_general_release_dynamic_s_25.07.2023.fasta"
   taxa <- assignTaxonomy(seqtab.nochim, unite.ref, multithread = TRUE, tryRC = TRUE)
   
-  taxa.print <- taxa  # Removing sequence rownames for display only
+# Removing sequence rownames for display only
+  taxa.print <- taxa
   rownames(taxa.print) <- NULL
   head(taxa.print)
   
@@ -203,4 +197,4 @@
   
 # Save files so you don't have to work through the computationally heavy work again
   saveRDS(seqtab.nochim, file = "Osmia_dev_seqsITS.rds")
-  saveRDS(taxa, file = "Osmia_dev_taxaITS.rds") 
+  saveRDS(taxa, file = "Osmia_dev_taxaITS.rds")
