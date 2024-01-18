@@ -26,7 +26,7 @@
 # Import data
   seqtab.nochim <- readRDS("Osmia_dev_seqsITS.rds")
   taxa <- readRDS("Osmia_dev_taxaITS.rds")
-  metaITS_dev <- read.csv("Osmia_dev_master - ITS_all.csv")
+  metaITS_dev <- read.csv("Osmia_dev_master - ITS_worked.csv")
 
 ## Create phyloseq object ----
 
@@ -38,10 +38,10 @@
   sampleID <- samples$sampleID
   nesting_tube <- samples$nesting_tube
   sample_or_control <- samples$sample_or_control
-  sampleinfo <- data.frame(extractionID = extractionID, 
-                           sample_type = sample_type, 
-                           sampleID = sampleID, 
-                           nesting_tube = nesting_tube, 
+  sampleinfo <- data.frame(extractionID = extractionID,
+                           sample_type = sample_type,
+                           sampleID = sampleID,
+                           nesting_tube = nesting_tube,
                            sample_or_control = sample_or_control)
   rownames(sampleinfo) <- samples.out
 
@@ -87,18 +87,18 @@
   ps.neg <- prune_samples(sample_data(ps1)$sample_or_control == "control", ps1)
 
 # Calculate taxa abundance in samples from sample counts
-  ps.neg.presence <- transform_sample_counts(ps.neg, function(abund) 1 * (abund > 0))
+  ps.neg.presence <- transform_sample_counts(ps.neg, function(abund) 1*(abund > 0))
 
 # Make phyloseq object of presence-absence in true positive samples
   ps.pos <- prune_samples(sample_data(ps1)$sample_or_control == "sample", ps1)
 
 # Calculate taxa abundance in samples from sample counts
-  ps.pos.presence <- transform_sample_counts(ps.pos, function(abund) 1 * (abund > 0))
+  ps.pos.presence <- transform_sample_counts(ps.pos, function(abund) 1*(abund > 0))
 
 # Make data.frame of prevalence in positive and negative samples
   df.pres <- data.frame(prevalence.pos = taxa_sums(ps.pos.presence), 
                         prevalence.neg = taxa_sums(ps.neg.presence),
-                        contam.prev=contamdf.prev$contaminant)
+                        contam.prev = contamdf.prev$contaminant)
 
 # Plot
   ggplot(data = df.pres, aes(x = prevalence.neg, y = prevalence.pos, color = contam.prev)) + 
@@ -177,41 +177,38 @@
   fungrich$sample_type <- factor(fungrich$sample_type, levels = c("initial provision", "final provision", "larva", "pre-wintering adult", "emerged", "dead"))
 
 # Boxplot of Shannon richness
-  ggplot(fungrich, aes(x = sample_type, y = Shannon, color = sample_type)) + 
-    geom_boxplot(outlier.shape = NA, 
-                 width = 0.5, 
-                 position = position_dodge(width = 0.1)) +
-    geom_jitter(size = 1, alpha = 0.9) +
-    theme_bw() +
-    scale_color_manual(name = "Developmental Stage",
-                       values = c("#FDD835", "#E4511E", "#43A047", "#0288D1","#9575CD", "#616161")) +
-    labs(title = "") +
-    xlab("Developmental Stage") +
-    ylab("Shannon richness")
+  fig2B <- ggplot(fungrich, aes(x = sample_type, y = Shannon, color = sample_type)) + 
+              geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(width = 0.1)) +
+              geom_jitter(size = 1, alpha = 0.9) +
+              theme_bw() +
+              scale_color_manual(name = "Developmental Stage",
+                                values = c("#FDD835", "#E4511E", "#43A047", "#0288D1","#9575CD", "#616161")) +
+              labs(title = "") +
+              xlab("Developmental Stage") +
+              ylab("Shannon richness") +
+              ggtitle("B")
+  fig2B
 
 # Boxplot of Simpson richness
   ggplot(fungrich, aes(x = sample_type, y = Simpson, color = sample_type)) + 
-    geom_boxplot(outlier.shape = NA, 
-                 width = 0.5, 
-                 position = position_dodge(width = 0.1)) +
+    geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(width = 0.1)) +
     geom_jitter(size = 1, alpha = 0.9) +
     theme_bw() +
-    scale_color_manual(name = "Developmental Stage",
-                       values = c("#FDD835", "#E4511E", "#43A047", "#0288D1","#9575CD", "#616161")) +
+    scale_color_manual(values = c("#FDD835", "#E4511E", "#43A047", "#0288D1","#9575CD", "#616161")) +
     labs(title = "Simpson richness") +
     xlab("Developmental Stage")
 
 # Boxplot of Observed richness
-  ggplot(fungrich, aes(x = sample_type, y = Observed, color = sample_type)) + 
-    geom_boxplot(outlier.shape = NA, 
-                 width = 0.5, 
-                 position = position_dodge(width = 0.1)) +
-    geom_jitter(size = 1, alpha = 0.9) +
-    theme_bw() +
-    scale_color_manual(name = "Developmental Stage",
-                       values = c("#FDD835", "#E4511E", "#43A047", "#0288D1","#9575CD", "#616161")) +
-    labs(title = "Observed richness") +
-    xlab("Developmental Stage")
+  figS1B <- ggplot(fungrich, aes(x = sample_type, y = Observed, color = sample_type)) + 
+              geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(width = 0.1)) +
+              geom_jitter(size = 1, alpha = 0.9) +
+              theme_bw() +
+              scale_color_manual(name = "Developmental Stage",
+                                 values = c("#FDD835", "#E4511E", "#43A047", "#0288D1","#9575CD", "#616161")) +
+              labs(title = "Observed richness") +
+              xlab("Developmental Stage") +
+              ggtitle("B")
+  figS1B
 
 ## Rarefaction ----
 
@@ -227,14 +224,14 @@
 
 # Create a distance matrix using Bray Curtis dissimilarity
   fung_bray <- phyloseq::distance(rareps, method = "bray")
-
+  
 # Convert to data frame
   samplefung <- data.frame(sample_data(rareps))
-
+  
 # Perform the PERMANOVA to test effects of developmental stage on fungal community composition
   fung_perm <- adonis2(fung_bray ~ sample_type, data = samplefung)
   fung_perm
-                                             
+  
 ## Test for homogeneity of multivariate dispersion ----
   
 # Calculate the average distance of group members to the group centroid
@@ -254,7 +251,7 @@
 # Which group dispersions differ?
   disp_fung_tHSD <- TukeyHSD(disp_fung)
   disp_fung_tHSD
-                                             
+  
 ## Ordination ----
 
 # Calculate the relative abundance of each otu
@@ -265,15 +262,17 @@
   ord.pcoa.bray <- ordinate(ps.prop, method = "PCoA", distance = "bray")
 
 # Plot ordination
-  plot_ordination(ps.prop, ord.pcoa.bray, color = "sample_type") + 
-    theme_bw() +
-    theme(text = element_text(size = 16)) +
-    theme(legend.justification = "left", 
-          legend.title = element_text(size = 16, colour = "black"), 
-          legend.text = element_text(size = 14, colour = "black")) + 
-    geom_point(size = 3) +
-    scale_color_manual(values = c("#616161", "#9575CD", "#E4511E", "#FDD835", "#43A047", "#0288D1")) +
-    labs(title = "PCoA: Bacteria", color = "Developmental Stage")
+  fig3B <- plot_ordination(ps.prop, ord.pcoa.bray, color = "sample_type") + 
+              theme_bw() +
+              theme(text = element_text(size = 16)) +
+              theme(legend.justification = "left", 
+                    legend.title = element_text(size = 16, colour = "black"), 
+                    legend.text = element_text(size = 14, colour = "black")) + 
+              geom_point(size = 3) +
+              scale_color_manual(values = c("#616161", "#9575CD", "#E4511E", "#FDD835", "#43A047", "#0288D1")) +
+              labs(color = "Developmental Stage") +
+              ggtitle("B")
+  fig3B
 
 ## Stacked community plot ----
 
@@ -281,7 +280,7 @@
   Okabe_Ito <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#000000")
 
 # Stretch palette (define more intermediate color options)
-  okabe_ext <- usecol(Okabe_Ito, n = 52)
+  okabe_ext <- usecol(Okabe_Ito, n = 68)
   colors <- sample(okabe_ext)
 
 # Remove patterns in tax_table   
@@ -309,8 +308,7 @@
     xlab("Treatment") +
     theme_bw() + 
     theme(text = element_text(size = 16)) +
-    theme(panel.grid.major = element_blank(), 
-          panel.grid.minor = element_blank()) + 
+    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + 
     theme(legend.justification = "left", 
           legend.title = element_text(size = 16, colour = "black"), 
           legend.text = element_text(size = 14, colour = "black")) + 
@@ -368,33 +366,36 @@
     ggtitle("Fungi")
 
 # Plot Genus for each sample
-  ggplot(data = y6, aes(x = sampleID, y = Abundance, fill = Genus)) + 
-    geom_bar(stat = "identity", position = "fill") + 
-    scale_fill_manual(values = colors) +
-    facet_grid(~ sample_type, scale = "free", space = "free") +
-    theme(legend.position = "right") +
-    ylab("Relative abundance") + 
-    ylim(0, 1.0) +
-    xlab("Treatment") +
-    theme_bw() + 
-    theme(text = element_text(size = 16)) +
-    theme(panel.grid.major = element_blank(), 
-          panel.grid.minor = element_blank()) + 
-    theme(legend.justification = "left", 
-          legend.title = element_text(size = 16, colour = "black"), 
-          legend.text = element_text(size = 14, colour = "black")) + 
-    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
-    guides(fill = guide_legend(ncol = 3)) +
-    ggtitle("Fungi")
+  fig1B <- ggplot(data = y6, aes(x = sampleID, y = Abundance, fill = Genus)) + 
+              geom_bar(stat = "identity", position = "fill") + 
+              scale_fill_manual(values = colors) +
+              facet_grid(~ sample_type, scale = "free", space = "free") +
+              theme(legend.position = "right") +
+              ylab("Relative abundance") + 
+              ylim(0, 1.0) +
+              xlab("Treatment") +
+              theme_bw() + 
+              theme(text = element_text(size = 16)) +
+              theme(panel.grid.major = element_blank(), 
+                    panel.grid.minor = element_blank()) + 
+              theme(legend.justification = "left", 
+                    legend.title = element_text(size = 16, colour = "black"), 
+                    legend.text = element_text(size = 14, colour = "black")) + 
+              theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+              guides(fill = guide_legend(ncol = 3)) +
+              ggtitle("B")
+  fig1B
 
 ## Differential abundance ----
 # Resource: https://joey711.github.io/phyloseq-extensions/DESeq2.html
 
+# When run again, change ps2 to rareps!  
+  
 # Remove patterns in tax_table   
-  tax_table(ps2)[, colnames(tax_table(ps2))] <- gsub(tax_table(ps2)[, colnames(tax_table(ps2))], pattern = "[a-z]__", replacement = "")
+  tax_table(rareps)[, colnames(tax_table(rareps))] <- gsub(tax_table(rareps)[, colnames(tax_table(rareps))], pattern = "[a-z]__", replacement = "")
   
 # Convert from a phyloseq to a deseq obj
-  desq_obj <- phyloseq_to_deseq2(ps2, ~ sample_type)
+  desq_obj <- phyloseq_to_deseq2(rareps, ~ sample_type)
   
 # Calculate the geometric mean and remove rows with NA
   gm_mean <- function(x, na.rm = TRUE) {
@@ -416,16 +417,16 @@
 # Initial vs final provisions
   
 # Extract results from differential abundance table for initial vs final provisions
-  init_final <- results(desq_dds, contrast = c("sample_type", "initial provision", "final provision"))
+  #init_final <- results(desq_dds, contrast = c("sample_type", "initial provision", "final provision"))
   
 # Order differential abundances by their padj value
-  init_final <- init_final[order(init_final$padj, na.last = NA), ]
+  #init_final <- init_final[order(init_final$padj, na.last = NA), ]
   
 # Filter data to only include padj < alpha and remove NAs
-  init_final_p05 <- init_final[(init_final$padj < alpha & !is.na(init_final$padj)), ]
+  #init_final_p05 <- init_final[(init_final$padj < alpha & !is.na(init_final$padj)), ]
   
 # Check to see if any padj is below alpha
-  init_final_p05
+  #init_final_p05
   
 # Initial provisions vs larvae
   
@@ -442,16 +443,16 @@
   init_larva_p05
   
 # Combine filtered differential abundance data with taxonomic names from phyloseq obj
-  init_larva_p05 <- cbind(as(init_larva_p05, "data.frame"),
-                         as(tax_table(ps2)[rownames(init_larva_p05), ], "matrix"))
+  #init_larva_p05 <- cbind(as(init_larva_p05, "data.frame"),
+                         #as(tax_table(ps2)[rownames(init_larva_p05), ], "matrix"))
   
 # Plot
-  ggplot(init_larva_p05, aes(y = Genus, x = log2FoldChange, color = Phylum)) +
-    geom_vline(xintercept = 0.0, color = "gray", size = 0.5) +
-    geom_point(size = 3) +
-    theme(axis.text.x = element_text(angle = -90, hjust = 0, vjust = 0.5)) +
-    theme_bw() +
-    ggtitle("Initial provision vs. Larvae")
+  #ggplot(init_larva_p05, aes(y = Genus, x = log2FoldChange, color = Phylum)) +
+    #geom_vline(xintercept = 0.0, color = "gray", size = 0.5) +
+    #geom_point(size = 3) +
+    #theme(axis.text.x = element_text(angle = -90, hjust = 0, vjust = 0.5)) +
+    #theme_bw() +
+    #ggtitle("Initial provision vs. Larvae")
   
 # Initial provisions vs pre-wintering adults
   
@@ -482,70 +483,70 @@
   init_dead_p05
   
 # Combine filtered differential abundance data with taxonomic names from phyloseq obj
-  init_dead_p05 <- cbind(as(init_dead_p05, "data.frame"),
-                          as(tax_table(ps2)[rownames(init_dead_p05), ], "matrix"))
+  #init_dead_p05 <- cbind(as(init_dead_p05, "data.frame"),
+                          #as(tax_table(ps2)[rownames(init_dead_p05), ], "matrix"))
   
 # Plot
-  ggplot(init_dead_p05, aes(y = Genus, x = log2FoldChange, color = Phylum)) +
-    geom_vline(xintercept = 0.0, color = "gray", size = 0.5) +
-    geom_point(size = 3) +
-    theme(axis.text.x = element_text(angle = -90, hjust = 0, vjust = 0.5)) +
-    theme_bw() +
-    ggtitle("Initial provision vs. Dead adults")  
+  #ggplot(init_dead_p05, aes(y = Genus, x = log2FoldChange, color = Phylum)) +
+    #geom_vline(xintercept = 0.0, color = "gray", size = 0.5) +
+    #geom_point(size = 3) +
+    #theme(axis.text.x = element_text(angle = -90, hjust = 0, vjust = 0.5)) +
+    #theme_bw() +
+    #ggtitle("Initial provision vs. Dead adults")  
 
 # Final provisions vs larvae
   
 # Extract results from differential abundance table for final provisions vs larvae
-  final_larva <- results(desq_dds, contrast = c("sample_type", "final provision", "larva"))
+  #final_larva <- results(desq_dds, contrast = c("sample_type", "final provision", "larva"))
   
 # Order differential abundances by their padj value
-  final_larva <- final_larva[order(final_larva$padj, na.last = NA), ]
+  #final_larva <- final_larva[order(final_larva$padj, na.last = NA), ]
   
 # Filter data to only include padj < alpha and remove NAs
-  final_larva_p05 <- final_larva[(final_larva$padj < alpha & !is.na(final_larva$padj)), ]
+  #final_larva_p05 <- final_larva[(final_larva$padj < alpha & !is.na(final_larva$padj)), ]
   
 # Check to see if any padj is below alpha
-  final_larva_p05
+  #final_larva_p05
   
 # Final provisions vs pre-wintering adults
   
 # Extract results from differential abundance table for final provisions vs pre-wintering adults
-  final_pre <- results(desq_dds, contrast = c("sample_type", "final provision", "pre.wintering.adult"))
+  #final_pre <- results(desq_dds, contrast = c("sample_type", "final provision", "pre.wintering.adult"))
   
 # Order differential abundances by their padj value
-  final_pre <- final_pre[order(final_pre$padj, na.last = NA), ]
+  #final_pre <- final_pre[order(final_pre$padj, na.last = NA), ]
   
 # Filter data to only include padj < alpha and remove NAs
-  final_pre_p05 <- final_pre[(final_pre$padj < alpha & !is.na(final_pre$padj)), ]
+  #final_pre_p05 <- final_pre[(final_pre$padj < alpha & !is.na(final_pre$padj)), ]
   
 # Check to see if any padj is below alpha
-  final_pre_p05
+  #final_pre_p05
   
 # Combine filtered differential abundance data with taxonomic names from phyloseq obj
-  final_pre_p05 <- cbind(as(final_pre_p05, "data.frame"),
-                         as(tax_table(ps2)[rownames(final_pre_p05), ], "matrix"))
+  #final_pre_p05 <- cbind(as(final_pre_p05, "data.frame"),
+                         #as(tax_table(ps2)[rownames(final_pre_p05), ], "matrix"))
   
-  # Plot
-  ggplot(final_pre_p05, aes(y = Genus, x = log2FoldChange, color = Phylum)) +
-    geom_vline(xintercept = 0.0, color = "gray", size = 0.5) +
-    geom_point(size = 3) +
-    theme(axis.text.x = element_text(angle = -90, hjust = 0, vjust = 0.5)) +
-    theme_bw() +
-    ggtitle("Final provision vs. Pre-wintering adults") 
+# Plot
+  #ggplot(final_pre_p05, aes(y = Genus, x = log2FoldChange, color = Phylum)) +
+    #geom_vline(xintercept = 0.0, color = "gray", size = 0.5) +
+    #geom_point(size = 3) +
+    #theme(axis.text.x = element_text(angle = -90, hjust = 0, vjust = 0.5)) +
+    #theme_bw() +
+    #ggtitle("Final provision vs. Pre-wintering adults") 
   
 # Final provisions vs dead adults
   
 # Extract results from differential abundance table for final provisions vs dead adults
-  final_dead <- results(desq_dds, contrast = c("sample_type", "final provision", "dead"))
+  #final_dead <- results(desq_dds, contrast = c("sample_type", "final provision", "dead"))
   
 # Order differential abundances by their padj value
-  final_dead <- final_dead[order(final_dead$padj, na.last = NA), ]
+  #final_dead <- final_dead[order(final_dead$padj, na.last = NA), ]
   
 # Filter data to only include padj < alpha and remove NAs
-  final_dead_p05 <- final_dead[(final_dead$padj < alpha & !is.na(final_dead$padj)), ]
+  #final_dead_p05 <- final_dead[(final_dead$padj < alpha & !is.na(final_dead$padj)), ]
   
 # Check to see if any padj is below alpha
-  final_dead_p05
+  #final_dead_p05
   
 # Larvae vs pre-wintering adults
   
@@ -562,16 +563,16 @@
   larva_pre_p05
   
 # Combine filtered differential abundance data with taxonomic names from phyloseq obj
-  larva_pre_p05 <- cbind(as(larva_pre_p05, "data.frame"),
-                         as(tax_table(ps2)[rownames(larva_pre_p05), ], "matrix"))
+  #larva_pre_p05 <- cbind(as(larva_pre_p05, "data.frame"),
+                         #as(tax_table(ps2)[rownames(larva_pre_p05), ], "matrix"))
   
 # Plot
-  ggplot(larva_pre_p05, aes(y = Genus, x = log2FoldChange, color = Phylum)) +
-    geom_vline(xintercept = 0.0, color = "gray", size = 0.5) +
-    geom_point(size = 3) +
-    theme(axis.text.x = element_text(angle = -90, hjust = 0, vjust = 0.5)) +
-    theme_bw() +
-    ggtitle("Larvae vs Pre-wintering adults")
+  #ggplot(larva_pre_p05, aes(y = Genus, x = log2FoldChange, color = Phylum)) +
+    #geom_vline(xintercept = 0.0, color = "gray", size = 0.5) +
+    #geom_point(size = 3) +
+    #theme(axis.text.x = element_text(angle = -90, hjust = 0, vjust = 0.5)) +
+    #theme_bw() +
+    #ggtitle("Larvae vs Pre-wintering adults")
   
 # Larvae vs dead adults
   
@@ -593,7 +594,7 @@
   pre_emerg <- results(desq_dds, contrast = c("sample_type", "pre.wintering.adult", "emerged"))
   
 # Order differential abundances by their padj value
-  pre_emerg<- pre_emerg[order(pre_emerg$padj, na.last = NA), ]
+  pre_emerg <- pre_emerg[order(pre_emerg$padj, na.last = NA), ]
   
 # Filter data to only include padj < alpha and remove NAs
   pre_emerg_p05 <- pre_emerg[(pre_emerg$padj < alpha & !is.na(pre_emerg$padj)), ]
@@ -616,16 +617,16 @@
   pre_dead_p05
   
 # Combine filtered differential abundance data with taxonomic names from phyloseq obj
-  pre_dead_p05 <- cbind(as(pre_dead_p05, "data.frame"),
-                         as(tax_table(ps2)[rownames(pre_dead_p05), ], "matrix"))
+  #pre_dead_p05 <- cbind(as(pre_dead_p05, "data.frame"),
+                         #as(tax_table(ps2)[rownames(pre_dead_p05), ], "matrix"))
   
 # Plot
-  ggplot(pre_dead_p05, aes(y = Genus, x = log2FoldChange, color = Phylum)) +
-    geom_vline(xintercept = 0.0, color = "gray", size = 0.5) +
-    geom_point(size = 3) +
-    theme(axis.text.x = element_text(angle = -90, hjust = 0, vjust = 0.5)) +
-    theme_bw() +
-    ggtitle("Pre-wintering vs Dead adults")
+  #ggplot(pre_dead_p05, aes(y = Genus, x = log2FoldChange, color = Phylum)) +
+    #geom_vline(xintercept = 0.0, color = "gray", size = 0.5) +
+    #geom_point(size = 3) +
+    #theme(axis.text.x = element_text(angle = -90, hjust = 0, vjust = 0.5)) +
+    #theme_bw() +
+    #ggtitle("Pre-wintering vs Dead adults")
 
 # Emerged vs dead
   
