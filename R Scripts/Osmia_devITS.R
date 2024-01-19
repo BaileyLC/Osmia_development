@@ -387,9 +387,7 @@
   fig1B
 
 ## Differential abundance ----
-# Resource: https://joey711.github.io/phyloseq-extensions/DESeq2.html
-
-# When run again, change ps2 to rareps!  
+# Resource: https://joey711.github.io/phyloseq-extensions/DESeq2.html 
   
 # Remove patterns in tax_table   
   tax_table(rareps)[, colnames(tax_table(rareps))] <- gsub(tax_table(rareps)[, colnames(tax_table(rareps))], pattern = "[a-z]__", replacement = "")
