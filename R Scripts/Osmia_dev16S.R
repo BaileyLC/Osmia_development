@@ -97,9 +97,9 @@
   ps.pos.presence <- transform_sample_counts(ps.pos, function(abund) 1 * (abund > 0))
   
 # Make data.frame of prevalence in positive and negative samples
-  df.pres <- data.frame(prevalence.pos=taxa_sums(ps.pos.presence), 
-                        prevalence.neg=taxa_sums(ps.neg.presence),
-                        contam.prev=contamdf.prev$contaminant)
+  df.pres <- data.frame(prevalence.pos = taxa_sums(ps.pos.presence), 
+                        prevalence.neg = taxa_sums(ps.neg.presence),
+                        contam.prev = contamdf.prev$contaminant)
   
 # Plot
   ggplot(data = df.pres, aes(x = prevalence.neg, y = prevalence.pos, color = contam.prev)) + 
