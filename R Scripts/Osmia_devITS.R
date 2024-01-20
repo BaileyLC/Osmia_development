@@ -162,15 +162,15 @@
   fungrich <- fungrich[complete.cases(fungrich), ]
 
 # Examine the effects of sample_type on Shannon richness
-  mod4 <- lme(Shannon ~ sample_type, random = ~1|sampleID, data = fungrich)
+  mod4 <- lme(Shannon ~ sample_type, random = ~1|nesting_tube, data = fungrich)
   anova(mod4)
 
 # Examine the effects of sample_type on Simpson richness
-  mod5 <- lme(Simpson ~ sample_type, random = ~1|sampleID, data = fungrich)
+  mod5 <- lme(Simpson ~ sample_type, random = ~1|nesting_tube, data = fungrich)
   anova(mod5)
 
 # Examine the effects of sample_type on observed richness
-  mod6 <- lme(Observed ~ sample_type, random = ~1|sampleID, data = fungrich)
+  mod6 <- lme(Observed ~ sample_type, random = ~1|nesting_tube, data = fungrich)
   anova(mod6)
 
 # Order samples on x-axis
