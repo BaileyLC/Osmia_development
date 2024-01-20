@@ -199,7 +199,7 @@
 # Order samples on x-axis
   bactrich$sample_type <- factor(bactrich$sample_type, levels = c("initial provision", "final provision", "larva", "pre-wintering adult", "dead"))
   
-# Boxplot of Shannon diversity
+# Boxplot of Shannon index
   Shannon_bact <- ggplot(bactrich, aes(x = sample_type, y = Shannon, color = sample_type)) + 
                     geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(width = 0.1)) +
                     geom_jitter(size = 1, alpha = 0.9) +
@@ -209,11 +209,11 @@
                                       values = c("#FDD835", "#E4511E", "#43A047", "#0288D1", "#616161")) +
                     labs(title = "") +
                     xlab("Developmental Stage") +
-                    ylab("Shannon richness") +
+                    ylab("Shannon index") +
                     ggtitle("A")
   Shannon_bact
   
-# Boxplot of Simpson richness
+# Boxplot of Simpson index
     Simpson_bact <- ggplot(bactrich, aes(x = sample_type, y = Simpson, color = sample_type)) + 
                       geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(width = 0.1)) +
                       geom_jitter(size = 1, alpha = 0.9) +
@@ -222,7 +222,7 @@
                                         values = c("#FDD835", "#E4511E", "#43A047", "#0288D1", "#616161")) +
                       labs(title = "") +
                       xlab("Developmental Stage") +
-                      ylab("Simpson richness") +
+                      ylab("Simpson index") +
                       ggtitle("A")
     Simpson_bact
 
