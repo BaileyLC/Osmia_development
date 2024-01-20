@@ -222,7 +222,8 @@
                                         values = c("#FDD835", "#E4511E", "#43A047", "#0288D1", "#616161")) +
                       labs(title = "") +
                       xlab("Developmental Stage") +
-                      ylab("Simpson richness")
+                      ylab("Simpson richness") +
+                      ggtitle("A")
     Simpson_bact
 
 # Boxplot of Observed richness
