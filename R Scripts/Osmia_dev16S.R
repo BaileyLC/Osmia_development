@@ -251,15 +251,16 @@
   rare_tidy <- rarecurve(tab, label = FALSE, tidy = TRUE)
   
 # Plot rarefaction curve
-  ggplot(rare_tidy, aes(x = Sample, y = Species, group = Site)) +
-    geom_line() +
-    theme_bw() +
-    theme(panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank()) +
-    geom_vline(xintercept = 20) +
-    labs(title = "A") + 
-    xlab("Number of reads") +
-    ylab("Number of ASVs")
+  rare_bact <- ggplot(rare_tidy, aes(x = Sample, y = Species, group = Site)) +
+                  geom_line() +
+                  theme_bw() +
+                  theme(panel.grid.major = element_blank(),
+                        panel.grid.minor = element_blank()) +
+                  geom_vline(xintercept = 20) +
+                  labs(title = "A") + 
+                  xlab("Number of reads") +
+                  ylab("Number of ASVs")
+  rare_bact
   
 # Set seed and rarefy  
   set.seed(1234)
