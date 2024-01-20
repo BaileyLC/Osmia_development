@@ -1,6 +1,6 @@
 ##### Project: Osmia developmental microbiome
 
-#### Ownership: Bailey Crowley & Robert N. Schaeffer
+#### Owners: Bailey Crowley & Robert N. Schaeffer
 
 ### Purpose: Quality control of ITS rRNA data using the DADA2 pipeline
 ###: Resource: https://benjjneb.github.io/dada2/ITS_workflow.html
