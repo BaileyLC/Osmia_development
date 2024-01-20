@@ -1,6 +1,6 @@
 ##### Project: Osmia developmental microbiome
 
-#### Ownership: Bailey Crowley & Robert N. Schaeffer
+#### Owners: Bailey Crowley & Robert N. Schaeffer
 
 ### Purpose: Create nice figures
 
