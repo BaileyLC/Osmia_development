@@ -189,15 +189,15 @@
   bactrich <- bactrich[complete.cases(bactrich), ]
   
 # Examine the effects of sample_type on Shannon richness
-  mod1 <- lme(Shannon ~ sample_type, random = ~1|sampleID, data = bactrich)
+  mod1 <- lme(Shannon ~ sample_type, random = ~1|nesting_tube, data = bactrich)
   anova(mod1)
   
 # Examine the effects of sample_type on Simpson richness
-  mod2 <- lme(Simpson ~ sample_type, random = ~1|sampleID, data = bactrich)
+  mod2 <- lme(Simpson ~ sample_type, random = ~1|nesting_tube, data = bactrich)
   anova(mod2)
   
 # Examine the effects of sample_type on observed richness
-  mod3 <- lme(Observed ~ sample_type, random = ~1|sampleID, data = bactrich)
+  mod3 <- lme(Observed ~ sample_type, random = ~1|nesting_tube, data = bactrich)
   anova(mod3)
   
 # Order samples on x-axis
