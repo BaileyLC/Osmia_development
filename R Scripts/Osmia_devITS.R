@@ -239,7 +239,7 @@
                         panel.grid.minor = element_blank()) +
                   labs(title = "B") + 
                   xlab("Number of reads") +
-                  ylab("Number of ASVs")
+                  ylab("Number of species")
   rare_fungi
 
 # Set seed and rarefy
@@ -312,19 +312,19 @@
   tax_table(rareps)[, colnames(tax_table(rareps))] <- gsub(tax_table(rareps)[, colnames(tax_table(rareps))], pattern = "[a-z]__", replacement = "")
 
 # Sort data by Family
-  y1 <- tax_glom(rareps, taxrank = 'Family') # agglomerate taxa
-  y2 <- transform_sample_counts(y1, function(x) x/sum(x))
-  y3 <- psmelt(y2)
-  y3$Family <- as.character(y3$Family)
-  y3$Family[y3$Abundance < 0.01] <- "Family < 1% abund."
-  y3$Family <- as.factor(y3$Family)
-  head(y3)
+  y7 <- tax_glom(rareps, taxrank = 'Family') # agglomerate taxa
+  y8 <- transform_sample_counts(y7, function(x) x/sum(x))
+  y9 <- psmelt(y8)
+  y9$Family <- as.character(y9$Family)
+  y9$Family[y9$Abundance < 0.01] <- "Family < 1% abund."
+  y9$Family <- as.factor(y9$Family)
+  head(y9)
 
 # Reorder x-axis 
-  y3$sample_type <- factor(y3$sample_type, levels = c("initial provision", "final provision", "larva", "pre-wintering adult", "emerged", "dead"))
+  y9$sample_type <- factor(y9$sample_type, levels = c("initial provision", "final provision", "larva", "pre-wintering adult", "emerged", "dead"))
 
 # Plot Family by sample type
-  ggplot(data = y3, aes(x = sample_type, y = Abundance, fill = Family)) + 
+  ggplot(data = y9, aes(x = sample_type, y = Abundance, fill = Family)) + 
     geom_bar(stat = "identity", position = "fill") + 
     scale_fill_manual(values = colors) + 
     theme(legend.position = "right") +
@@ -332,16 +332,16 @@
     ylim(0, 1.0) +
     xlab("Treatment") +
     theme_bw() + 
-    theme(text = element_text(size = 16)) +
+    theme(text = element_text(size = 14)) +
     theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + 
     theme(legend.justification = "left", 
-          legend.title = element_text(size = 16, colour = "black"), 
+          legend.title = element_text(size = 14, colour = "black"), 
           legend.text = element_text(size = 14, colour = "black")) + 
-    guides(fill = guide_legend(ncol = 2)) +
+    guides(fill = guide_legend(ncol = 3)) +
     ggtitle("Fungi")
 
 # Plot Family for each sample
-  fam_relabund_fungi <- ggplot(data = y3, aes(x = sampleID, y = Abundance, fill = Family)) + 
+  fam_relabund_fungi <- ggplot(data = y9, aes(x = sampleID, y = Abundance, fill = Family)) + 
                           geom_bar(stat = "identity", position = "fill") + 
                           scale_fill_manual(values = colors) +
                           facet_grid(~ sample_type, 
@@ -352,31 +352,31 @@
                           ylim(0, 1.0) +
                           xlab("Treatment") +
                           theme_bw() + 
-                          theme(text = element_text(size = 16)) +
+                          theme(text = element_text(size = 14)) +
                           theme(panel.grid.major = element_blank(), 
                                 panel.grid.minor = element_blank()) + 
                           theme(legend.justification = "left", 
-                                legend.title = element_text(size = 16, colour = "black"), 
-                                legend.text = element_text(size = 14, colour = "black")) + 
+                                legend.title = element_text(size = 14, colour = "black"), 
+                                legend.text = element_text(size = 10, colour = "black")) + 
                           theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
-                          guides(fill = guide_legend(ncol = 2)) +
+                          guides(fill = guide_legend(ncol = 3)) +
                           ggtitle("B")
   fam_relabund_fungi
 
 # Sort data by Genus
-  y4 <- tax_glom(rareps, taxrank = 'Genus') # agglomerate taxa
-  y5 <- transform_sample_counts(y4, function(x) x/sum(x))
-  y6 <- psmelt(y5)
-  y6$Genus <- as.character(y6$Genus)
-  y6$Genus[y6$Abundance < 0.01] <- "Genera < 1% abund."
-  y6$Genus <- as.factor(y6$Genus)
-  head(y6)
+  y10 <- tax_glom(rareps, taxrank = 'Genus') # agglomerate taxa
+  y11 <- transform_sample_counts(y10, function(x) x/sum(x))
+  y12 <- psmelt(y11)
+  y12$Genus <- as.character(y12$Genus)
+  y12$Genus[y12$Abundance < 0.01] <- "Genera < 1% abund."
+  y12$Genus <- as.factor(y12$Genus)
+  head(y12)
 
 # Order samples on x-axis
-  y6$sample_type <- factor(y6$sample_type, levels = c("initial provision", "final provision", "larva", "pre-wintering adult", "dead"))
+  y12$sample_type <- factor(y12$sample_type, levels = c("initial provision", "final provision", "larva", "pre-wintering adult", "dead"))
 
 # Plot Genus by sample type
-  ggplot(data = y6, aes(x = sample_type, y = Abundance, fill = Genus)) + 
+  ggplot(data = y12, aes(x = sample_type, y = Abundance, fill = Genus)) + 
     geom_bar(stat = "identity", position = "fill") + 
     scale_fill_manual(values = colors) + 
     theme(legend.position = "right") +
@@ -384,17 +384,17 @@
     ylim(0, 1.0) +
     xlab("Treatment") +
     theme_bw() + 
-    theme(text = element_text(size = 16)) +
+    theme(text = element_text(size = 14)) +
     theme(panel.grid.major = element_blank(), 
           panel.grid.minor = element_blank()) + 
     theme(legend.justification = "left", 
-          legend.title = element_text(size = 16, colour = "black"), 
-          legend.text = element_text(size = 14, colour = "black")) + 
+          legend.title = element_text(size = 14, colour = "black"), 
+          legend.text = element_text(size = 10, colour = "black")) + 
     guides(fill = guide_legend(ncol = 3)) +
     ggtitle("Fungi")
 
 # Plot Genus for each sample
-  gen_relabund_fungi <- ggplot(data = y6, aes(x = sampleID, y = Abundance, fill = Genus)) + 
+  gen_relabund_fungi <- ggplot(data = y12, aes(x = sampleID, y = Abundance, fill = Genus)) + 
                           geom_bar(stat = "identity", position = "fill") + 
                           scale_fill_manual(values = colors) +
                           facet_grid(~ sample_type,
@@ -405,12 +405,12 @@
                           ylim(0, 1.0) +
                           xlab("Treatment") +
                           theme_bw() + 
-                          theme(text = element_text(size = 16)) +
+                          theme(text = element_text(size = 14)) +
                           theme(panel.grid.major = element_blank(), 
                                 panel.grid.minor = element_blank()) + 
                           theme(legend.justification = "left", 
-                                legend.title = element_text(size = 16, colour = "black"), 
-                                legend.text = element_text(size = 14, colour = "black")) + 
+                                legend.title = element_text(size = 14, colour = "black"), 
+                                legend.text = element_text(size = 10, colour = "black")) + 
                           theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
                           guides(fill = guide_legend(ncol = 3)) +
                           ggtitle("B")
