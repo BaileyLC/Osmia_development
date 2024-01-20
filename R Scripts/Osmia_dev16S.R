@@ -199,7 +199,7 @@
 # Order samples on x-axis
   bactrich$sample_type <- factor(bactrich$sample_type, levels = c("initial provision", "final provision", "larva", "pre-wintering adult", "dead"))
   
-# Boxplot of Shannon diversity
+# Boxplot of Shannon index
   Shannon_bact <- ggplot(bactrich, aes(x = sample_type, y = Shannon, color = sample_type)) + 
                     geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(width = 0.1)) +
                     geom_jitter(size = 1, alpha = 0.9) +
@@ -207,22 +207,21 @@
                     theme(legend.position = "none") +
                     scale_color_manual(name = "Developmental Stage",
                                       values = c("#FDD835", "#E4511E", "#43A047", "#0288D1", "#616161")) +
-                    labs(title = "") +
+                    labs(title = "A") +
                     xlab("Developmental Stage") +
-                    ylab("Shannon richness") +
-                    ggtitle("A")
+                    ylab("Shannon index")
   Shannon_bact
   
-# Boxplot of Simpson richness
+# Boxplot of Simpson index
     Simpson_bact <- ggplot(bactrich, aes(x = sample_type, y = Simpson, color = sample_type)) + 
                       geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(width = 0.1)) +
                       geom_jitter(size = 1, alpha = 0.9) +
                       theme_bw() +
                       scale_color_manual(name = "Developmental Stage",
                                         values = c("#FDD835", "#E4511E", "#43A047", "#0288D1", "#616161")) +
-                      labs(title = "") +
+                      labs(title = "A") +
                       xlab("Developmental Stage") +
-                      ylab("Simpson richness")
+                      ylab("Simpson index")
     Simpson_bact
 
 # Boxplot of Observed richness
@@ -233,10 +232,9 @@
                       theme(legend.position = "none") +
                       scale_color_manual(name = "Developmental Stage",
                                         values = c("#FDD835", "#E4511E", "#43A047", "#0288D1", "#616161")) +
-                      labs(title = "") +
+                      labs(title = "A") +
                       xlab("Developmental Stage") +
-                      ylab("Observed richness") +
-                      ggtitle("A")
+                      ylab("Observed richness")
   Observed_bact
   
 ## Rarefaction ----
@@ -248,20 +246,19 @@
   rare <- rarecurve(tab, label = FALSE, tidy = FALSE)
   
 # Save rarefaction data as a "tidy" df
-  rare_tidy <- rarecurve(tab, label = FALSE, tidy = TRUE)
+  rare_tidy_bact <- rarecurve(tab, label = FALSE, tidy = TRUE)
   
 # Plot rarefaction curve
-  rare_bact <- ggplot(rare_tidy, aes(x = Sample, y = Species, group = Site)) +
+  rare_bact <- ggplot(rare_tidy_bact, aes(x = Sample, y = Species, group = Site)) +
                   geom_line() +
                   theme_bw() +
                   theme(panel.grid.major = element_blank(),
                         panel.grid.minor = element_blank()) +
-                  geom_vline(xintercept = 20) +
                   labs(title = "A") + 
                   xlab("Number of reads") +
                   ylab("Number of ASVs")
   rare_bact
-  
+
 # Set seed and rarefy  
   set.seed(1234)
   rareps <- rarefy_even_depth(ps3, sample.size = 20)
