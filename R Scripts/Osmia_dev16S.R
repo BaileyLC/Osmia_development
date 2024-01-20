@@ -20,8 +20,8 @@
   library(grDevices) # Version 4.3.1
   library(RColorBrewer) # Version 1.1-3
   library(unikn) # Version 0.9.0
-  library(dplyr) # Version 1.1.3
   library(RVAideMemoire) # Version 0.9-83-7
+  library(dplyr) # Version 1.1.3
   library(DESeq2) # Version 1.40.2
 
 # Import data
@@ -39,11 +39,7 @@
   sampleID <- samples$sampleID
   nesting_tube <- samples$nesting_tube
   sample_or_control <- samples$sample_or_control
-  sampleinfo <- data.frame(extractionID = extractionID, 
-                           sample_type = sample_type, 
-                           sampleID = sampleID, 
-                           nesting_tube = nesting_tube, 
-                           sample_or_control = sample_or_control)
+  sampleinfo <- data.frame(extractionID = extractionID, sample_type = sample_type, sampleID = sampleID, nesting_tube = nesting_tube, sample_or_control = sample_or_control)
   rownames(sampleinfo) <- samples.out
 
 # Format your data to work with phyloseq
@@ -63,7 +59,7 @@
   
 # Plot samples by library size
   ggplot(data = df, aes(x = Index, y = LibrarySize, color = sample_or_control)) + 
-    geom_point()  
+    geom_point()
   
 # Determine which ASVs are contaminants based on prevalence (presence/absence) in negative controls
   sample_data(ps1)$is.neg <- sample_data(ps1)$sample_or_control == "control"
@@ -88,19 +84,19 @@
   ps.neg <- prune_samples(sample_data(ps1)$sample_or_control == "control", ps1)
   
 # Calculate taxa abundance in samples from sample counts
-  ps.neg.presence <- transform_sample_counts(ps.neg, function(abund) 1 * (abund > 0))
+  ps.neg.presence <- transform_sample_counts(ps.neg, function(abund) 1*(abund > 0))
   
 # Make phyloseq object of presence-absence in true positive samples
   ps.pos <- prune_samples(sample_data(ps1)$sample_or_control == "sample", ps1)
   
 # Calculate taxa abundance in samples from sample counts
-  ps.pos.presence <- transform_sample_counts(ps.pos, function(abund) 1 * (abund > 0))
+  ps.pos.presence <- transform_sample_counts(ps.pos, function(abund) 1*(abund > 0))
   
 # Make data.frame of prevalence in positive and negative samples
   df.pres <- data.frame(prevalence.pos = taxa_sums(ps.pos.presence), 
                         prevalence.neg = taxa_sums(ps.neg.presence),
                         contam.prev = contamdf.prev$contaminant)
-  
+
 # Plot
   ggplot(data = df.pres, aes(x = prevalence.neg, y = prevalence.pos, color = contam.prev)) + 
     geom_point() +
@@ -126,13 +122,17 @@
 # Remove DNA from Eukarya, Eukaryota & Streptophyta
   ps2 <- ps2 %>%
     subset_taxa(Kingdom != "Eukarya" &
-                  Kingdom != "Eukaryota" &
+                Kingdom != "Eukaryota" &
                   Family != "Streptophyta")
   
 # Remove DNA from Archaea
   ps2 <- ps2 %>%
     subset_taxa(Kingdom != "Archaea")
   
+# Remove DNA from cyanobacteria & chlorplasts
+  ps2 <- ps2 %>%
+    subset_taxa(Phylum != "Cyanobacteria/Chloroplast")
+
 # What remains in the phyloseq object?
   ps2
   
@@ -199,38 +199,45 @@
 # Order samples on x-axis
   bactrich$sample_type <- factor(bactrich$sample_type, levels = c("initial provision", "final provision", "larva", "pre-wintering adult", "dead"))
   
-# Boxplot of Shannon richness
-  ggplot(bactrich, aes(x = sample_type, y = Shannon, color = sample_type)) + 
-    geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(width = 0.1)) +
-    geom_jitter(size = 1, alpha = 0.9) +
-    theme_bw() +
-    scale_color_manual(name = "Developmental Stage",
-                       values = c("#FDD835", "#E4511E", "#43A047", "#0288D1", "#616161")) +
-    labs(title = "") +
-    xlab("Developmental Stage") +
-    ylab("Shannon richness")
+# Boxplot of Shannon diversity
+  Shannon_bact <- ggplot(bactrich, aes(x = sample_type, y = Shannon, color = sample_type)) + 
+                    geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(width = 0.1)) +
+                    geom_jitter(size = 1, alpha = 0.9) +
+                    theme_bw() +
+                    theme(legend.position = "none") +
+                    scale_color_manual(name = "Developmental Stage",
+                                      values = c("#FDD835", "#E4511E", "#43A047", "#0288D1", "#616161")) +
+                    labs(title = "") +
+                    xlab("Developmental Stage") +
+                    ylab("Shannon richness") +
+                    ggtitle("A")
+  Shannon_bact
   
 # Boxplot of Simpson richness
-  ggplot(bactrich, aes(x = sample_type, y = Simpson, color = sample_type)) + 
-    geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(width = 0.1)) +
-    geom_jitter(size = 1, alpha = 0.9) +
-    theme_bw() +
-    scale_color_manual(name = "Developmental Stage",
-                       values = c("#FDD835", "#E4511E", "#43A047", "#0288D1", "#616161")) +
-    labs(title = "") +
-    xlab("Developmental Stage") +
-    ylab("Simpson richness")
-  
+    Simpson_bact <- ggplot(bactrich, aes(x = sample_type, y = Simpson, color = sample_type)) + 
+                      geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(width = 0.1)) +
+                      geom_jitter(size = 1, alpha = 0.9) +
+                      theme_bw() +
+                      scale_color_manual(name = "Developmental Stage",
+                                        values = c("#FDD835", "#E4511E", "#43A047", "#0288D1", "#616161")) +
+                      labs(title = "") +
+                      xlab("Developmental Stage") +
+                      ylab("Simpson richness")
+    Simpson_bact
+
 # Boxplot of Observed richness
-  ggplot(bactrich, aes(x = sample_type, y = Observed, color = sample_type)) + 
-    geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(width = 0.1)) +
-    geom_jitter(size = 1, alpha = 0.9) +
-    theme_bw() +
-    scale_color_manual(name = "Developmental Stage",
-                       values = c("#FDD835", "#E4511E", "#43A047", "#0288D1", "#616161")) +
-    labs(title = "") +
-    xlab("Developmental Stage") +
-    ylab("Observed richness")
+  Observed_bact <- ggplot(bactrich, aes(x = sample_type, y = Observed, color = sample_type)) + 
+                      geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(width = 0.1)) +
+                      geom_jitter(size = 1, alpha = 0.9) +
+                      theme_bw() +
+                      theme(legend.position = "none") +
+                      scale_color_manual(name = "Developmental Stage",
+                                        values = c("#FDD835", "#E4511E", "#43A047", "#0288D1", "#616161")) +
+                      labs(title = "") +
+                      xlab("Developmental Stage") +
+                      ylab("Observed richness") +
+                      ggtitle("A")
+  Observed_bact
   
 ## Rarefaction ----
   
@@ -238,26 +245,40 @@
   tab <- otu_table(ps3)
   class(tab) <- "matrix"
   tab <- t(tab)
-  rare <- rarecurve(tab, step = 50, label = FALSE)
+  rare <- rarecurve(tab, label = FALSE, tidy = FALSE)
   
-# Set seed and rarefy 
+# Save rarefaction data as a "tidy" df
+  rare_tidy <- rarecurve(tab, label = FALSE, tidy = TRUE)
+  
+# Plot rarefaction curve
+  ggplot(rare_tidy, aes(x = Sample, y = Species, group = Site)) +
+    geom_line() +
+    theme_bw() +
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank()) +
+    geom_vline(xintercept = 20) +
+    labs(title = "A") + 
+    xlab("Number of reads") +
+    ylab("Number of ASVs")
+  
+# Set seed and rarefy  
   set.seed(1234)
   rareps <- rarefy_even_depth(ps3, sample.size = 20)
   
 # Create a distance matrix using Bray Curtis dissimilarity
   bact_bray <- phyloseq::distance(rareps, method = "bray")
-
-# Conver to data frame
+  
+# Convert to data frame
   samplebact <- data.frame(sample_data(rareps))
-
+  
 # Perform the PERMANOVA to test effects of developmental stage on bacterial community composition
   bact_perm <- adonis2(bact_bray ~ sample_type, data = samplebact)
   bact_perm
-
-# Which group means differ?
+  
+# Follow up with pairwise comparisons - which sample types differ?
   bact_perm_BH <- pairwise.perm.manova(bact_bray, samplebact$sample_type, p.method = "BH", nperm = 9999)
   bact_perm_BH
-
+  
 ## Test for homogeneity of multivariate dispersion ----
 
 # Calculate the average distance of group members to the group centroid
@@ -277,7 +298,7 @@
 # Which group dispersions differ?
   disp_bact_tHSD <- TukeyHSD(disp_bact)
   disp_bact_tHSD
-                                             
+  
 ## Ordination ----
   
 # Calculate the relative abundance of each otu  
@@ -287,15 +308,18 @@
   ord.pcoa.bray <- ordinate(ps.prop, method = "PCoA", distance = "bray")  
   
 # Plot ordination
-  plot_ordination(ps.prop, ord.pcoa.bray, color = "sample_type") + 
-    theme_bw() +
-    theme(text = element_text(size = 16)) +
-    theme(legend.justification = "left", 
-          legend.title = element_text(size = 16, colour = "black"), 
-          legend.text = element_text(size = 14, colour = "black")) + 
-    geom_point(size = 3) +
-    scale_color_manual(values = c("#616161", "#E4511E", "#FDD835", "#43A047", "#0288D1")) + 
-    labs(title = "PCoA: Bacteria", color = "Developmental Stage")
+  PCoA_bacteria <- plot_ordination(ps.prop, ord.pcoa.bray, color = "sample_type") + 
+                      theme_bw() +
+                      theme(text = element_text(size = 16)) +
+                      theme(legend.justification = "left", 
+                            legend.title = element_text(size = 16, colour = "black"), 
+                            legend.text = element_text(size = 14, colour = "black")) + 
+                      theme(legend.position = "none") +
+                      geom_point(size = 3) +
+                      scale_color_manual(values = c("#616161", "#E4511E", "#FDD835", "#43A047", "#0288D1")) + 
+                      labs(color = "Developmental Stage") +
+                      ggtitle("A")
+  PCoA_bacteria
   
 ## Stacked community plot ----
   
@@ -328,7 +352,8 @@
     xlab("Treatment") +
     theme_bw() + 
     theme(text = element_text(size = 16)) +
-    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + 
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank()) + 
     theme(legend.justification = "left", 
           legend.title = element_text(size = 16, colour = "black"), 
           legend.text = element_text(size = 14, colour = "black")) + 
@@ -336,24 +361,27 @@
     ggtitle("Bacteria")
   
 # Plot Family for each sample
-  ggplot(data = y3, aes(x = sampleID, y = Abundance, fill = Family)) + 
-    geom_bar(stat = "identity", position = "fill") + 
-    scale_fill_manual(values = colors) +
-    facet_grid(~ sample_type, scale = "free", space = "free") +
-    theme(legend.position = "right") +
-    ylab("Relative abundance") + 
-    ylim(0, 1.0) +
-    xlab("Treatment") +
-    theme_bw() + 
-    theme(text = element_text(size = 16)) +
-    theme(panel.grid.major = element_blank(), 
-          panel.grid.minor = element_blank()) + 
-    theme(legend.justification = "left", 
-          legend.title = element_text(size = 16, colour = "black"), 
-          legend.text = element_text(size = 14, colour = "black")) + 
-    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
-    guides(fill = guide_legend(ncol = 2)) +
-    ggtitle("Bacteria")
+  fam_relabund_bacteria <- ggplot(data = y3, aes(x = sampleID, y = Abundance, fill = Family)) + 
+                              geom_bar(stat = "identity", position = "fill") + 
+                              scale_fill_manual(values = colors) +
+                              facet_grid(~ sample_type,
+                                         scale = "free", 
+                                         space = "free") +
+                              theme(legend.position = "right") +
+                              ylab("Relative abundance") + 
+                              ylim(0, 1.0) +
+                              xlab("Treatment") +
+                              theme_bw() + 
+                              theme(text = element_text(size = 16)) +
+                              theme(panel.grid.major = element_blank(),
+                                    panel.grid.minor = element_blank()) + 
+                              theme(legend.justification = "left", 
+                                    legend.title = element_text(size = 16, colour = "black"), 
+                                    legend.text = element_text(size = 14, colour = "black")) + 
+                              theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+                              guides(fill = guide_legend(ncol = 2)) +
+                              ggtitle("Bacteria")
+  fam_relabund_bacteria
   
 # Sort data by Genus
   y4 <- tax_glom(rareps, taxrank = 'Genus') # agglomerate taxa
@@ -377,8 +405,7 @@
     xlab("Treatment") +
     theme_bw() + 
     theme(text = element_text(size = 16)) +
-    theme(panel.grid.major = element_blank(), 
-          panel.grid.minor = element_blank()) + 
+    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + 
     theme(legend.justification = "left", 
           legend.title = element_text(size = 16, colour = "black"), 
           legend.text = element_text(size = 14, colour = "black")) + 
@@ -386,31 +413,35 @@
     ggtitle("Bacteria")
   
 # Plot Genus for each sample
-  ggplot(data = y6, aes(x = sampleID, y = Abundance, fill = Genus)) + 
-    geom_bar(stat = "identity", position = "fill") + 
-    scale_fill_manual(values = colors) +
-    facet_grid(~ sample_type, scale = "free", 
-               space = "free") +
-    theme(legend.position = "right") +
-    ylab("Relative abundance") + 
-    ylim(0, 1.0) +
-    xlab("Treatment") +
-    theme_bw() + 
-    theme(text = element_text(size = 16)) +
-    theme(panel.grid.major = element_blank(), 
-          panel.grid.minor = element_blank()) + 
-    theme(legend.justification = "left", 
-          legend.title = element_text(size = 16, colour = "black"), 
-          legend.text = element_text(size = 14, colour = "black")) + 
-    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
-    guides(fill = guide_legend(ncol = 3)) +
-    ggtitle("Bacteria")
+  gen_relabund_bacteria <- ggplot(data = y6, aes(x = sampleID, y = Abundance, fill = Genus)) + 
+                              geom_bar(stat = "identity", position = "fill") + 
+                              scale_fill_manual(values = colors) +
+                              facet_grid(~ sample_type, 
+                                         scale = "free", 
+                                         space = "free") +
+                              theme(legend.position = "right") +
+                              ylab("Relative abundance") + 
+                              ylim(0, 1.0) +
+                              xlab("Treatment") +
+                              theme_bw() + 
+                              theme(text = element_text(size = 16)) +
+                              theme(panel.grid.major = element_blank(), 
+                                    panel.grid.minor = element_blank()) + 
+                              theme(legend.justification = "left", 
+                                    legend.title = element_text(size = 16, colour = "black"), 
+                                    legend.text = element_text(size = 14, colour = "black")) + 
+                              theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+                              guides(fill = guide_legend(ncol = 3)) +
+                              ggtitle("A")
+  gen_relabund_bacteria
   
 ## Differential abundance ----
 # Resource: https://joey711.github.io/phyloseq-extensions/DESeq2.html
   
+# When run again, change ps2 to rareps!   
+  
 # Convert from a phyloseq to a deseq obj
-  desq_obj <- phyloseq_to_deseq2(ps3, ~ sample_type)
+  desq_obj <- phyloseq_to_deseq2(rareps, ~ sample_type)
   
 # Calculate the geometric mean and remove rows with NA
   gm_mean <- function(x, na.rm = TRUE) {
@@ -554,3 +585,4 @@
   
 # Check to see if any padj is below alpha
   larva_dead_p05
+  
