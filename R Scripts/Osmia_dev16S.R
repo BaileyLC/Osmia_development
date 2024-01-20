@@ -188,11 +188,11 @@
   bactrich[bactrich == 0] <- NA
   bactrich <- bactrich[complete.cases(bactrich), ]
   
-# Examine the effects of sample_type on Shannon richness
+# Examine the effects of sample_type on Shannon index
   mod1 <- lme(Shannon ~ sample_type, random = ~1|nesting_tube, data = bactrich)
   anova(mod1)
   
-# Examine the effects of sample_type on Simpson richness
+# Examine the effects of sample_type on Simpson index
   mod2 <- lme(Simpson ~ sample_type, random = ~1|nesting_tube, data = bactrich)
   anova(mod2)
   
@@ -267,7 +267,7 @@
                         panel.grid.minor = element_blank()) +
                   labs(title = "A") + 
                   xlab("Number of reads") +
-                  ylab("Number of ASVs")
+                  ylab("Number of species")
   rare_bact
 
 # Set seed and rarefy  
@@ -368,7 +368,7 @@
     theme(legend.justification = "left", 
           legend.title = element_text(size = 16, colour = "black"), 
           legend.text = element_text(size = 14, colour = "black")) + 
-    guides(fill = guide_legend(ncol = 2)) +
+    guides(fill = guide_legend(ncol = 3)) +
     ggtitle("Bacteria")
   
 # Plot Family for each sample
@@ -383,14 +383,14 @@
                           ylim(0, 1.0) +
                           xlab("Treatment") +
                           theme_bw() + 
-                          theme(text = element_text(size = 16)) +
+                          theme(text = element_text(size = 14)) +
                           theme(panel.grid.major = element_blank(),
                                 panel.grid.minor = element_blank()) + 
                           theme(legend.justification = "left", 
-                                legend.title = element_text(size = 16, colour = "black"), 
-                                legend.text = element_text(size = 14, colour = "black")) + 
+                                legend.title = element_text(size = 14, colour = "black"), 
+                                legend.text = element_text(size = 10, colour = "black")) + 
                           theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
-                          guides(fill = guide_legend(ncol = 2)) +
+                          guides(fill = guide_legend(ncol = 3)) +
                           ggtitle("A")
   fam_relabund_bact
   
@@ -415,11 +415,11 @@
     ylim(0, 1.0) +
     xlab("Treatment") +
     theme_bw() + 
-    theme(text = element_text(size = 16)) +
+    theme(text = element_text(size = 14)) +
     theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + 
     theme(legend.justification = "left", 
-          legend.title = element_text(size = 16, colour = "black"), 
-          legend.text = element_text(size = 14, colour = "black")) + 
+          legend.title = element_text(size = 14, colour = "black"), 
+          legend.text = element_text(size = 10, colour = "black")) + 
     guides(fill = guide_legend(ncol = 3)) +
     ggtitle("Bacteria")
   
@@ -435,12 +435,12 @@
                           ylim(0, 1.0) +
                           xlab("Treatment") +
                           theme_bw() + 
-                          theme(text = element_text(size = 16)) +
+                          theme(text = element_text(size = 14)) +
                           theme(panel.grid.major = element_blank(), 
                                 panel.grid.minor = element_blank()) + 
                           theme(legend.justification = "left", 
-                                legend.title = element_text(size = 16, colour = "black"), 
-                                legend.text = element_text(size = 14, colour = "black")) + 
+                                legend.title = element_text(size = 14, colour = "black"), 
+                                legend.text = element_text(size = 10, colour = "black")) + 
                           theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
                           guides(fill = guide_legend(ncol = 3)) +
                           ggtitle("A")
