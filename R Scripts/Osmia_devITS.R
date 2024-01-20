@@ -181,6 +181,9 @@
                       geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(width = 0.1)) +
                       geom_jitter(size = 1, alpha = 0.9) +
                       theme_bw() +
+                      theme(legend.position = "none") +
+                      theme(panel.grid.major = element_blank(),
+                            panel.grid.minor = element_blank()) +
                       scale_color_manual(name = "Developmental Stage",
                                          values = c("#FDD835", "#E4511E", "#43A047", "#0288D1","#9575CD", "#616161")) +
                       labs(title = "B") +
@@ -193,16 +196,23 @@
                       geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(width = 0.1)) +
                       geom_jitter(size = 1, alpha = 0.9) +
                       theme_bw() +
+                      theme(legend.position = "none") +
+                      theme(panel.grid.major = element_blank(),
+                            panel.grid.minor = element_blank()) +
                       scale_color_manual(values = c("#FDD835", "#E4511E", "#43A047", "#0288D1","#9575CD", "#616161")) +
                       labs(title = "B") +
                       xlab("Developmental Stage") +
                       ylab("Simpson index")
+  Simpson_fungi
 
 # Boxplot of Observed richness
   Observed_fungi <- ggplot(fungrich, aes(x = sample_type, y = Observed, color = sample_type)) + 
                       geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(width = 0.1)) +
                       geom_jitter(size = 1, alpha = 0.9) +
                       theme_bw() +
+                      theme(legend.position = "none") +
+                      theme(panel.grid.major = element_blank(),
+                            panel.grid.minor = element_blank()) +
                       scale_color_manual(name = "Developmental Stage",
                                         values = c("#FDD835", "#E4511E", "#43A047", "#0288D1","#9575CD", "#616161")) +
                       labs(title = "B") +
@@ -282,6 +292,8 @@
                   theme(legend.justification = "left", 
                         legend.title = element_text(size = 16, colour = "black"), 
                         legend.text = element_text(size = 14, colour = "black")) + 
+                  theme(panel.grid.major = element_blank(),
+                        panel.grid.minor = element_blank()) +
                   geom_point(size = 3) +
                   scale_color_manual(values = c("#616161", "#9575CD", "#E4511E", "#FDD835", "#43A047", "#0288D1")) +
                   labs(title = "B", color = "Developmental Stage")
@@ -348,7 +360,8 @@
                                 legend.text = element_text(size = 14, colour = "black")) + 
                           theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
                           guides(fill = guide_legend(ncol = 2)) +
-                          ggtitle("Fungi")
+                          ggtitle("B")
+  fam_relabund_fungi
 
 # Sort data by Genus
   y4 <- tax_glom(rareps, taxrank = 'Genus') # agglomerate taxa
