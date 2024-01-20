@@ -1,6 +1,6 @@
 ##### Project: Osmia developmental microbiome
 
-#### Ownership: Bailey Crowley & Robert N. Schaeffer
+#### Owners: Bailey Crowley & Robert N. Schaeffer
 
 ### Purpose: Analysis of 16S rRNA gene data
 
