@@ -276,17 +276,16 @@
   ord.pcoa.bray <- ordinate(ps.prop, method = "PCoA", distance = "bray")
 
 # Plot ordination
-  fig3B <- plot_ordination(ps.prop, ord.pcoa.bray, color = "sample_type") + 
-              theme_bw() +
-              theme(text = element_text(size = 16)) +
-              theme(legend.justification = "left", 
-                    legend.title = element_text(size = 16, colour = "black"), 
-                    legend.text = element_text(size = 14, colour = "black")) + 
-              geom_point(size = 3) +
-              scale_color_manual(values = c("#616161", "#9575CD", "#E4511E", "#FDD835", "#43A047", "#0288D1")) +
-              labs(color = "Developmental Stage") +
-              ggtitle("B")
-  fig3B
+  PCoA_fungi <- plot_ordination(ps.prop, ord.pcoa.bray, color = "sample_type") + 
+                  theme_bw() +
+                  theme(text = element_text(size = 16)) +
+                  theme(legend.justification = "left", 
+                        legend.title = element_text(size = 16, colour = "black"), 
+                        legend.text = element_text(size = 14, colour = "black")) + 
+                  geom_point(size = 3) +
+                  scale_color_manual(values = c("#616161", "#9575CD", "#E4511E", "#FDD835", "#43A047", "#0288D1")) +
+                  labs(title = "B", color = "Developmental Stage")
+  PCoA_fungi
 
 ## Stacked community plot ----
 
@@ -330,24 +329,26 @@
     ggtitle("Fungi")
 
 # Plot Family for each sample
-  ggplot(data = y3, aes(x = sampleID, y = Abundance, fill = Family)) + 
-    geom_bar(stat = "identity", position = "fill") + 
-    scale_fill_manual(values = colors) +
-    facet_grid(~ sample_type, scale = "free", space = "free") +
-    theme(legend.position = "right") +
-    ylab("Relative abundance") + 
-    ylim(0, 1.0) +
-    xlab("Treatment") +
-    theme_bw() + 
-    theme(text = element_text(size = 16)) +
-    theme(panel.grid.major = element_blank(), 
-          panel.grid.minor = element_blank()) + 
-    theme(legend.justification = "left", 
-          legend.title = element_text(size = 16, colour = "black"), 
-          legend.text = element_text(size = 14, colour = "black")) + 
-    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
-    guides(fill = guide_legend(ncol = 2)) +
-    ggtitle("Fungi")
+  fam_relabund_fungi <- ggplot(data = y3, aes(x = sampleID, y = Abundance, fill = Family)) + 
+                          geom_bar(stat = "identity", position = "fill") + 
+                          scale_fill_manual(values = colors) +
+                          facet_grid(~ sample_type, 
+                                     scale = "free",
+                                     space = "free") +
+                          theme(legend.position = "right") +
+                          ylab("Relative abundance") + 
+                          ylim(0, 1.0) +
+                          xlab("Treatment") +
+                          theme_bw() + 
+                          theme(text = element_text(size = 16)) +
+                          theme(panel.grid.major = element_blank(), 
+                                panel.grid.minor = element_blank()) + 
+                          theme(legend.justification = "left", 
+                                legend.title = element_text(size = 16, colour = "black"), 
+                                legend.text = element_text(size = 14, colour = "black")) + 
+                          theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+                          guides(fill = guide_legend(ncol = 2)) +
+                          ggtitle("Fungi")
 
 # Sort data by Genus
   y4 <- tax_glom(rareps, taxrank = 'Genus') # agglomerate taxa
@@ -380,25 +381,27 @@
     ggtitle("Fungi")
 
 # Plot Genus for each sample
-  fig1B <- ggplot(data = y6, aes(x = sampleID, y = Abundance, fill = Genus)) + 
-              geom_bar(stat = "identity", position = "fill") + 
-              scale_fill_manual(values = colors) +
-              facet_grid(~ sample_type, scale = "free", space = "free") +
-              theme(legend.position = "right") +
-              ylab("Relative abundance") + 
-              ylim(0, 1.0) +
-              xlab("Treatment") +
-              theme_bw() + 
-              theme(text = element_text(size = 16)) +
-              theme(panel.grid.major = element_blank(), 
-                    panel.grid.minor = element_blank()) + 
-              theme(legend.justification = "left", 
-                    legend.title = element_text(size = 16, colour = "black"), 
-                    legend.text = element_text(size = 14, colour = "black")) + 
-              theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
-              guides(fill = guide_legend(ncol = 3)) +
-              ggtitle("B")
-  fig1B
+  gen_relabund_fungi <- ggplot(data = y6, aes(x = sampleID, y = Abundance, fill = Genus)) + 
+                          geom_bar(stat = "identity", position = "fill") + 
+                          scale_fill_manual(values = colors) +
+                          facet_grid(~ sample_type,
+                                     scale = "free",
+                                     space = "free") +
+                          theme(legend.position = "right") +
+                          ylab("Relative abundance") + 
+                          ylim(0, 1.0) +
+                          xlab("Treatment") +
+                          theme_bw() + 
+                          theme(text = element_text(size = 16)) +
+                          theme(panel.grid.major = element_blank(), 
+                                panel.grid.minor = element_blank()) + 
+                          theme(legend.justification = "left", 
+                                legend.title = element_text(size = 16, colour = "black"), 
+                                legend.text = element_text(size = 14, colour = "black")) + 
+                          theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+                          guides(fill = guide_legend(ncol = 3)) +
+                          ggtitle("B")
+  gen_relabund_fungi
 
 ## Differential abundance ----
 # Resource: https://joey711.github.io/phyloseq-extensions/DESeq2.html
