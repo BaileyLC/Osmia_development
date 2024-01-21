@@ -214,7 +214,7 @@
                     scale_color_manual(name = "Developmental Stage",
                                       values = c("#FDD835", "#E4511E", "#43A047", "#0288D1", "#616161")) +
                     labs(title = "A") +
-                    xlab("Developmental Stage") +
+                    xlab("Sample type") +
                     ylab("Shannon index")
   Shannon_bact
   
@@ -229,7 +229,7 @@
                       scale_color_manual(name = "Developmental Stage",
                                         values = c("#FDD835", "#E4511E", "#43A047", "#0288D1", "#616161")) +
                       labs(title = "A") +
-                      xlab("Developmental Stage") +
+                      xlab("Sample type") +
                       ylab("Simpson index")
     Simpson_bact
 
@@ -244,7 +244,7 @@
                       scale_color_manual(name = "Developmental Stage",
                                         values = c("#FDD835", "#E4511E", "#43A047", "#0288D1", "#616161")) +
                       labs(title = "A") +
-                      xlab("Developmental Stage") +
+                      xlab("Sample type") +
                       ylab("Observed richness")
   Observed_bact
   
