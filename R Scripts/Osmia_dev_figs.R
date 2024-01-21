@@ -16,7 +16,7 @@
 ## Shannon index ----
 
 # Create plot
-  Osmia_dev_Shannon <- Shannon_bact + Shannon_fungi + plot_layout(ncol = 1, nrow = 2)
+  Osmia_dev_Shannon <- Osmia_dev_Shannon_bact + Osmia_dev_Shannon_fungi + plot_layout(ncol = 2, nrow = 1)
   Osmia_dev_Shannon
   
 # Save plot  
@@ -25,7 +25,7 @@
 ## Simpson index ----
 
 # Create plot
-  Osmia_dev_Simpson <- Simpson_bact + Simpson_fungi + plot_layout(ncol = 1, nrow = 2)
+  Osmia_dev_Simpson <- Osmia_dev_Simpson_bact + Osmia_dev_Simpson_fungi + plot_layout(ncol = 2, nrow = 1)
   Osmia_dev_Simpson
   
 # Save plot  
@@ -34,7 +34,7 @@
 ## Observed richness ----
   
 # Create plot
-  Osmia_dev_Observed <- Observed_bact + Observed_fungi + plot_layout(ncol = 1, nrow = 2)
+  Osmia_dev_Observed <- Osmia_dev_Observed_bact + Osmia_dev_Observed_fungi + plot_layout(ncol = 2, nrow = 1)
   Osmia_dev_Observed
   
 # Save plot  
@@ -43,7 +43,7 @@
 ## Rarefaction curves ----
 
 # Create plot
-  Osmia_dev_rare <- rare_bact + rare_fungi + plot_layout(ncol = 1, nrow = 2)
+  Osmia_dev_rare <- Osmia_dev_rare_bact + Osmia_dev_rare_fungi + plot_layout(ncol = 2, nrow = 1)
   Osmia_dev_rare
   
 # Save plot
@@ -52,7 +52,7 @@
 ## PCoA plots ----
   
 # Create plot
-  Osmia_dev_PCoA <- PCoA_bact + PCoA_fungi + plot_layout(ncol = 2, nrow = 1)
+  Osmia_dev_PCoA <- Osmia_dev_PCoA_bact + Osmia_dev_PCoA_fungi + plot_layout(ncol = 2, nrow = 1)
   Osmia_dev_PCoA
   
 # Save plot
@@ -61,7 +61,7 @@
 ## Relative abundance by Family ----
   
 # Create plot
-  Osmia_dev_fam_relabund <- fam_relabund_bact + fam_relabund_fungi + plot_layout(ncol = 1, nrow = 2)
+  Osmia_dev_fam_relabund <- Osmia_dev_fam_relabund_bact + Osmia_dev_fam_relabund_fungi + plot_layout(ncol = 1, nrow = 2)
   Osmia_dev_fam_relabund
   
 # Save plot
@@ -70,7 +70,7 @@
 ## Relative abundance by Genus ----
   
 # Create plot
-  Osmia_dev_gen_relabund <- gen_relabund_bact + gen_relabund_fungi + plot_layout(ncol = 1, nrow = 2)
+  Osmia_dev_gen_relabund <- Osmia_dev_gen_relabund_bact + Osmia_dev_gen_relabund_fungi + plot_layout(ncol = 1, nrow = 2)
   Osmia_dev_gen_relabund
   
 # Save plot
