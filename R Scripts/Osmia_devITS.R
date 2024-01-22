@@ -12,7 +12,10 @@
 # Load necessary packages
   library(ggplot2) # Version 3.4.3
   library(phyloseq) # Version 1.44.0
+  library(microbiome) # Version 1.22.0
+  library(knitr) # Version 1.45
   library(vegan) # Version 2.6-4
+  library(RVAideMemoire) # Version 0.9-83-7
   library(magrittr) # Version 2.0.3
   library(decontam) # Version 1.20.0
   library(nlme) # Version 3.1-163
@@ -51,6 +54,9 @@
                   tax_table(taxa))
   ps1
 
+# Summarize the phyloseq obj contents before processing
+  summarize_phyloseq(ps1)
+  
 ## Inspect & remove contaminants ----
 # Resource: https://benjjneb.github.io/decontam/vignettes/decontam_intro.html
 
@@ -122,6 +128,9 @@
   
 # What is the mean number of reads in all samples?
   mean(sample_sums(ps2))  
+  
+# Summarize the phyloseq obj contents before processing
+  summarize_phyloseq(ps2)
   
 # Add Seq to each taxa name
   taxa_names(ps2) <- paste0("Seq", seq(ntaxa(ps2)))
@@ -241,7 +250,7 @@
                             labs(title = "B") + 
                             xlab("Number of reads") +
                             ylab("Number of species")
-  rare_fungi
+  Osmia_dev_rare_fungi
 
 # Set seed and rarefy
   set.seed(1234)
@@ -310,7 +319,7 @@
   Okabe_Ito <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#000000")
 
 # Stretch palette (define more intermediate color options)
-  okabe_ext <- usecol(Okabe_Ito, n = 73)
+  okabe_ext <- usecol(Okabe_Ito, n = 76)
   colors <- sample(okabe_ext)
 
 # Remove patterns in tax_table   
