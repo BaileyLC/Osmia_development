@@ -14,6 +14,8 @@
   library(ggplot2) # Version 3.4.3
   library(phyloseq) # Version 1.44.0
   library(vegan) # Version 2.6-4
+  library(microbiome) # Version 1.22.0
+  library(knitr) # Version 1.45
   library(magrittr) # Version 2.0.3
   library(decontam) # Version 1.20.0
   library(nlme) # Version 3.1-163
@@ -51,6 +53,9 @@
                   sample_data(sampleinfo), 
                   tax_table(taxa))
   ps1
+  
+# Summarize the phyloseq obj contents before processing
+  summarize_phyloseq(ps1)
 
 ## Inspect & remove contaminants ----
 # Resource: https://benjjneb.github.io/decontam/vignettes/decontam_intro.html
@@ -150,6 +155,9 @@
 # What is the mean number of reads in all samples?
   mean(sample_sums(ps3))
 
+# Summarize the phyloseq obj contents before processing
+  summarize_phyloseq(ps3)
+  
 # Add Seq to each taxa name
   taxa_names(ps3) <- paste0("Seq", seq(ntaxa(ps3)))
 
