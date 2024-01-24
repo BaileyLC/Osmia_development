@@ -129,7 +129,7 @@
 # What is the mean number of reads in all samples?
   mean(sample_sums(ps2))  
   
-# Summarize the phyloseq obj contents before processing
+# Summarize the phyloseq obj contents after processing
   summarize_phyloseq(ps2)
   
 # Add Seq to each taxa name
