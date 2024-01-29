@@ -10,7 +10,6 @@
   setwd("~/Downloads")
 
 # Load necessary packages
-  library(Biostrings) # Version 2.68.1
   library(ggplot2) # Version 3.4.3
   library(phyloseq) # Version 1.44.0
   library(vegan) # Version 2.6-4
@@ -152,9 +151,6 @@
 # How many reads are in each sample? 
   sample_sums(ps3)
 
-# What is the mean number of reads in all samples?
-  mean(sample_sums(ps3))
-
 # Summarize the phyloseq obj contents after processing
   summarize_phyloseq(ps3)
   
@@ -178,7 +174,7 @@
     scale_y_log10() + 
     facet_wrap(~ type, 1, scales = "free")
   
-## Species richness ----  
+## Alpha diversity ----
   
 # Estimate Shannon, Simpson & observed richness
   bactrich <- estimate_richness(ps3, split = TRUE, measures = c("Shannon", "Simpson", "Observed"))
@@ -227,18 +223,18 @@
   Osmia_dev_Shannon_bact
   
 # Boxplot of Simpson index
-    Osmia_dev_Simpson_bact <- ggplot(bactrich, aes(x = sample_type, y = Simpson, color = sample_type)) + 
-                                geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(width = 0.1)) +
-                                geom_jitter(size = 1, alpha = 0.9) +
-                                theme_bw() +
-                                theme(legend.position = "none") +
-                                theme(panel.grid.major = element_blank(),
-                                      panel.grid.minor = element_blank()) +
-                                scale_color_manual(name = "Developmental Stage",
-                                                   values = c("#FDD835", "#E4511E", "#43A047", "#0288D1", "#616161")) +
-                                labs(title = "A") +
-                                xlab("Sample type") +
-                                ylab("Simpson index")
+  Osmia_dev_Simpson_bact <- ggplot(bactrich, aes(x = sample_type, y = Simpson, color = sample_type)) + 
+                                   geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(width = 0.1)) +
+                                   geom_jitter(size = 1, alpha = 0.9) +
+                                   theme_bw() +
+                                   theme(legend.position = "none") +
+                                   theme(panel.grid.major = element_blank(),
+                                         panel.grid.minor = element_blank()) +
+                                   scale_color_manual(name = "Developmental Stage",
+                                                      values = c("#FDD835", "#E4511E", "#43A047", "#0288D1", "#616161")) +
+                                   labs(title = "A") +
+                                   xlab("Sample type") +
+                                   ylab("Simpson index")
     Osmia_dev_Simpson_bact
 
 # Boxplot of Observed richness
@@ -256,38 +252,13 @@
                                 ylab("Observed richness")
   Osmia_dev_Observed_bact
   
-## Rarefaction ----
-  
-# Produce rarefaction curves
-  tab <- otu_table(ps3)
-  class(tab) <- "matrix"
-  tab <- t(tab)
-  rare <- rarecurve(tab, label = FALSE, tidy = FALSE)
-  
-# Save rarefaction data as a "tidy" df
-  rare_tidy_bact <- rarecurve(tab, label = FALSE, tidy = TRUE)
-  
-# Plot rarefaction curve
-  Osmia_dev_rare_bact <- ggplot(rare_tidy_bact, aes(x = Sample, y = Species, group = Site)) +
-                            geom_line() +
-                            geom_vline(xintercept = 20) +
-                            theme_bw() +
-                            theme(panel.grid.major = element_blank(),
-                                  panel.grid.minor = element_blank()) +
-                            labs(title = "A") + 
-                            xlab("Number of reads") +
-                            ylab("Number of species")
-  Osmia_dev_rare_bact
-
-# Set seed and rarefy  
-  set.seed(1234)
-  rareps_bact <- rarefy_even_depth(ps3, sample.size = 20)
+## Beta diversity without rarefaction ----
   
 # Create a distance matrix using Bray Curtis dissimilarity
-  bact_bray <- phyloseq::distance(rareps_bact, method = "bray")
+  bact_bray <- phyloseq::distance(ps3, method = "bray")
   
 # Convert to data frame
-  samplebact <- data.frame(sample_data(rareps_bact))
+  samplebact <- data.frame(sample_data(ps3))
   
 # Perform the PERMANOVA to test effects of developmental stage on bacterial community composition
   bact_perm <- adonis2(bact_bray ~ sample_type, data = samplebact)
@@ -297,8 +268,8 @@
   bact_perm_BH <- pairwise.perm.manova(bact_bray, samplebact$sample_type, p.method = "BH")
   bact_perm_BH
   
-## Test for homogeneity of multivariate dispersion ----
-
+## Test for homogeneity of multivariate dispersion without rarefaction ----
+  
 # Calculate the average distance of group members to the group centroid
   disp_bact <- betadisper(bact_bray, samplebact$sample_type)
   disp_bact
@@ -317,29 +288,115 @@
   disp_bact_tHSD <- TukeyHSD(disp_bact)
   disp_bact_tHSD
   
-## Ordination ----
+## Ordination without rarefaction ----
   
 # Calculate the relative abundance of each otu  
-  ps.prop_bact <- transform_sample_counts(rareps_bact, function(otu) otu/sum(otu))
+  ps.prop_bact <- transform_sample_counts(ps3, function(otu) otu/sum(otu))
   
 # PCoA using Bray-Curtis distance
-  ord.pcoa.bray <- ordinate(ps.prop_bact, method = "PCoA", distance = "bray")  
+  ord.pcoa.bray <- ordinate(ps.prop_bact, method = "PCoA", distance = "bray")
   
 # Plot ordination
   Osmia_dev_PCoA_bact <- plot_ordination(ps.prop_bact, ord.pcoa.bray, color = "sample_type") + 
+                                         theme_bw() +
+                                         theme(text = element_text(size = 16)) +
+                                         theme(legend.justification = "left", 
+                                               legend.title = element_text(size = 16, colour = "black"), 
+                                               legend.text = element_text(size = 14, colour = "black")) +
+                                         theme(legend.position = "none") +
+                                         theme(panel.grid.major = element_blank(),
+                                               panel.grid.minor = element_blank()) +
+                                         geom_point(size = 3) +
+                                         scale_color_manual(values = c("#616161", "#E4511E", "#FDD835", "#43A047", "#0288D1")) + 
+                                         labs(color = "Developmental Stage") +
+                                         ggtitle("A")
+  Osmia_dev_PCoA_bact  
+
+## Rarefaction ----
+  
+# Produce rarefaction curves
+  tab <- otu_table(ps3)
+  class(tab) <- "matrix"
+  tab <- t(tab)
+  #bact_rare <- rarecurve(tab, label = FALSE, tidy = FALSE)
+  
+# Save rarefaction data as a "tidy" df
+  rare_tidy_bact <- rarecurve(tab, label = FALSE, tidy = TRUE)
+  
+# Plot rarefaction curve
+  Osmia_dev_rare_bact <- ggplot(rare_tidy_bact, aes(x = Sample, y = Species, group = Site)) +
+                            geom_line() +
                             theme_bw() +
-                            theme(text = element_text(size = 16)) +
-                            theme(legend.justification = "left", 
-                                  legend.title = element_text(size = 16, colour = "black"), 
-                                  legend.text = element_text(size = 14, colour = "black")) +
-                            theme(legend.position = "none") +
                             theme(panel.grid.major = element_blank(),
                                   panel.grid.minor = element_blank()) +
-                            geom_point(size = 3) +
-                            scale_color_manual(values = c("#616161", "#E4511E", "#FDD835", "#43A047", "#0288D1")) + 
-                            labs(color = "Developmental Stage") +
-                            ggtitle("A")
-  Osmia_dev_PCoA_bact
+                            labs(title = "A") + 
+                            xlab("Number of reads") +
+                            ylab("Number of species")
+  Osmia_dev_rare_bact
+
+# Set seed and rarefy  
+  set.seed(1234)
+  rareps_bact <- rarefy_even_depth(ps3, sample.size = 20)
+  
+## Beta diversity with rarefied data ----  
+  
+# Create a distance matrix using Bray Curtis dissimilarity
+  bact_bray_rare <- phyloseq::distance(rareps_bact, method = "bray")
+  
+# Convert to data frame
+  samplebact_rare <- data.frame(sample_data(rareps_bact))
+  
+# Perform the PERMANOVA to test effects of developmental stage on bacterial community composition
+  bact_perm_rare <- adonis2(bact_bray_rare ~ sample_type, data = samplebact_rare)
+  bact_perm_rare
+  
+# Follow up with pairwise comparisons - which sample types differ?
+  bact_perm_BH_rare <- pairwise.perm.manova(bact_bray_rare, samplebact_rare$sample_type, p.method = "BH")
+  bact_perm_BH_rare
+  
+## Test for homogeneity of multivariate dispersion with rarefied data ----
+
+# Calculate the average distance of group members to the group centroid
+  disp_bact_rare <- betadisper(bact_bray_rare, samplebact_rare$sample_type)
+  disp_bact_rare
+  
+# Do any of the group dispersions differ?
+  disp_bact_an_rare <- anova(disp_bact_rare)
+  disp_bact_an_rare
+  
+# Which group dispersions differ?
+  disp_bact_ttest_rare <- permutest(disp_bact_rare, 
+                                    control = permControl(nperm = 999),
+                                    pairwise = TRUE)
+  disp_bact_ttest_rare
+  
+# Which group dispersions differ?
+  disp_bact_tHSD_rare <- TukeyHSD(disp_bact_rare)
+  disp_bact_tHSD_rare
+  
+## Ordination with rarefied data ----
+  
+# Calculate the relative abundance of each otu  
+  ps.prop_bact_rare <- transform_sample_counts(rareps_bact, function(otu) otu/sum(otu))
+  
+# PCoA using Bray-Curtis distance
+  ord.pcoa.bray_rare <- ordinate(ps.prop_bact_rare, method = "PCoA", distance = "bray")
+  
+# Plot ordination
+  Osmia_dev_PCoA_bact_rare <- plot_ordination(ps.prop_bact_rare, ord.pcoa.bray_rare, color = "sample_type") + 
+                                              theme_bw() +
+                                              theme(text = element_text(size = 16)) +
+                                              theme(legend.justification = "left", 
+                                                    legend.title = element_text(size = 16, colour = "black"), 
+                                                    legend.text = element_text(size = 14, colour = "black")) +
+                                              theme(legend.position = "none") +
+                                              theme(panel.grid.major = element_blank(),
+                                                    panel.grid.minor = element_blank()) +
+                                              geom_point(size = 3) +
+                                              scale_color_manual(values = c("#616161", "#E4511E", "#FDD835", "#43A047", "#0288D1")) + 
+                                              labs(color = "Developmental Stage") +
+                                              ggtitle("A")
+  Osmia_dev_PCoA_bact_rare
   
 ## Stacked community plot ----
   
