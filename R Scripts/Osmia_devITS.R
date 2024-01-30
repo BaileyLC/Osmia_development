@@ -56,7 +56,7 @@
 
 # Summarize the phyloseq obj contents before processing
   summarize_phyloseq(ps1)
-  
+
 ## Inspect & remove contaminants ----
 # Resource: https://benjjneb.github.io/decontam/vignettes/decontam_intro.html
 
@@ -126,9 +126,6 @@
 # How many reads are in each sample? 
   sample_sums(ps2)
   
-# What is the mean number of reads in all samples?
-  mean(sample_sums(ps2))  
-  
 # Summarize the phyloseq obj contents after processing
   summarize_phyloseq(ps2)
   
@@ -152,7 +149,7 @@
     scale_y_log10() + 
     facet_wrap(~ type, 1, scales = "free")
 
-## Species richness ----
+## Alpha diversity ----
 
 # Calculate species richness
   fungrich <- estimate_richness(ps2, split = TRUE, measures = c("Shannon", "Simpson", "Observed"))
@@ -229,38 +226,13 @@
                                 ylab("Observed richness")
   Osmia_dev_Observed_fungi
 
-## Rarefaction ----
-
-# Produce rarefaction curves
-  tab <- otu_table(ps2)
-  class(tab) <- "matrix"
-  tab <- t(tab)
-  rare <- rarecurve(tab, label = FALSE)
+## Beta diversity without rarefaction ----  
   
-# Save rarefaction data as a "tidy" df
-  rare_tidy_fungi <- rarecurve(tab, label = FALSE, tidy = TRUE)
-  
-# Plot rarefaction curve
-  Osmia_dev_rare_fungi <- ggplot(rare_tidy_fungi, aes(x = Sample, y = Species, group = Site)) +
-                            geom_line() +
-                            geom_vline(xintercept = 35) +
-                            theme_bw() +
-                            theme(panel.grid.major = element_blank(),
-                                  panel.grid.minor = element_blank()) +
-                            labs(title = "B") + 
-                            xlab("Number of reads") +
-                            ylab("Number of species")
-  Osmia_dev_rare_fungi
-
-# Set seed and rarefy
-  set.seed(1234)
-  rareps <- rarefy_even_depth(ps2, sample.size = 35)
-
 # Create a distance matrix using Bray Curtis dissimilarity
-  fung_bray <- phyloseq::distance(rareps, method = "bray")
+  fung_bray <- phyloseq::distance(ps2, method = "bray")
   
 # Convert to data frame
-  samplefung <- data.frame(sample_data(rareps))
+  samplefung <- data.frame(sample_data(ps2))
   
 # Perform the PERMANOVA to test effects of developmental stage on fungal community composition
   fung_perm <- adonis2(fung_bray ~ sample_type, data = samplefung)
@@ -270,7 +242,7 @@
   fungi_perm_BH <- pairwise.perm.manova(fung_bray, samplefung$sample_type, p.method = "BH")
   fungi_perm_BH
   
-## Test for homogeneity of multivariate dispersion ----
+## Test for homogeneity of multivariate dispersion without rarefaction ----
   
 # Calculate the average distance of group members to the group centroid
   disp_fung <- betadisper(fung_bray, samplefung$sample_type)
@@ -290,15 +262,15 @@
   disp_fung_tHSD <- TukeyHSD(disp_fung)
   disp_fung_tHSD
   
-## Ordination ----
-
+## Ordination without rarefaction ----
+  
 # Calculate the relative abundance of each otu
-  ps.prop <- transform_sample_counts(rareps, function(otu) otu/sum(otu))
+  ps.prop <- transform_sample_counts(ps2, function(otu) otu/sum(otu))
   ps.prop
-
+  
 # PCoA using Bray-Curtis distance
   ord.pcoa.bray <- ordinate(ps.prop, method = "PCoA", distance = "bray")
-
+  
 # Plot ordination
   Osmia_dev_PCoA_fungi <- plot_ordination(ps.prop, ord.pcoa.bray, color = "sample_type") + 
                             theme_bw() +
@@ -309,9 +281,95 @@
                             theme(panel.grid.major = element_blank(),
                                   panel.grid.minor = element_blank()) +
                             geom_point(size = 3) +
-                            scale_color_manual(values = c("#616161", "#9575CD", "#E4511E", "#FDD835", "#43A047", "#0288D1")) +
-                            labs(title = "B", color = "Developmental Stage")
-  Osmia_dev_PCoA_fungi
+                            scale_color_manual(color = "Developmental Stage",
+                                               values = c("#616161", "#9575CD", "#E4511E", "#FDD835", "#43A047", "#0288D1")) +
+                            labs(title = "B")
+  Osmia_dev_PCoA_fungi  
+  
+## Rarefaction ----
+
+# Produce rarefaction curves
+  tab <- otu_table(ps2)
+  class(tab) <- "matrix"
+  tab <- t(tab)
+  
+# Save rarefaction data as a "tidy" df
+  rare_tidy_fungi <- rarecurve(tab, label = FALSE, tidy = TRUE)
+  
+# Plot rarefaction curve
+  Osmia_dev_rare_fungi <- ggplot(rare_tidy_fungi, aes(x = Sample, y = Species, group = Site)) +
+                            geom_line() +
+                            theme_bw() +
+                            theme(panel.grid.major = element_blank(),
+                                  panel.grid.minor = element_blank()) +
+                            labs(title = "B") + 
+                            xlab("Number of reads") +
+                            ylab("Number of species")
+  Osmia_dev_rare_fungi
+
+# Set seed and rarefy
+  set.seed(1234)
+  fung_rareps <- rarefy_even_depth(ps2, sample.size = 30)
+
+## Beta diversity with rarefied data ----  
+  
+# Create a distance matrix using Bray Curtis dissimilarity
+  fung_bray_rare <- phyloseq::distance(fung_rareps, method = "bray")
+  
+# Convert to data frame
+  samplefung_rare <- data.frame(sample_data(fung_rareps))
+  
+# Perform the PERMANOVA to test effects of developmental stage on fungal community composition
+  fung_perm_rare <- adonis2(fung_bray_rare ~ sample_type, data = samplefung_rare)
+  fung_perm_rare
+  
+# Follow up with pairwise comparisons - which sample types differ?
+  fungi_perm_BH_rare <- pairwise.perm.manova(fung_bray_rare, samplefung_rare$sample_type, p.method = "BH")
+  fungi_perm_BH_rare
+
+## Test for homogeneity of multivariate dispersion with rarefied data ----
+  
+# Calculate the average distance of group members to the group centroid
+  disp_fung_rare <- betadisper(fung_bray_rare, samplefung_rare$sample_type)
+  disp_fung_rare
+  
+# Do any of the group dispersions differ?
+  disp_fung_an_rare <- anova(disp_fung_rare)
+  disp_fung_an_rare
+  
+# Which group dispersions differ?
+  disp_fung_ttest_rare <- permutest(disp_fung_rare, 
+                                    control = permControl(nperm = 999),
+                                    pairwise = TRUE)
+  disp_fung_ttest_rare
+  
+# Which group dispersions differ?
+  disp_fung_tHSD_rare <- TukeyHSD(disp_fung_rare)
+  disp_fung_tHSD_rare
+
+## Ordination with rarefied data ----
+
+# Calculate the relative abundance of each otu
+  ps.prop_rare <- transform_sample_counts(fung_rareps, function(otu) otu/sum(otu))
+  ps.prop_rare
+
+# PCoA using Bray-Curtis distance
+  ord.pcoa.bray_rare <- ordinate(ps.prop_rare, method = "PCoA", distance = "bray")
+
+# Plot ordination
+  Osmia_dev_PCoA_fungi_rare <- plot_ordination(ps.prop_rare, ord.pcoa.bray_rare, color = "sample_type") + 
+                                  theme_bw() +
+                                  theme(text = element_text(size = 16)) +
+                                  theme(legend.justification = "left", 
+                                        legend.title = element_text(size = 16, colour = "black"), 
+                                        legend.text = element_text(size = 14, colour = "black")) + 
+                                        theme(panel.grid.major = element_blank(),
+                                              panel.grid.minor = element_blank()) +
+                                        geom_point(size = 3) +
+                                        scale_color_manual(color = "Developmental Stage",
+                                                           values = c("#616161", "#9575CD", "#E4511E", "#FDD835", "#43A047", "#0288D1")) +
+                                        labs(title = "B")
+  Osmia_dev_PCoA_fungi_rare
 
 ## Stacked community plot ----
 
@@ -434,10 +492,10 @@
 # Resource: https://joey711.github.io/phyloseq-extensions/DESeq2.html
   
 # Remove patterns in tax_table   
-  tax_table(rareps)[, colnames(tax_table(rareps))] <- gsub(tax_table(rareps)[, colnames(tax_table(rareps))], pattern = "[a-z]__", replacement = "")
+  tax_table(fung_rareps)[, colnames(tax_table(fung_rareps))] <- gsub(tax_table(fung_rareps)[, colnames(tax_table(fung_rareps))], pattern = "[a-z]__", replacement = "")
   
 # Convert from a phyloseq to a deseq obj
-  desq_obj <- phyloseq_to_deseq2(rareps, ~ sample_type)
+  desq_obj <- phyloseq_to_deseq2(fung_rareps, ~ sample_type)
   
 # Calculate the geometric mean and remove rows with NA
   gm_mean <- function(x, na.rm = TRUE) {
@@ -457,7 +515,7 @@
   alpha <- 0.05
   
 # Initial vs final provisions
-  
+
 # Extract results from differential abundance table for initial vs final provisions
   #init_final <- results(desq_dds, contrast = c("sample_type", "initial provision", "final provision"))
   
@@ -670,7 +728,7 @@
     #theme_bw() +
     #ggtitle("Pre-wintering vs Dead adults")
 
-# Emerged vs dead
+# Emerged vs dead adults
   
 # Extract results from differential abundance table for emerged vs dead
   emerg_dead <- results(desq_dds, contrast = c("sample_type", "emerged", "dead"))
@@ -683,4 +741,32 @@
   
 # Check to see if any padj is below alpha
   emerg_dead_p05
+  
+# Emerged adults vs initial provisions
+  
+# Extract results from differential abundance table for emerged vs initial provisions
+  emerg_init <- results(desq_dds, contrast = c("sample_type", "emerged", "initial provision"))
+  
+# Order differential abundances by their padj value
+  emerg_init <- emerg_init[order(emerg_init$padj, na.last = NA), ]
+  
+# Filter data to only include padj < alpha and remove NAs
+  emerg_init_p05 <- emerg_init[(emerg_init$padj < alpha & !is.na(emerg_init$padj)), ]
+  
+# Check to see if any padj is below alpha
+  emerg_init_p05
+  
+# Emerged adults vs larvae
+  
+# Extract results from differential abundance table for emerged vs initial provisions
+  emerg_larva <- results(desq_dds, contrast = c("sample_type", "emerged", "larva"))
+  
+# Order differential abundances by their padj value
+  emerg_larva <- emerg_larva[order(emerg_larva$padj, na.last = NA), ]
+  
+# Filter data to only include padj < alpha and remove NAs
+  emerg_larva_p05 <- emerg_larva[(emerg_larva$padj < alpha & !is.na(emerg_larva$padj)), ]
+  
+# Check to see if any padj is below alpha
+  emerg_larva_p05
   
