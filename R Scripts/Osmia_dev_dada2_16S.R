@@ -19,7 +19,7 @@
   path <- "seqs/Osmia_dev16S" # where to find the directory containing the unzipped fastq files
   list.files(path) # call files to ensure you are in the correct location
 
-# Sort files to ensure forward/reverse reads are in the same order
+# Sort files to ensure forward and reverse reads are in the same order
   fnFs <- sort(list.files(path, pattern = "_L001_R1_001.fastq.gz", full.names = TRUE))
   fnRs <- sort(list.files(path, pattern = "_L001_R2_001.fastq.gz", full.names = TRUE))
 
@@ -123,7 +123,3 @@
 # Save files so you don't have to work through the computationally heavy work again
   saveRDS(seqtab.nochim, file = "Osmia_dev_seqs16S.rds")
   saveRDS(taxa, file = "Osmia_dev_taxa16S.rds")
-
-
-
-
