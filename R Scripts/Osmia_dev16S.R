@@ -298,18 +298,18 @@
   
 # Plot ordination
   Osmia_dev_PCoA_bact <- plot_ordination(ps.prop_bact, ord.pcoa.bray, color = "sample_type") + 
-                                         theme_bw() +
-                                         theme(text = element_text(size = 16)) +
-                                         theme(legend.justification = "left", 
-                                               legend.title = element_text(size = 16, colour = "black"), 
-                                               legend.text = element_text(size = 14, colour = "black")) +
-                                         theme(legend.position = "none") +
-                                         theme(panel.grid.major = element_blank(),
-                                               panel.grid.minor = element_blank()) +
-                                         geom_point(size = 3) +
-                                         scale_color_manual(values = c("#616161", "#E4511E", "#FDD835", "#43A047", "#0288D1")) + 
-                                         labs(color = "Developmental Stage") +
-                                         ggtitle("A")
+                           theme_bw() +
+                           theme(text = element_text(size = 16)) +
+                           theme(legend.justification = "left", 
+                                 legend.title = element_text(size = 16, colour = "black"), 
+                                legend.text = element_text(size = 14, colour = "black")) +
+                           theme(legend.position = "none") +
+                           theme(panel.grid.major = element_blank(),
+                                 panel.grid.minor = element_blank()) +
+                           geom_point(size = 3) +
+                           scale_color_manual(values = c("#616161", "#E4511E", "#FDD835", "#43A047", "#0288D1")) + 
+                           labs(color = "Developmental Stage") +
+                           ggtitle("A")
   Osmia_dev_PCoA_bact  
 
 ## Rarefaction ----
@@ -384,18 +384,18 @@
   
 # Plot ordination
   Osmia_dev_PCoA_bact_rare <- plot_ordination(ps.prop_bact_rare, ord.pcoa.bray_rare, color = "sample_type") + 
-                                              theme_bw() +
-                                              theme(text = element_text(size = 16)) +
-                                              theme(legend.justification = "left", 
-                                                    legend.title = element_text(size = 16, colour = "black"), 
-                                                    legend.text = element_text(size = 14, colour = "black")) +
-                                              theme(legend.position = "none") +
-                                              theme(panel.grid.major = element_blank(),
-                                                    panel.grid.minor = element_blank()) +
-                                              geom_point(size = 3) +
-                                              scale_color_manual(values = c("#616161", "#E4511E", "#FDD835", "#43A047", "#0288D1")) + 
-                                              labs(color = "Developmental Stage") +
-                                              ggtitle("A")
+                                theme_bw() +
+                                theme(text = element_text(size = 16)) +
+                                theme(legend.justification = "left", 
+                                      legend.title = element_text(size = 16, colour = "black"), 
+                                      legend.text = element_text(size = 14, colour = "black")) +
+                                theme(legend.position = "none") +
+                                theme(panel.grid.major = element_blank(),
+                                      panel.grid.minor = element_blank()) +
+                                geom_point(size = 3) +
+                                scale_color_manual(values = c("#616161", "#E4511E", "#FDD835", "#43A047", "#0288D1")) + 
+                                labs(color = "Developmental Stage") +
+                                ggtitle("A")
   Osmia_dev_PCoA_bact_rare
   
 ## Stacked community plot ----
