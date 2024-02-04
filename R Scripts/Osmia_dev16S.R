@@ -10,18 +10,15 @@
   setwd("~/Downloads")
 
 # Load necessary packages
-  library(ggplot2) # Version 3.4.3
   library(phyloseq) # Version 1.44.0
-  library(vegan) # Version 2.6-4
-  library(knitr) # Version 1.45
-  library(magrittr) # Version 2.0.3
   library(decontam) # Version 1.20.0
+  library(ggplot2) # Version 3.4.3
+  library(vegan) # Version 2.6-4
+  library(magrittr) # Version 2.0.3
   library(nlme) # Version 3.1-163
-  library(grDevices) # Version 4.3.1
   library(RColorBrewer) # Version 1.1-3
   library(unikn) # Version 0.9.0
   library(RVAideMemoire) # Version 0.9-83-7
-  library(dplyr) # Version 1.1.3
   library(DESeq2) # Version 1.40.2
 
 # Import data
@@ -596,7 +593,7 @@
   geoMeans <- apply(counts(desq_obj), 1, gm_mean)
   
 # Estimate size factors
-  desq_dds <- DESEq2::estimateSizeFactors(desq_obj, geoMeans = geoMeans)
+  desq_dds <- DESeq2::estimateSizeFactors(desq_obj, geoMeans = geoMeans)
   
 # Fit a local regression
   desq_dds <- DESeq2::DESeq(desq_dds, fitType = "local")
