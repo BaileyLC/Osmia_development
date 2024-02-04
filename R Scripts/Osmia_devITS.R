@@ -10,19 +10,15 @@
   setwd("~/Downloads")
 
 # Load necessary packages
-  library(ggplot2) # Version 3.4.3
   library(phyloseq) # Version 1.44.0
-  library(knitr) # Version 1.45
-  library(vegan) # Version 2.6-4
-  library(RVAideMemoire) # Version 0.9-83-7
-  library(magrittr) # Version 2.0.3
   library(decontam) # Version 1.20.0
+  library(ggplot2) # Version 3.4.3
+  library(vegan) # Version 2.6-4
+  library(magrittr) # Version 2.0.3
   library(nlme) # Version 3.1-163
-  library(grDevices) # Version 4.3.1
   library(RColorBrewer) # Version 1.1-3
   library(unikn) # Version 0.9.0
-  library(ShortRead) # Version 1.58.0
-  library(dplyr) # Version 1.1.3
+  library(RVAideMemoire) # Version 0.9-83-7
   library(DESeq2) # Version 1.40.2
 
 # Import data
@@ -325,8 +321,7 @@
                             theme(panel.grid.major = element_blank(),
                                   panel.grid.minor = element_blank()) +
                             geom_point(size = 3) +
-                            scale_color_manual(color = "Developmental Stage",
-                                               values = c("#616161", "#9575CD", "#E4511E", "#FDD835", "#43A047", "#0288D1")) +
+                            scale_color_manual(values = c("#616161", "#9575CD", "#E4511E", "#FDD835", "#43A047", "#0288D1")) +
                             labs(title = "B")
   Osmia_dev_PCoA_fungi  
   
@@ -407,12 +402,11 @@
                                   theme(legend.justification = "left", 
                                         legend.title = element_text(size = 16, colour = "black"), 
                                         legend.text = element_text(size = 14, colour = "black")) + 
-                                        theme(panel.grid.major = element_blank(),
-                                              panel.grid.minor = element_blank()) +
-                                        geom_point(size = 3) +
-                                        scale_color_manual(color = "Developmental Stage",
-                                                           values = c("#616161", "#9575CD", "#E4511E", "#FDD835", "#43A047", "#0288D1")) +
-                                        labs(title = "B")
+                                  theme(panel.grid.major = element_blank(),
+                                        panel.grid.minor = element_blank()) +
+                                  geom_point(size = 3) +
+                                  scale_color_manual(values = c("#616161", "#9575CD", "#E4511E", "#FDD835", "#43A047", "#0288D1")) +
+                                  labs(title = "B")
   Osmia_dev_PCoA_fungi_rare
 
 ## Stacked community plot ----
@@ -425,10 +419,10 @@
   colors <- sample(okabe_ext)
 
 # Remove patterns in tax_table   
-  tax_table(rareps)[, colnames(tax_table(rareps))] <- gsub(tax_table(rareps)[, colnames(tax_table(rareps))], pattern = "[a-z]__", replacement = "")
+  tax_table(fung_rareps)[, colnames(tax_table(fung_rareps))] <- gsub(tax_table(fung_rareps)[, colnames(tax_table(fung_rareps))], pattern = "[a-z]__", replacement = "")
 
 # Sort data by Family
-  y7 <- phyloseq::tax_glom(rareps, taxrank = 'Family') # agglomerate taxa
+  y7 <- phyloseq::tax_glom(fung_rareps, taxrank = 'Family') # agglomerate taxa
   y8 <- phyloseq::transform_sample_counts(y7, function(x) x/sum(x))
   y9 <- phyloseq::psmelt(y8)
   y9$Family <- as.character(y9$Family)
@@ -480,7 +474,7 @@
   Osmia_dev_fam_relabund_fungi
 
 # Sort data by Genus
-  y10 <- phyloseq::tax_glom(rareps, taxrank = 'Genus') # agglomerate taxa
+  y10 <- phyloseq::tax_glom(fung_rareps, taxrank = 'Genus') # agglomerate taxa
   y11 <- phyloseq::transform_sample_counts(y10, function(x) x/sum(x))
   y12 <- phyloseq::psmelt(y11)
   y12$Genus <- as.character(y12$Genus)
@@ -550,10 +544,10 @@
   geoMeans <- apply(counts(desq_obj), 1, gm_mean)
   
 # Estimate size factors
-  desq_dds <- DESEq2::estimateSizeFactors(desq_obj, geoMeans = geoMeans)
+  desq_dds <- DESeq2::estimateSizeFactors(desq_obj, geoMeans = geoMeans)
   
 # Fit a local regression
-  desq_dds <- DESEq2::DESeq(desq_dds, fitType = "local")
+  desq_dds <- DESeq2::DESeq(desq_dds, fitType = "local")
 
 # Set significance factor  
   alpha <- 0.05
@@ -575,7 +569,7 @@
 # Initial provisions vs larvae
   
 # Extract results from differential abundance table for initial provisions vs larvae
-  init_larva <- DESEq2::results(desq_dds, contrast = c("sample_type", "initial provision", "larva"))
+  init_larva <- DESeq2::results(desq_dds, contrast = c("sample_type", "initial provision", "larva"))
   
 # Order differential abundances by their padj value
   init_larva <- init_larva[order(init_larva$padj, na.last = NA), ]
@@ -601,7 +595,7 @@
 # Initial provisions vs pre-wintering adults
   
 # Extract results from differential abundance table for initial provisions vs pre-wintering adults
-  init_pre <- DESEq2::results(desq_dds, contrast = c("sample_type", "initial provision", "pre.wintering.adult"))
+  init_pre <- DESeq2::results(desq_dds, contrast = c("sample_type", "initial provision", "pre.wintering.adult"))
   
 # Order differential abundances by their padj value
   init_pre <- init_pre[order(init_pre$padj, na.last = NA), ]
@@ -615,7 +609,7 @@
 # Initial provisions vs dead adults
   
 # Extract results from differential abundance table for initial provisions vs dead adults
-  init_dead <- DESEq2::results(desq_dds, contrast = c("sample_type", "initial provision", "dead"))
+  init_dead <- DESeq2::results(desq_dds, contrast = c("sample_type", "initial provision", "dead"))
   
 # Order differential abundances by their padj value
   init_dead <- init_dead[order(init_dead$padj, na.last = NA), ]
@@ -641,7 +635,7 @@
 # Final provisions vs larvae
   
 # Extract results from differential abundance table for final provisions vs larvae
-  #final_larva <- DESEq2::results(desq_dds, contrast = c("sample_type", "final provision", "larva"))
+  #final_larva <- DESeq2::results(desq_dds, contrast = c("sample_type", "final provision", "larva"))
   
 # Order differential abundances by their padj value
   #final_larva <- final_larva[order(final_larva$padj, na.last = NA), ]
@@ -655,7 +649,7 @@
 # Final provisions vs pre-wintering adults
   
 # Extract results from differential abundance table for final provisions vs pre-wintering adults
-  #final_pre <- DESEq2::results(desq_dds, contrast = c("sample_type", "final provision", "pre.wintering.adult"))
+  #final_pre <- DESeq2::results(desq_dds, contrast = c("sample_type", "final provision", "pre.wintering.adult"))
   
 # Order differential abundances by their padj value
   #final_pre <- final_pre[order(final_pre$padj, na.last = NA), ]
@@ -681,7 +675,7 @@
 # Final provisions vs dead adults
   
 # Extract results from differential abundance table for final provisions vs dead adults
-  #final_dead <- DESEq2::results(desq_dds, contrast = c("sample_type", "final provision", "dead"))
+  #final_dead <- DESeq2::results(desq_dds, contrast = c("sample_type", "final provision", "dead"))
   
 # Order differential abundances by their padj value
   #final_dead <- final_dead[order(final_dead$padj, na.last = NA), ]
@@ -695,7 +689,7 @@
 # Larvae vs pre-wintering adults
   
 # Extract results from differential abundance table for larvae vs pre-wintering adults
-  larva_pre <- DESEq2::results(desq_dds, contrast = c("sample_type", "larva", "pre.wintering.adult"))
+  larva_pre <- DESeq2::results(desq_dds, contrast = c("sample_type", "larva", "pre.wintering.adult"))
   
 # Order differential abundances by their padj value
   larva_pre <- larva_pre[order(larva_pre$padj, na.last = NA), ]
@@ -721,7 +715,7 @@
 # Larvae vs dead adults
   
 # Extract results from differential abundance table for larvae vs dead adults
-  larva_dead <- DESEq2::results(desq_dds, contrast = c("sample_type", "larva", "dead"))
+  larva_dead <- DESeq2::results(desq_dds, contrast = c("sample_type", "larva", "dead"))
   
 # Order differential abundances by their padj value
   larva_dead <- larva_dead[order(larva_dead$padj, na.last = NA), ]
@@ -735,7 +729,7 @@
 # Pre-wintering vs emerged adults
   
 # Extract results from differential abundance table for pre-wintering vs emerged adults
-  pre_emerg <- DESEq2::results(desq_dds, contrast = c("sample_type", "pre.wintering.adult", "emerged"))
+  pre_emerg <- DESeq2::results(desq_dds, contrast = c("sample_type", "pre.wintering.adult", "emerged"))
   
 # Order differential abundances by their padj value
   pre_emerg <- pre_emerg[order(pre_emerg$padj, na.last = NA), ]
@@ -749,7 +743,7 @@
 # Pre-wintering vs dead adults
   
 # Extract results from differential abundance table for pre-wintering vs dead adults
-  pre_dead <- DESEq2::results(desq_dds, contrast = c("sample_type", "pre.wintering.adult", "dead"))
+  pre_dead <- DESeq2::results(desq_dds, contrast = c("sample_type", "pre.wintering.adult", "dead"))
   
 # Order differential abundances by their padj value
   pre_dead<- pre_dead[order(pre_dead$padj, na.last = NA), ]
@@ -775,7 +769,7 @@
 # Emerged vs dead adults
   
 # Extract results from differential abundance table for emerged vs dead
-  emerg_dead <- DESEq2::results(desq_dds, contrast = c("sample_type", "emerged", "dead"))
+  emerg_dead <- DESeq2::results(desq_dds, contrast = c("sample_type", "emerged", "dead"))
   
 # Order differential abundances by their padj value
   emerg_dead <- emerg_dead[order(emerg_dead$padj, na.last = NA), ]
@@ -789,7 +783,7 @@
 # Emerged adults vs initial provisions
   
 # Extract results from differential abundance table for emerged vs initial provisions
-  emerg_init <- DESEq2::results(desq_dds, contrast = c("sample_type", "emerged", "initial provision"))
+  emerg_init <- DESeq2::results(desq_dds, contrast = c("sample_type", "emerged", "initial provision"))
   
 # Order differential abundances by their padj value
   emerg_init <- emerg_init[order(emerg_init$padj, na.last = NA), ]
@@ -803,7 +797,7 @@
 # Emerged adults vs larvae
   
 # Extract results from differential abundance table for emerged vs initial provisions
-  emerg_larva <- DESEq2::results(desq_dds, contrast = c("sample_type", "emerged", "larva"))
+  emerg_larva <- DESeq2::results(desq_dds, contrast = c("sample_type", "emerged", "larva"))
   
 # Order differential abundances by their padj value
   emerg_larva <- emerg_larva[order(emerg_larva$padj, na.last = NA), ]
