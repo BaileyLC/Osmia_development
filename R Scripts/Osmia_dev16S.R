@@ -13,7 +13,6 @@
   library(ggplot2) # Version 3.4.3
   library(phyloseq) # Version 1.44.0
   library(vegan) # Version 2.6-4
-  library(microbiome) # Version 1.22.0
   library(knitr) # Version 1.45
   library(magrittr) # Version 2.0.3
   library(decontam) # Version 1.20.0
@@ -28,7 +27,7 @@
 # Import data
   seqtab.nochim <- readRDS("Osmia_dev_seqs16S.rds")
   taxa <- readRDS("Osmia_dev_taxa16S.rds")
-  meta16S_dev <- read.csv("Osmia_dev_master - 16S_all.csv")
+  meta16S_dev <- read.csv("Osmia_dev_master - 16S_worked.csv")
 
 ## Create phyloseq object ----
 
@@ -53,8 +52,12 @@
                   tax_table(taxa))
   ps1
   
-# Summarize the phyloseq obj contents before processing
-  summarize_phyloseq(ps1)
+# Display total number of reads and means per sample in phyloseq obj before processing
+  sum(sample_sums(ps1))
+  mean(sample_sums(ps1))
+  
+# How many taxa were identified before processing
+  nrow(tax_table(ps1))
 
 ## Inspect & remove contaminants ----
 # Resource: https://benjjneb.github.io/decontam/vignettes/decontam_intro.html
@@ -71,7 +74,7 @@
 
 # Determine which ASVs are contaminants based on prevalence (presence/absence) in negative controls
   sample_data(ps1)$is.neg <- sample_data(ps1)$sample_or_control == "control"
-  contamdf.prev <- isContaminant(ps1, method = "prevalence", neg = "is.neg")
+  contamdf.prev <- decontam::isContaminant(ps1, method = "prevalence", neg = "is.neg")
 
 # How many contaminants are there?
   table(contamdf.prev$contaminant)
@@ -80,7 +83,7 @@
   head(which(contamdf.prev$contaminant))
 
 # Determine which ASVs are contaminants based on prevalence (presence/absence) higher than 0.5 in negative controls
-  contamdf.prev05 <- isContaminant(ps1, method = "prevalence", neg = "is.neg", threshold = 0.5)
+  contamdf.prev05 <- decontam::isContaminant(ps1, method = "prevalence", neg = "is.neg", threshold = 0.5)
 
 # How many contaminants are there?
   table(contamdf.prev05$contaminant)
@@ -89,16 +92,16 @@
   head(which(contamdf.prev05$contaminant))
 
 # Make phyloseq object of presence-absence in negative controls
-  ps.neg <- prune_samples(sample_data(ps1)$sample_or_control == "control", ps1)
+  ps.neg <- phyloseq::prune_samples(sample_data(ps1)$sample_or_control == "control", ps1)
 
 # Calculate taxa abundance in samples from sample counts
-  ps.neg.presence <- transform_sample_counts(ps.neg, function(abund) 1*(abund > 0))
+  ps.neg.presence <- phyloseq::transform_sample_counts(ps.neg, function(abund) 1*(abund > 0))
 
 # Make phyloseq object of presence-absence in true positive samples
-  ps.pos <- prune_samples(sample_data(ps1)$sample_or_control == "sample", ps1)
+  ps.pos <- phyloseq::prune_samples(sample_data(ps1)$sample_or_control == "sample", ps1)
 
 # Calculate taxa abundance in samples from sample counts
-  ps.pos.presence <- transform_sample_counts(ps.pos, function(abund) 1*(abund > 0))
+  ps.pos.presence <- phyloseq::transform_sample_counts(ps.pos, function(abund) 1*(abund > 0))
 
 # Make data.frame of prevalence in positive and negative samples
   df.pres <- data.frame(prevalence.pos = taxa_sums(ps.pos.presence), 
@@ -112,16 +115,16 @@
     ylab("Prevalence (Samples)")
 
 # Make a new phyloseq object without contaminant taxa 
-  ps.noncontam <- prune_taxa(!contamdf.prev$contaminant, ps1)
+  ps.noncontam <- phyloseq::prune_taxa(!contamdf.prev$contaminant, ps1)
   ps.noncontam
 
 # Remove control samples used for identifying contaminants
-  ps_sub <- subset_samples(ps.noncontam, sample_or_control != "control")
+  ps_sub <- phyloseq::subset_samples(ps.noncontam, sample_or_control != "control")
   ps_sub
 
 # Remove DNA from mitochondria & chloroplast
   ps2 <- ps_sub %>%
-    subset_taxa(
+    phyloseq::subset_taxa(
       Kingdom == "Bacteria" &
         Family  != "mitochondria" &
         Class   != "Chloroplast"
@@ -129,30 +132,46 @@
 
 # Remove DNA from Eukarya, Eukaryota & Streptophyta
   ps2 <- ps2 %>%
-    subset_taxa(Kingdom != "Eukarya" &
-                Kingdom != "Eukaryota" &
-                  Family != "Streptophyta")
+    phyloseq::subset_taxa(Kingdom != "Eukarya" &
+                          Kingdom != "Eukaryota" &
+                            Family != "Streptophyta")
 
 # Remove DNA from Archaea
   ps2 <- ps2 %>%
-    subset_taxa(Kingdom != "Archaea")
+    phyloseq::subset_taxa(Kingdom != "Archaea")
 
 # Remove DNA from cyanobacteria & chlorplasts
   ps2 <- ps2 %>%
-    subset_taxa(Phylum != "Cyanobacteria/Chloroplast")
+    phyloseq::subset_taxa(Phylum != "Cyanobacteria/Chloroplast")
 
 # What remains in the phyloseq object?
   ps2
 
 # Remove samples without any reads  
-  ps3 <- prune_samples(sample_sums(ps2) != 0, ps2)
+  ps3 <- phyloseq::prune_samples(sample_sums(ps2) != 0, ps2)
   ps3
 
-# How many reads are in each sample? 
-  sample_sums(ps3)
-
-# Summarize the phyloseq obj contents after processing
-  summarize_phyloseq(ps3)
+# Display total number of reads and means per sample in phyloseq obj after processing
+  sum(sample_sums(ps3))
+  mean(sample_sums(ps3))
+  
+# How many taxa were identified after processing
+  nrow(tax_table(ps3))
+  
+# Save sample metadata
+  meta <- sample_data(ps3)
+  
+# How many total samples?
+  nrow(meta)
+  
+# How many samples for each developmental stage?  
+  meta %>%
+    group_by(sample_type) %>%
+    summarise(N = n())
+  
+# Save taxonomic and ASV counts
+  write.csv(tax_table(ps3), "Osmia_dev_16Staxa.csv")
+  write.csv(otu_table(ps3), "Osmia_dev_16Sotu.csv")
   
 # Add Seq to each taxa name
   taxa_names(ps3) <- paste0("Seq", seq(ntaxa(ps3)))
@@ -177,7 +196,7 @@
 ## Alpha diversity ----
   
 # Estimate Shannon, Simpson & observed richness
-  bactrich <- estimate_richness(ps3, split = TRUE, measures = c("Shannon", "Simpson", "Observed"))
+  bactrich <- phyloseq::estimate_richness(ps3, split = TRUE, measures = c("Shannon", "Simpson", "Observed"))
   
 # Build df with metadata 
   bactrich$sample_type <- sample_data(ps3)$sample_type
@@ -185,23 +204,23 @@
   bactrich$nesting_tube <- sample_data(ps3)$nesting_tube
   
 # Plot Shannon, Simpson & observed richness
-  plot_richness(ps3, x = "sample_type", measures = c("Shannon", "Simpson", "Observed"), color = "nesting_tube") + 
-    theme_bw()
+  phyloseq::plot_richness(ps3, x = "sample_type", measures = c("Shannon", "Simpson", "Observed"), color = "nesting_tube") + 
+              theme_bw()
   
 # Remove samples with 0 species richness 
   bactrich[bactrich == 0] <- NA
   bactrich <- bactrich[complete.cases(bactrich), ]
   
 # Examine the effects of sample_type on Shannon index
-  mod1 <- lme(Shannon ~ sample_type, random = ~1|nesting_tube, data = bactrich)
+  mod1 <- nlme::lme(Shannon ~ sample_type, random = ~1|nesting_tube, data = bactrich)
   anova(mod1)
   
 # Examine the effects of sample_type on Simpson index
-  mod2 <- lme(Simpson ~ sample_type, random = ~1|nesting_tube, data = bactrich)
+  mod2 <- nlme::lme(Simpson ~ sample_type, random = ~1|nesting_tube, data = bactrich)
   anova(mod2)
   
 # Examine the effects of sample_type on observed richness
-  mod3 <- lme(Observed ~ sample_type, random = ~1|nesting_tube, data = bactrich)
+  mod3 <- nlme::lme(Observed ~ sample_type, random = ~1|nesting_tube, data = bactrich)
   anova(mod3)
   
 # Order samples on x-axis
@@ -261,17 +280,17 @@
   samplebact <- data.frame(sample_data(ps3))
   
 # Perform the PERMANOVA to test effects of developmental stage on bacterial community composition
-  bact_perm <- adonis2(bact_bray ~ sample_type, data = samplebact)
+  bact_perm <- vegan::adonis2(bact_bray ~ sample_type, data = samplebact)
   bact_perm
   
 # Follow up with pairwise comparisons - which sample types differ?
-  bact_perm_BH <- pairwise.perm.manova(bact_bray, samplebact$sample_type, p.method = "BH")
+  bact_perm_BH <- RVAideMemoire::pairwise.perm.manova(bact_bray, samplebact$sample_type, p.method = "BH")
   bact_perm_BH
   
 ## Test for homogeneity of multivariate dispersion without rarefaction ----
   
 # Calculate the average distance of group members to the group centroid
-  disp_bact <- betadisper(bact_bray, samplebact$sample_type)
+  disp_bact <- vegan::betadisper(bact_bray, samplebact$sample_type)
   disp_bact
   
 # Do any of the group dispersions differ?
@@ -279,37 +298,62 @@
   disp_bact_an
   
 # Which group dispersions differ?
-  disp_bact_ttest <- permutest(disp_bact, 
-                               control = permControl(nperm = 999),
-                               pairwise = TRUE)
+  disp_bact_ttest <- vegan::permutest(disp_bact, 
+                                      control = permControl(nperm = 999),
+                                      pairwise = TRUE)
   disp_bact_ttest
   
 # Which group dispersions differ?
   disp_bact_tHSD <- TukeyHSD(disp_bact)
   disp_bact_tHSD
   
+## Plot distance to centroid ----
+  
+# Create df with sample metadata
+  #sam_dat <- as.data.frame(sample_data(ps3))
+  
+# Create df with distance to centroid measures
+  #disp_bact_df <- as.data.frame(disp_bact$distances)
+  #disp_bact_df$extractionID <- row.names(disp_bact_df)
+  
+# Merge dfs
+  #disp_df <- merge(sam_dat, disp_bact_df, by = "extractionID")
+
+# Plot
+  #ggplot(disp_df, aes(x = sample_type, y = disp_bact$distance, color = sample_type)) + 
+    #geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(width = 0.1)) + 
+    #geom_jitter(size = 1, alpha = 0.9) +
+    #theme_bw() +
+    #theme(legend.position = "none") +
+    #theme(panel.grid.major = element_blank(),
+          #panel.grid.minor = element_blank()) +
+    #scale_color_manual(values = c("#FDD835", "#E4511E", "#43A047", "#0288D1", "#616161")) +
+    #labs(title = "A") +
+    #xlab("Sample type") +
+    #ylab("Distance to centroid")
+  
 ## Ordination without rarefaction ----
   
 # Calculate the relative abundance of each otu  
-  ps.prop_bact <- transform_sample_counts(ps3, function(otu) otu/sum(otu))
+  ps.prop_bact <- phyloseq::transform_sample_counts(ps3, function(otu) otu/sum(otu))
   
 # PCoA using Bray-Curtis distance
-  ord.pcoa.bray <- ordinate(ps.prop_bact, method = "PCoA", distance = "bray")
+  ord.pcoa.bray <- phyloseq::ordinate(ps.prop_bact, method = "PCoA", distance = "bray")
   
 # Plot ordination
   Osmia_dev_PCoA_bact <- plot_ordination(ps.prop_bact, ord.pcoa.bray, color = "sample_type") + 
-                           theme_bw() +
-                           theme(text = element_text(size = 16)) +
-                           theme(legend.justification = "left", 
-                                 legend.title = element_text(size = 16, colour = "black"), 
-                                legend.text = element_text(size = 14, colour = "black")) +
-                           theme(legend.position = "none") +
-                           theme(panel.grid.major = element_blank(),
-                                 panel.grid.minor = element_blank()) +
-                           geom_point(size = 3) +
-                           scale_color_manual(values = c("#616161", "#E4511E", "#FDD835", "#43A047", "#0288D1")) + 
-                           labs(color = "Developmental Stage") +
-                           ggtitle("A")
+                                         theme_bw() +
+                                         theme(text = element_text(size = 16)) +
+                                         theme(legend.justification = "left", 
+                                               legend.title = element_text(size = 16, colour = "black"), 
+                                               legend.text = element_text(size = 14, colour = "black")) +
+                                         theme(legend.position = "none") +
+                                         theme(panel.grid.major = element_blank(),
+                                               panel.grid.minor = element_blank()) +
+                                         geom_point(size = 3) +
+                                         scale_color_manual(values = c("#616161", "#E4511E", "#FDD835", "#43A047", "#0288D1")) + 
+                                         labs(color = "Developmental Stage") +
+                                         ggtitle("A")
   Osmia_dev_PCoA_bact  
 
 ## Rarefaction ----
@@ -318,10 +362,9 @@
   tab <- otu_table(ps3)
   class(tab) <- "matrix"
   tab <- t(tab)
-  #bact_rare <- rarecurve(tab, label = FALSE, tidy = FALSE)
   
 # Save rarefaction data as a "tidy" df
-  rare_tidy_bact <- rarecurve(tab, label = FALSE, tidy = TRUE)
+  rare_tidy_bact <- vegan::rarecurve(tab, label = FALSE, tidy = TRUE)
   
 # Plot rarefaction curve
   Osmia_dev_rare_bact <- ggplot(rare_tidy_bact, aes(x = Sample, y = Species, group = Site)) +
@@ -336,8 +379,8 @@
 
 # Set seed and rarefy  
   set.seed(1234)
-  rareps_bact <- rarefy_even_depth(ps3, sample.size = 20)
-  
+  rareps_bact <- phyloseq::rarefy_even_depth(ps3, sample.size = 20)
+
 ## Beta diversity with rarefied data ----  
   
 # Create a distance matrix using Bray Curtis dissimilarity
@@ -347,17 +390,17 @@
   samplebact_rare <- data.frame(sample_data(rareps_bact))
   
 # Perform the PERMANOVA to test effects of developmental stage on bacterial community composition
-  bact_perm_rare <- adonis2(bact_bray_rare ~ sample_type, data = samplebact_rare)
+  bact_perm_rare <- vegan::adonis2(bact_bray_rare ~ sample_type, data = samplebact_rare)
   bact_perm_rare
   
 # Follow up with pairwise comparisons - which sample types differ?
-  bact_perm_BH_rare <- pairwise.perm.manova(bact_bray_rare, samplebact_rare$sample_type, p.method = "BH")
+  bact_perm_BH_rare <- RVAideMemoire::pairwise.perm.manova(bact_bray_rare, samplebact_rare$sample_type, p.method = "BH")
   bact_perm_BH_rare
   
 ## Test for homogeneity of multivariate dispersion with rarefied data ----
 
 # Calculate the average distance of group members to the group centroid
-  disp_bact_rare <- betadisper(bact_bray_rare, samplebact_rare$sample_type)
+  disp_bact_rare <- vegan::betadisper(bact_bray_rare, samplebact_rare$sample_type)
   disp_bact_rare
   
 # Do any of the group dispersions differ?
@@ -365,37 +408,61 @@
   disp_bact_an_rare
   
 # Which group dispersions differ?
-  disp_bact_ttest_rare <- permutest(disp_bact_rare, 
-                                    control = permControl(nperm = 999),
-                                    pairwise = TRUE)
+  disp_bact_ttest_rare <- vegan::permutest(disp_bact_rare, 
+                                           control = permControl(nperm = 999),
+                                           pairwise = TRUE)
   disp_bact_ttest_rare
   
 # Which group dispersions differ?
   disp_bact_tHSD_rare <- TukeyHSD(disp_bact_rare)
   disp_bact_tHSD_rare
   
+# Plot distance to centroid
+  
+# Create df with sample metadata
+  sam_dat_rare <- as.data.frame(sample_data(ps3))
+  
+# Create df with distance to centroid measures
+  disp_bact_df_rare <- as.data.frame(disp_bact_rare$distances)
+  
+# Merge dfs
+  disp_df_rare <- merge(sam_dat_rare, disp_bact_df_rare, by = 0)
+  
+# Plot
+  ggplot(disp_df_rare, aes(x = sample_type, y = disp_bact_rare$distance, color = sample_type)) + 
+    geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(width = 0.1)) + 
+    geom_jitter(size = 1, alpha = 0.9) +
+    theme_bw() +
+    theme(legend.position = "none") +
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank()) +
+    scale_color_manual(values = c("#FDD835", "#E4511E", "#43A047", "#0288D1", "#616161")) +
+    labs(title = "A") +
+    xlab("Sample type") +
+    ylab("Distance to centroid")
+  
 ## Ordination with rarefied data ----
   
 # Calculate the relative abundance of each otu  
-  ps.prop_bact_rare <- transform_sample_counts(rareps_bact, function(otu) otu/sum(otu))
+  ps.prop_bact_rare <- phyloseq::transform_sample_counts(rareps_bact, function(otu) otu/sum(otu))
   
 # PCoA using Bray-Curtis distance
-  ord.pcoa.bray_rare <- ordinate(ps.prop_bact_rare, method = "PCoA", distance = "bray")
+  ord.pcoa.bray_rare <- phyloseq::ordinate(ps.prop_bact_rare, method = "PCoA", distance = "bray")
   
 # Plot ordination
   Osmia_dev_PCoA_bact_rare <- plot_ordination(ps.prop_bact_rare, ord.pcoa.bray_rare, color = "sample_type") + 
-                                theme_bw() +
-                                theme(text = element_text(size = 16)) +
-                                theme(legend.justification = "left", 
-                                      legend.title = element_text(size = 16, colour = "black"), 
-                                      legend.text = element_text(size = 14, colour = "black")) +
-                                theme(legend.position = "none") +
-                                theme(panel.grid.major = element_blank(),
-                                      panel.grid.minor = element_blank()) +
-                                geom_point(size = 3) +
-                                scale_color_manual(values = c("#616161", "#E4511E", "#FDD835", "#43A047", "#0288D1")) + 
-                                labs(color = "Developmental Stage") +
-                                ggtitle("A")
+                                              theme_bw() +
+                                              theme(text = element_text(size = 16)) +
+                                              theme(legend.justification = "left", 
+                                                    legend.title = element_text(size = 16, colour = "black"), 
+                                                    legend.text = element_text(size = 14, colour = "black")) +
+                                              theme(legend.position = "none") +
+                                              theme(panel.grid.major = element_blank(),
+                                                    panel.grid.minor = element_blank()) +
+                                              geom_point(size = 3) +
+                                              scale_color_manual(values = c("#616161", "#E4511E", "#FDD835", "#43A047", "#0288D1")) + 
+                                              labs(color = "Developmental Stage") +
+                                              ggtitle("A")
   Osmia_dev_PCoA_bact_rare
   
 ## Stacked community plot ----
@@ -404,13 +471,13 @@
   Okabe_Ito <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#000000")
   
 # Stretch palette (define more intermediate color options)
-  okabe_ext <- usecol(Okabe_Ito, n = 80)
+  okabe_ext <- unikn::usecol(Okabe_Ito, n = 80)
   colors <- sample(okabe_ext) 
   
 # Sort data by Family 
-  y1 <- tax_glom(rareps_bact, taxrank = 'Family') # agglomerate taxa
-  y2 <- transform_sample_counts(y1, function(x) x/sum(x))
-  y3 <- psmelt(y2)
+  y1 <- phyloseq::tax_glom(rareps_bact, taxrank = 'Family') # agglomerate taxa
+  y2 <- phyloseq::transform_sample_counts(y1, function(x) x/sum(x))
+  y3 <- phyloseq::psmelt(y2)
   y3$Family <- as.character(y3$Family)
   y3$Family[y3$Abundance < 0.01] <- "Family < 1% abund."
   y3$Family <- as.factor(y3$Family)
@@ -461,9 +528,9 @@
   Osmia_dev_fam_relabund_bact
   
 # Sort data by Genus
-  y4 <- tax_glom(rareps_bact, taxrank = 'Genus') # agglomerate taxa
-  y5 <- transform_sample_counts(y4, function(x) x/sum(x))
-  y6 <- psmelt(y5)
+  y4 <- phyloseq::tax_glom(rareps_bact, taxrank = 'Genus') # agglomerate taxa
+  y5 <- phyloseq::transform_sample_counts(y4, function(x) x/sum(x))
+  y6 <- phyloseq::psmelt(y5)
   y6$Genus <- as.character(y6$Genus)
   y6$Genus[y6$Abundance < 0.01] <- "Genera < 1% abund."
   y6$Genus <- as.factor(y6$Genus)
@@ -518,7 +585,7 @@
 # When run again, change ps2 to rareps!   
   
 # Convert from a phyloseq to a deseq obj
-  desq_obj <- phyloseq_to_deseq2(rareps_bact, ~ sample_type)
+  desq_obj <- phyloseq::phyloseq_to_deseq2(rareps_bact, ~ sample_type)
   
 # Calculate the geometric mean and remove rows with NA
   gm_mean <- function(x, na.rm = TRUE) {
@@ -529,10 +596,10 @@
   geoMeans <- apply(counts(desq_obj), 1, gm_mean)
   
 # Estimate size factors
-  desq_dds <- estimateSizeFactors(desq_obj, geoMeans = geoMeans)
+  desq_dds <- DESEq2::estimateSizeFactors(desq_obj, geoMeans = geoMeans)
   
 # Fit a local regression
-  desq_dds <- DESeq(desq_dds, fitType = "local")
+  desq_dds <- DESeq2::DESeq(desq_dds, fitType = "local")
   
 # Set significance factor  
   alpha <- 0.05
@@ -540,7 +607,7 @@
 # Initial vs final provisions
   
 # Extract results from differential abundance table for initial vs final provisions
-  init_final <- results(desq_dds, contrast = c("sample_type", "initial provision", "final provision"))
+  init_final <- DESeq2::results(desq_dds, contrast = c("sample_type", "initial provision", "final provision"))
   
 # Order differential abundances by their padj value
   init_final <- init_final[order(init_final$padj, na.last = NA), ]
@@ -554,7 +621,7 @@
 # Initial provisions vs larvae
   
 # Extract results from differential abundance table for initial provisions vs larvae
-  init_larva <- results(desq_dds, contrast = c("sample_type", "initial provision", "larva"))
+  init_larva <- DESeq2::results(desq_dds, contrast = c("sample_type", "initial provision", "larva"))
   
 # Order differential abundances by their padj value
   init_larva <- init_larva[order(init_larva$padj, na.last = NA), ]
@@ -568,7 +635,7 @@
 # Initial provisions vs pre-wintering adults
   
 # Extract results from differential abundance table for initial provisions vs pre-wintering adults
-  init_pre <- results(desq_dds, contrast = c("sample_type", "initial provision", "pre.wintering.adult"))
+  init_pre <- DESeq2::results(desq_dds, contrast = c("sample_type", "initial provision", "pre.wintering.adult"))
   
 # Order differential abundances by their padj value
   init_pre <- init_pre[order(init_pre$padj, na.last = NA), ]
@@ -582,7 +649,7 @@
 # Initial provisions vs dead adults
 
 # Extract results from differential abundance table for initial provisions vs dead adults
-  init_dead <- results(desq_dds, contrast = c("sample_type", "initial provision", "dead"))
+  init_dead <- DESeq2::results(desq_dds, contrast = c("sample_type", "initial provision", "dead"))
   
 # Order differential abundances by their padj value
   init_dead <- init_dead[order(init_dead$padj, na.last = NA), ]
@@ -596,7 +663,7 @@
 # Final provisions vs larvae
   
 # Extract results from differential abundance table for final provisions vs larvae
-  final_larva <- results(desq_dds, contrast = c("sample_type", "final provision", "larva"))
+  final_larva <- DESeq2::results(desq_dds, contrast = c("sample_type", "final provision", "larva"))
   
 # Order differential abundances by their padj value
   final_larva <- final_larva[order(final_larva$padj, na.last = NA), ]
@@ -610,7 +677,7 @@
 # Final provisions vs pre-wintering adults
   
 # Extract results from differential abundance table for final provisions vs pre-wintering adults
-  final_pre <- results(desq_dds, contrast = c("sample_type", "final provision", "pre.wintering.adult"))
+  final_pre <- DESeq2::results(desq_dds, contrast = c("sample_type", "final provision", "pre.wintering.adult"))
   
 # Order differential abundances by their padj value
   final_pre <- final_pre[order(final_pre$padj, na.last = NA), ]
@@ -624,7 +691,7 @@
 # Final provisions vs dead adults
   
 # Extract results from differential abundance table for final provisions vs dead adults
-  final_dead <- results(desq_dds, contrast = c("sample_type", "final provision", "dead"))
+  final_dead <- DESeq2::results(desq_dds, contrast = c("sample_type", "final provision", "dead"))
   
 # Order differential abundances by their padj value
   final_dead <- final_dead[order(final_dead$padj, na.last = NA), ]
@@ -638,7 +705,7 @@
 # Larvae vs pre-wintering adults
   
 # Extract results from differential abundance table for larvae vs pre-wintering adults
-  larva_pre <- results(desq_dds, contrast = c("sample_type", "larva", "pre.wintering.adult"))
+  larva_pre <- DESeq2::results(desq_dds, contrast = c("sample_type", "larva", "pre.wintering.adult"))
   
 # Order differential abundances by their padj value
   larva_pre <- larva_pre[order(larva_pre$padj, na.last = NA), ]
@@ -652,7 +719,7 @@
 # Larvae vs dead adults
   
 # Extract results from differential abundance table for larvae vs dead adults
-  larva_dead <- results(desq_dds, contrast = c("sample_type", "larva", "dead"))
+  larva_dead <- DESeq2::results(desq_dds, contrast = c("sample_type", "larva", "dead"))
   
 # Order differential abundances by their padj value
   larva_dead <- larva_dead[order(larva_dead$padj, na.last = NA), ]
