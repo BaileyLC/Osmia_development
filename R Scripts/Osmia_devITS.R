@@ -429,6 +429,9 @@
   y9$Family[y9$Abundance < 0.01] <- "Family < 1% abund."
   y9$Family <- as.factor(y9$Family)
   head(y9)
+  
+# Save relative abundance data
+  write.csv(y9, "Osmia_dev_Fam_fungi_relabund.csv")
 
 # Reorder x-axis 
   y9$sample_type <- factor(y9$sample_type, levels = c("initial provision", "final provision", "larva", "pre-wintering adult", "emerged", "dead"))
@@ -481,6 +484,9 @@
   y12$Genus[y12$Abundance < 0.01] <- "Genera < 1% abund."
   y12$Genus <- as.factor(y12$Genus)
   head(y12)
+  
+# Save relative abundance data
+  write.csv(y12, "Osmia_dev_Gen_fungi_relabund.csv")
 
 # Order samples on x-axis
   y12$sample_type <- factor(y12$sample_type, levels = c("initial provision", "final provision", "larva", "pre-wintering adult", "dead"))
