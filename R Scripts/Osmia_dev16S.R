@@ -351,7 +351,7 @@
                                          scale_color_manual(values = c("#616161", "#E4511E", "#FDD835", "#43A047", "#0288D1")) + 
                                          labs(color = "Developmental Stage") +
                                          ggtitle("A")
-  Osmia_dev_PCoA_bact  
+  Osmia_dev_PCoA_bact
 
 ## Rarefaction ----
   
@@ -480,6 +480,9 @@
   y3$Family <- as.factor(y3$Family)
   head(y3)
   
+# Save relative abundance data
+  write.csv(y3, "Osmia_dev_Fam_bact_relabund.csv")
+  
 # Order samples on x-axis
   y3$sample_type <- factor(y3$sample_type, levels = c("initial provision", "final provision", "larva", "pre-wintering adult", "dead"))
   
@@ -532,6 +535,9 @@
   y6$Genus[y6$Abundance < 0.01] <- "Genera < 1% abund."
   y6$Genus <- as.factor(y6$Genus)
   head(y6)
+  
+# Save relative abundance data
+  write.csv(y6, "Osmia_dev_Gen_bact_relabund.csv")
 
 # Order samples on x-axis
   y6$sample_type <- factor(y6$sample_type, levels = c("initial provision", "final provision", "larva", "pre-wintering adult", "dead"))
