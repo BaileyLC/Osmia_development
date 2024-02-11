@@ -52,9 +52,6 @@
 # Display total number of reads and means per sample in phyloseq obj before processing
   sum(sample_sums(ps1))
   mean(sample_sums(ps1))
-  
-# How many taxa were identified before processing
-  nrow(tax_table(ps1))
 
 ## Inspect & remove contaminants ----
 # Resource: https://benjjneb.github.io/decontam/vignettes/decontam_intro.html
@@ -151,9 +148,6 @@
 # Display total number of reads and means per sample in phyloseq obj after processing
   sum(sample_sums(ps3))
   mean(sample_sums(ps3))
-  
-# How many taxa were identified after processing
-  nrow(tax_table(ps3))
   
 # Save sample metadata
   meta <- sample_data(ps3)
