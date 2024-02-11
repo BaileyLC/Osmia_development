@@ -582,13 +582,11 @@
                                     ggtitle("A")
   Osmia_dev_gen_relabund_bact
   
-## Differential abundance ----
-# Resource: https://joey711.github.io/phyloseq-extensions/DESeq2.html
-  
-# When run again, change ps2 to rareps!   
-  
+## Differential abundance without rarefaction ----
+# Resource: https://joey711.github.io/phyloseq-extensions/DESeq2.html  
+
 # Convert from a phyloseq to a deseq obj
-  desq_obj <- phyloseq::phyloseq_to_deseq2(rareps_bact, ~ sample_type)
+  desq_obj <- phyloseq::phyloseq_to_deseq2(ps3, ~ sample_type)
   
 # Calculate the geometric mean and remove rows with NA
   gm_mean <- function(x, na.rm = TRUE) {
@@ -597,14 +595,14 @@
   
 # Add a count of 1 to all geometric means
   geoMeans <- apply(counts(desq_obj), 1, gm_mean)
-  
+
 # Estimate size factors
   desq_dds <- DESeq2::estimateSizeFactors(desq_obj, geoMeans = geoMeans)
   
-# Fit a local regression
+  # Fit a local regression
   desq_dds <- DESeq2::DESeq(desq_dds, fitType = "local")
   
-# Set significance factor  
+  # Set significance factor  
   alpha <- 0.05
   
 # Initial vs final provisions
@@ -650,7 +648,7 @@
   init_pre_p05
   
 # Initial provisions vs dead adults
-
+  
 # Extract results from differential abundance table for initial provisions vs dead adults
   init_dead <- DESeq2::results(desq_dds, contrast = c("sample_type", "initial provision", "dead"))
   
@@ -732,4 +730,153 @@
   
 # Check to see if any padj is below alpha
   larva_dead_p05
+  
+## Differential abundance with rarefied data ----
+# Resource: https://joey711.github.io/phyloseq-extensions/DESeq2.html
+  
+# Convert from a phyloseq to a deseq obj
+  desq_obj_rare <- phyloseq::phyloseq_to_deseq2(rareps_bact, ~ sample_type)
+  
+# Calculate the geometric mean and remove rows with NA
+  gm_mean <- function(x, na.rm = TRUE) {
+    exp(sum(log(x[x > 0]), na.rm = na.rm) / length(x))
+  }
+  
+# Add a count of 1 to all geometric means
+  geoMeans <- apply(counts(desq_obj_rare), 1, gm_mean)
+  
+# Estimate size factors
+  desq_dds_rare <- DESeq2::estimateSizeFactors(desq_obj_rare, geoMeans = geoMeans)
+  
+# Fit a local regression
+  desq_dds_rare <- DESeq2::DESeq(desq_dds_rare, fitType = "local")
+  
+# Set significance factor  
+  alpha <- 0.05
+  
+# Initial vs final provisions
+  
+# Extract results from differential abundance table for initial vs final provisions
+  init_final_rare <- DESeq2::results(desq_dds_rare, contrast = c("sample_type", "initial provision", "final provision"))
+  
+# Order differential abundances by their padj value
+  init_final_rare <- init_final_rare[order(init_final_rare$padj, na.last = NA), ]
+  
+# Filter data to only include padj < alpha and remove NAs
+  init_final_rare_p05 <- init_final_rare[(init_final_rare$padj < alpha & !is.na(init_final_rare$padj)), ]
+  
+# Check to see if any padj is below alpha
+  init_final_rare_p05
+  
+# Initial provisions vs larvae
+  
+# Extract results from differential abundance table for initial provisions vs larvae
+  init_larva_rare <- DESeq2::results(desq_dds_rare, contrast = c("sample_type", "initial provision", "larva"))
+  
+# Order differential abundances by their padj value
+  init_larva_rare <- init_larva_rare[order(init_larva_rare$padj, na.last = NA), ]
+  
+# Filter data to only include padj < alpha and remove NAs
+  init_larva_rare_p05 <- init_larva_rare[(init_larva_rare$padj < alpha & !is.na(init_larva_rare$padj)), ]
+  
+# Check to see if any padj is below alpha
+  init_larva_rare_p05
+  
+# Initial provisions vs pre-wintering adults
+  
+# Extract results from differential abundance table for initial provisions vs pre-wintering adults
+  init_pre_rare <- DESeq2::results(desq_dds_rare, contrast = c("sample_type", "initial provision", "pre.wintering.adult"))
+  
+# Order differential abundances by their padj value
+  init_pre_rare <- init_pre_rare[order(init_pre_rare$padj, na.last = NA), ]
+  
+# Filter data to only include padj < alpha and remove NAs
+  init_pre_rare_p05 <- init_pre_rare[(init_pre_rare$padj < alpha & !is.na(init_pre_rare$padj)), ]
+  
+# Check to see if any padj is below alpha
+  init_pre_rare_p05
+  
+# Initial provisions vs dead adults
+
+# Extract results from differential abundance table for initial provisions vs dead adults
+  init_dead_rare <- DESeq2::results(desq_dds_rare, contrast = c("sample_type", "initial provision", "dead"))
+  
+# Order differential abundances by their padj value
+  init_dead_rare <- init_dead_rare[order(init_dead_rare$padj, na.last = NA), ]
+  
+# Filter data to only include padj < alpha and remove NAs
+  init_dead_rare_p05 <- init_dead_rare[(init_dead_rare$padj < alpha & !is.na(init_dead_rare$padj)), ]
+  
+# Check to see if any padj is below alpha
+  init_dead_rare_p05
+  
+# Final provisions vs larvae
+  
+# Extract results from differential abundance table for final provisions vs larvae
+  final_larva_rare <- DESeq2::results(desq_dds_rare, contrast = c("sample_type", "final provision", "larva"))
+  
+# Order differential abundances by their padj value
+  final_larva_rare <- final_larva_rare[order(final_larva_rare$padj, na.last = NA), ]
+  
+# Filter data to only include padj < alpha and remove NAs
+  final_larva_rare_p05 <- final_larva_rare[(final_larva_rare$padj < alpha & !is.na(final_larva_rare$padj)), ]
+  
+# Check to see if any padj is below alpha
+  final_larva_rare_p05
+  
+# Final provisions vs pre-wintering adults
+  
+# Extract results from differential abundance table for final provisions vs pre-wintering adults
+  final_pre_rare <- DESeq2::results(desq_dds_rare, contrast = c("sample_type", "final provision", "pre.wintering.adult"))
+  
+# Order differential abundances by their padj value
+  final_pre_rare <- final_pre_rare[order(final_pre_rare$padj, na.last = NA), ]
+  
+# Filter data to only include padj < alpha and remove NAs
+  final_pre_rare_p05 <- final_pre_rare[(final_pre_rare$padj < alpha & !is.na(final_pre_rare$padj)), ]
+  
+# Check to see if any padj is below alpha
+  final_pre_rare_p05
+  
+# Final provisions vs dead adults
+  
+# Extract results from differential abundance table for final provisions vs dead adults
+  final_dead_rare <- DESeq2::results(desq_dds_rare, contrast = c("sample_type", "final provision", "dead"))
+  
+# Order differential abundances by their padj value
+  final_dead_rare <- final_dead_rare[order(final_dead_rare$padj, na.last = NA), ]
+  
+# Filter data to only include padj < alpha and remove NAs
+  final_dead_rare_p05 <- final_dead_rare[(final_dead_rare$padj < alpha & !is.na(final_dead_rare$padj)), ]
+  
+# Check to see if any padj is below alpha
+  final_dead_rare_p05
+  
+# Larvae vs pre-wintering adults
+  
+# Extract results from differential abundance table for larvae vs pre-wintering adults
+  larva_pre_rare <- DESeq2::results(desq_dds_rare, contrast = c("sample_type", "larva", "pre.wintering.adult"))
+  
+# Order differential abundances by their padj value
+  larva_pre_rare <- larva_pre_rare[order(larva_pre_rare$padj, na.last = NA), ]
+  
+# Filter data to only include padj < alpha and remove NAs
+  larva_pre_rare_p05 <- larva_pre_rare[(larva_pre_rare$padj < alpha & !is.na(larva_pre_rare$padj)), ]
+  
+# Check to see if any padj is below alpha
+  larva_pre_rare_p05
+  
+# Larvae vs dead adults
+  
+# Extract results from differential abundance table for larvae vs dead adults
+  larva_dead_rare <- DESeq2::results(desq_dds_rare, contrast = c("sample_type", "larva", "dead"))
+  
+# Order differential abundances by their padj value
+  larva_dead_rare <- larva_dead_rare[order(larva_dead_rare$padj, na.last = NA), ]
+  
+# Filter data to only include padj < alpha and remove NAs
+  larva_dead_rare_p05 <- larva_dead_rare[(larva_dead_rare$padj < alpha & !is.na(larva_dead_rare$padj)), ]
+  
+# Check to see if any padj is below alpha
+  larva_dead_rare_p05
   
