@@ -126,14 +126,8 @@
   sum(sample_sums(ps2))
   mean(sample_sums(ps2))
   
-# How many taxa were identified after processing
-  nrow(tax_table(ps2))
-  
 # Save sample metadata
-  meta <- sample_data(ps2)  
-  
-# How many total samples?
-  nrow(meta)
+  meta <- sample_data(ps2)
   
 # How many samples for each developmental stage?  
   meta %>%
