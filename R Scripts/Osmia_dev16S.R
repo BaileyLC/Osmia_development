@@ -20,6 +20,7 @@
   library(unikn) # Version 0.9.0
   library(RVAideMemoire) # Version 0.9-83-7
   library(DESeq2) # Version 1.40.2
+  library(tidyverse) # Version 1.2.0
 
 # Import data
   seqtab.nochim <- readRDS("Osmia_dev_seqs16S.rds")
@@ -576,11 +577,11 @@
                                     ggtitle("A")
   Osmia_dev_gen_relabund_bact
   
-## Differential abundance with relative abundance data ----
+## Differential abundance with raw data ----
 # Resource: https://joey711.github.io/phyloseq-extensions/DESeq2.html  
 
 # Convert from a phyloseq to a deseq obj
-  desq_obj <- phyloseq::phyloseq_to_deseq2(ps.prop_bact, ~ sample_type)
+  desq_obj <- phyloseq::phyloseq_to_deseq2(ps3, ~ sample_type)
   
 # Calculate the geometric mean and remove rows with NA
   gm_mean <- function(x, na.rm = TRUE) {
