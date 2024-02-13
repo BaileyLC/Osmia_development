@@ -436,7 +436,7 @@
   Okabe_Ito <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#000000")
 
 # Stretch palette (define more intermediate color options)
-  okabe_ext <- unikn::usecol(Okabe_Ito, n = 76)
+  okabe_ext <- unikn::usecol(Okabe_Ito, n = 78)
   colors <- sample(okabe_ext)
 
 # Remove patterns in tax_table
