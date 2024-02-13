@@ -361,6 +361,14 @@
 # Convert to data frame
   samplefung_rare <- data.frame(sample_data(fung_rareps))
   
+# Perform the PERMANOVA to test effects of developmental stage on fungal community composition
+  fung_perm_rare <- vegan::adonis2(fung_bray_rare ~ sample_type, data = samplefung_rare)
+  fung_perm_rare
+  
+# Follow up with pairwise comparisons - which sample types differ?
+  fungi_perm_BH_rare <- RVAideMemoire::pairwise.perm.manova(fung_bray_rare, samplefung_rare$sample_type, p.method = "BH")
+  fungi_perm_BH_rare  
+  
 # Set permutations to deal with pseudoreplication of bee nests
   perm_rare <- how(within = Within(type = "free"),
                    plots = Plots(type = "none"),
@@ -369,12 +377,8 @@
                    complete = FALSE)
   
 # Perform the PERMANOVA to test effects of developmental stage on fungal community composition
-  fung_perm_rare <- vegan::adonis2(fung_bray_rare ~ sample_type, permutations = perm_rare, data = samplefung_rare)
-  fung_perm_rare
-  
-# Follow up with pairwise comparisons - which sample types differ?
-  #fungi_perm_BH_rare <- RVAideMemoire::pairwise.perm.manova(fung_bray_rare, samplefung_rare$sample_type, p.method = "BH")
-  #fungi_perm_BH_rare
+  fung_perm_rare_pseudo <- vegan::adonis2(fung_bray_rare ~ sample_type, permutations = perm_rare, data = samplefung_rare)
+  fung_perm_rare_pseudo
 
 ## Test for homogeneity of multivariate dispersion with rarefied data ----
   
