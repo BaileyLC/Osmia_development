@@ -20,6 +20,7 @@
   library(unikn) # Version 0.9.0
   library(RVAideMemoire) # Version 0.9-83-7
   library(DESeq2) # Version 1.40.2
+  library(tidyverse) # Version 1.2.0
 
 # Import data
   seqtab.nochim <- readRDS("Osmia_dev_seqsITS.rds")
@@ -235,11 +236,11 @@
 ## Beta diversity with relative abundance data ----  
   
 # Calculate the relative abundance of each otu
-  ps.prop <- phyloseq::transform_sample_counts(ps2, function(otu) otu/sum(otu))
-  ps.prop
+  ps.prop_fung <- phyloseq::transform_sample_counts(ps2, function(otu) otu/sum(otu))
+  ps.prop_fung
   
 # Create a distance matrix using Bray Curtis dissimilarity
-  fung_bray <- phyloseq::distance(ps.prop, method = "bray")
+  fung_bray <- phyloseq::distance(ps.prop_fung, method = "bray")
   
 # Convert to data frame
   samplefung <- data.frame(sample_data(ps2))
@@ -300,10 +301,10 @@
 ## Ordination with relative abundance data ----
   
 # PCoA using Bray-Curtis distance
-  ord.pcoa.bray <- phyloseq::ordinate(ps.prop, method = "PCoA", distance = "bray")
+  ord.pcoa.bray <- phyloseq::ordinate(ps.prop_fung, method = "PCoA", distance = "bray")
   
 # Plot ordination
-  Osmia_dev_PCoA_fungi <- plot_ordination(ps.prop, ord.pcoa.bray, color = "sample_type") + 
+  Osmia_dev_PCoA_fungi <- plot_ordination(ps.prop_fung, ord.pcoa.bray, color = "sample_type") + 
                             theme_bw() +
                             theme(text = element_text(size = 16)) +
                             theme(legend.justification = "left", 
@@ -523,14 +524,14 @@
                                     ggtitle("B")
   Osmia_dev_gen_relabund_fungi
 
-## Differential abundance with relative abundance data ----
+## Differential abundance with raw data ----
 # Resource: https://joey711.github.io/phyloseq-extensions/DESeq2.html  
-  
+
 # Remove patterns in tax_table   
-  tax_table(ps.prop)[, colnames(tax_table(ps.prop))] <- gsub(tax_table(ps.prop)[, colnames(tax_table(ps.prop))], pattern = "[a-z]__", replacement = "")
+  tax_table(ps2)[, colnames(tax_table(ps2))] <- gsub(tax_table(ps2)[, colnames(tax_table(ps2))], pattern = "[a-z]__", replacement = "")
   
 # Convert from a phyloseq to a deseq obj
-  desq_obj <- phyloseq::phyloseq_to_deseq2(ps.prop, ~ sample_type)
+  desq_obj <- phyloseq::phyloseq_to_deseq2(ps2, ~ sample_type)
   
 # Calculate the geometric mean and remove rows with NA
   gm_mean <- function(x, na.rm = TRUE) {
