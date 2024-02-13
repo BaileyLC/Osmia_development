@@ -1,4 +1,4 @@
-##### Project: Osmia developmental microbiome
+##### Project: Osmia Developmental Microbiome
 
 #### Owners: Bailey Crowley & Robert N. Schaeffer
 
@@ -253,6 +253,17 @@
   fungi_perm_BH <- RVAideMemoire::pairwise.perm.manova(fung_bray, samplefung$sample_type, p.method = "BH")
   fungi_perm_BH
   
+# Set permutations to deal with pseudoreplication of bee nests
+  perm_relabund <- how(within = Within(type = "free"),
+                       plots = Plots(type = "none"),
+                       blocks = samplefung$nesting_tube,
+                       observed = FALSE,
+                       complete = FALSE)
+  
+# Perform the PERMANOVA to test effects of developmental stage on fungal community composition, dealing with pseudoreplication
+  fung_perm_pseudo <- vegan::adonis2(fung_bray ~ sample_type, permutations = perm_relabund, data = samplefung)
+  fung_perm_pseudo
+  
 ## Test for homogeneity of multivariate dispersion with relative abundance data ----
   
 # Calculate the average distance of group members to the group centroid
@@ -270,7 +281,7 @@
  #disp_fung_ttest
   
 # Which group dispersions differ?
-  #disp_fung_tHSD <- TukeyHSD(disp_fung)
+  #disp_fung_tHSD <- stats::TukeyHSD(disp_fung)
   #disp_fung_tHSD
   
 ## Plot distance to centroid ----
@@ -340,7 +351,7 @@
 
 # Set seed and rarefy
   set.seed(1234)
-  fung_rareps <- phyloseq::rarefy_even_depth(ps2, sample.size = 30)
+  fung_rareps <- phyloseq::rarefy_even_depth(ps2, sample.size = 35)
 
 ## Beta diversity with rarefied data ----  
   
@@ -350,13 +361,20 @@
 # Convert to data frame
   samplefung_rare <- data.frame(sample_data(fung_rareps))
   
+# Set permutations to deal with pseudoreplication of bee nests
+  perm_rare <- how(within = Within(type = "free"),
+                   plots = Plots(type = "none"),
+                   blocks = samplefung_rare$nesting_tube,
+                   observed = FALSE,
+                   complete = FALSE)
+  
 # Perform the PERMANOVA to test effects of developmental stage on fungal community composition
-  fung_perm_rare <- vegan::adonis2(fung_bray_rare ~ sample_type, data = samplefung_rare)
+  fung_perm_rare <- vegan::adonis2(fung_bray_rare ~ sample_type, permutations = perm_rare, data = samplefung_rare)
   fung_perm_rare
   
 # Follow up with pairwise comparisons - which sample types differ?
-  fungi_perm_BH_rare <- RVAideMemoire::pairwise.perm.manova(fung_bray_rare, samplefung_rare$sample_type, p.method = "BH")
-  fungi_perm_BH_rare
+  #fungi_perm_BH_rare <- RVAideMemoire::pairwise.perm.manova(fung_bray_rare, samplefung_rare$sample_type, p.method = "BH")
+  #fungi_perm_BH_rare
 
 ## Test for homogeneity of multivariate dispersion with rarefied data ----
   
@@ -375,7 +393,7 @@
   disp_fung_ttest_rare
   
 # Which group dispersions differ?
-  disp_fung_tHSD_rare <- TukeyHSD(disp_fung_rare)
+  disp_fung_tHSD_rare <- stats::TukeyHSD(disp_fung_rare)
   disp_fung_tHSD_rare
 
 ## Ordination with rarefied data ----
@@ -410,7 +428,7 @@
   okabe_ext <- unikn::usecol(Okabe_Ito, n = 76)
   colors <- sample(okabe_ext)
 
-# Remove patterns in tax_table   
+# Remove patterns in tax_table
   tax_table(fung_rareps)[, colnames(tax_table(fung_rareps))] <- gsub(tax_table(fung_rareps)[, colnames(tax_table(fung_rareps))], pattern = "[a-z]__", replacement = "")
 
 # Sort data by Family
