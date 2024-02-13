@@ -117,36 +117,43 @@
   ps_sub <- phyloseq::subset_samples(ps.noncontam, sample_or_control != "control")
   ps_sub
 
+# Remove DNA from Pseudogymnoascus, the causative agent of white-nose syndrome in bats
+  ps2 <- ps_sub %>%
+    phyloseq::subset_taxa(Genus != "g__Pseudogymnoascus")
+  
 # Remove samples without any reads  
-  ps2 <- phyloseq::prune_samples(sample_sums(ps_sub) != 0, ps_sub)
+  ps3 <- phyloseq::prune_samples(sample_sums(ps2) != 0, ps2)
 
 # Display total number of reads and means per sample in phyloseq obj after processing
-  sum(sample_sums(ps2))
-  mean(sample_sums(ps2))
+  sum(sample_sums(ps3))
+  mean(sample_sums(ps3))
   
 # Save sample metadata
-  meta <- sample_data(ps2)
+  meta <- sample_data(ps3)
   
 # How many samples for each developmental stage?  
   meta %>%
     group_by(sample_type) %>%
     summarise(N = n())
   
+# Remove patterns in tax_table   
+  tax_table(ps3)[, colnames(tax_table(ps3))] <- gsub(tax_table(ps3)[, colnames(tax_table(ps3))], pattern = "[a-z]__", replacement = "")
+  
 # Save taxonomic and ASV counts
-  write.csv(tax_table(ps2), "Osmia_dev_ITStaxa.csv")
-  write.csv(otu_table(ps2), "Osmia_dev_ITSotu.csv")
+  write.csv(tax_table(ps3), "Osmia_dev_ITStaxa.csv")
+  write.csv(otu_table(ps3), "Osmia_dev_ITSotu.csv")
   
 # Add Seq to each taxa name
-  taxa_names(ps2) <- paste0("Seq", seq(ntaxa(ps2)))
+  taxa_names(ps3) <- paste0("Seq", seq(ntaxa(ps3)))
 
 # Create a df containing the number of reads per OTU
-  readsumsdf <- data.frame(nreads = sort(taxa_sums(ps2), TRUE), 
-                           sorted = 1:ntaxa(ps2),
+  readsumsdf <- data.frame(nreads = sort(taxa_sums(ps3), TRUE), 
+                           sorted = 1:ntaxa(ps3),
                            type = "OTUs")
 
 # Add a column containing the number of reads per sample
-  readsumsdf <- rbind(readsumsdf, data.frame(nreads = sort(sample_sums(ps2), TRUE), 
-                                             sorted = 1:nsamples(ps2), 
+  readsumsdf <- rbind(readsumsdf, data.frame(nreads = sort(sample_sums(ps3), TRUE), 
+                                             sorted = 1:nsamples(ps3), 
                                              type = "Samples"))
 
 # Plot number of reads per OTU & sample
@@ -159,15 +166,15 @@
 ## Alpha diversity ----
 
 # Calculate species richness
-  fungrich <- phyloseq::estimate_richness(ps2, split = TRUE, measures = c("Shannon", "Simpson", "Observed"))
+  fungrich <- phyloseq::estimate_richness(ps3, split = TRUE, measures = c("Shannon", "Simpson", "Observed"))
 
 # Build df with metadata
-  fungrich$sample_type <- sample_data(ps2)$sample_type
-  fungrich$sampleID <- sample_data(ps2)$sampleID
-  fungrich$nesting_tube <- sample_data(ps2)$nesting_tube
+  fungrich$sample_type <- sample_data(ps3)$sample_type
+  fungrich$sampleID <- sample_data(ps3)$sampleID
+  fungrich$nesting_tube <- sample_data(ps3)$nesting_tube
 
 # Plot species richness  
-  phyloseq::plot_richness(ps2, x = "sample_type", measures = c("Shannon", "Simpson", "Observed"), color = "nesting_tube") + 
+  phyloseq::plot_richness(ps3, x = "sample_type", measures = c("Shannon", "Simpson", "Observed"), color = "nesting_tube") + 
               theme_bw()
 
 # Remove samples with 0 species richness 
@@ -236,22 +243,22 @@
 ## Beta diversity with relative abundance data ----  
   
 # Calculate the relative abundance of each otu
-  ps.prop_fung <- phyloseq::transform_sample_counts(ps2, function(otu) otu/sum(otu))
+  ps.prop_fung <- phyloseq::transform_sample_counts(ps3, function(otu) otu/sum(otu))
   ps.prop_fung
   
 # Create a distance matrix using Bray Curtis dissimilarity
   fung_bray <- phyloseq::distance(ps.prop_fung, method = "bray")
   
 # Convert to data frame
-  samplefung <- data.frame(sample_data(ps2))
+  samplefung <- data.frame(sample_data(ps3))
   
 # Perform the PERMANOVA to test effects of developmental stage on fungal community composition
   fung_perm <- vegan::adonis2(fung_bray ~ sample_type, data = samplefung)
   fung_perm
   
 # Follow up with pairwise comparisons - which sample types differ?
-  fungi_perm_BH <- RVAideMemoire::pairwise.perm.manova(fung_bray, samplefung$sample_type, p.method = "BH")
-  fungi_perm_BH
+  #fungi_perm_BH <- RVAideMemoire::pairwise.perm.manova(fung_bray, samplefung$sample_type, p.method = "BH")
+  #fungi_perm_BH
   
 # Set permutations to deal with pseudoreplication of bee nests
   perm_relabund <- how(within = Within(type = "free"),
@@ -331,7 +338,7 @@
 ## Rarefaction ----
 
 # Produce rarefaction curves
-  tab <- otu_table(ps2)
+  tab <- otu_table(ps3)
   class(tab) <- "matrix"
   tab <- t(tab)
   
@@ -351,7 +358,7 @@
 
 # Set seed and rarefy
   set.seed(1234)
-  fung_rareps <- phyloseq::rarefy_even_depth(ps2, sample.size = 35)
+  fung_rareps <- phyloseq::rarefy_even_depth(ps3, sample.size = 30)
 
 ## Beta diversity with rarefied data ----  
   
@@ -550,10 +557,10 @@
 # Resource: https://joey711.github.io/phyloseq-extensions/DESeq2.html  
 
 # Remove patterns in tax_table   
-  tax_table(ps2)[, colnames(tax_table(ps2))] <- gsub(tax_table(ps2)[, colnames(tax_table(ps2))], pattern = "[a-z]__", replacement = "")
+  tax_table(ps3)[, colnames(tax_table(ps3))] <- gsub(tax_table(ps3)[, colnames(tax_table(ps3))], pattern = "[a-z]__", replacement = "")
   
 # Convert from a phyloseq to a deseq obj
-  desq_obj <- phyloseq::phyloseq_to_deseq2(ps2, ~ sample_type)
+  desq_obj <- phyloseq::phyloseq_to_deseq2(ps3, ~ sample_type)
   
 # Calculate the geometric mean and remove rows with NA
   gm_mean <- function(x, na.rm = TRUE) {
@@ -588,7 +595,7 @@
   
 # Combine filtered differential abundance data with taxonomic names from phyloseq obj
   init_final_p05 <- cbind(as(init_final_p05, "data.frame"),
-                          as(tax_table(ps2)[rownames(init_final_p05), ], "matrix"))
+                          as(tax_table(ps3)[rownames(init_final_p05), ], "matrix"))
   
 # Plot
   ggplot(init_final_p05, aes(y = Genus, x = log2FoldChange, color = Phylum)) +
@@ -642,7 +649,7 @@
   
 # Combine filtered differential abundance data with taxonomic names from phyloseq obj
   init_dead_p05 <- cbind(as(init_dead_p05, "data.frame"),
-                         as(tax_table(ps2)[rownames(init_dead_p05), ], "matrix"))
+                         as(tax_table(ps3)[rownames(init_dead_p05), ], "matrix"))
   
 # Plot
   ggplot(init_dead_p05, aes(y = Genus, x = log2FoldChange, color = Phylum)) +
@@ -668,7 +675,7 @@
   
 # Combine filtered differential abundance data with taxonomic names from phyloseq obj
   final_larva_p05 <- cbind(as(final_larva_p05, "data.frame"),
-                           as(tax_table(ps2)[rownames(final_larva_p05), ], "matrix"))
+                           as(tax_table(ps3)[rownames(final_larva_p05), ], "matrix"))
   
 # Plot
   ggplot(final_larva_p05, aes(y = Genus, x = log2FoldChange, color = Phylum)) +
@@ -694,7 +701,7 @@
   
 # Combine filtered differential abundance data with taxonomic names from phyloseq obj
   final_pre_p05 <- cbind(as(final_pre_p05, "data.frame"),
-                         as(tax_table(ps2)[rownames(final_pre_p05), ], "matrix"))
+                         as(tax_table(ps3)[rownames(final_pre_p05), ], "matrix"))
   
 # Plot
   ggplot(final_pre_p05, aes(y = Genus, x = log2FoldChange, color = Phylum)) +
@@ -748,7 +755,7 @@
   
 # Combine filtered differential abundance data with taxonomic names from phyloseq obj
   larva_dead_p05 <- cbind(as(larva_dead_p05, "data.frame"),
-                         as(tax_table(ps2)[rownames(larva_dead_p05), ], "matrix"))
+                         as(tax_table(ps3)[rownames(larva_dead_p05), ], "matrix"))
   
   # Plot
   ggplot(larva_dead_p05, aes(y = Genus, x = log2FoldChange, color = Phylum)) +
@@ -774,7 +781,7 @@
   
 # Combine filtered differential abundance data with taxonomic names from phyloseq obj
   pre_emerg_p05 <- cbind(as(pre_emerg_p05, "data.frame"),
-                          as(tax_table(ps2)[rownames(pre_emerg_p05), ], "matrix"))
+                          as(tax_table(ps3)[rownames(pre_emerg_p05), ], "matrix"))
   
 # Plot
   ggplot(pre_emerg_p05, aes(y = Genus, x = log2FoldChange, color = Phylum)) +
@@ -828,7 +835,7 @@
   
 # Combine filtered differential abundance data with taxonomic names from phyloseq obj
   emerg_init_p05 <- cbind(as(emerg_init_p05, "data.frame"),
-                         as(tax_table(ps2)[rownames(emerg_init_p05), ], "matrix"))
+                         as(tax_table(ps3)[rownames(emerg_init_p05), ], "matrix"))
   
 # Plot
   ggplot(emerg_init_p05, aes(y = Genus, x = log2FoldChange, color = Phylum)) +
@@ -854,7 +861,7 @@
   
 # Combine filtered differential abundance data with taxonomic names from phyloseq obj
   emerg_larva_p05 <- cbind(as(emerg_larva_p05, "data.frame"),
-                          as(tax_table(ps2)[rownames(emerg_larva_p05), ], "matrix"))
+                          as(tax_table(ps3)[rownames(emerg_larva_p05), ], "matrix"))
   
 # Plot
   ggplot(emerg_larva_p05, aes(y = Genus, x = log2FoldChange, color = Phylum)) +
