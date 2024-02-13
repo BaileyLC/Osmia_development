@@ -68,7 +68,7 @@
 
 # Determine which ASVs are contaminants based on prevalence (presence/absence) in negative controls
   sample_data(ps1)$is.neg <- sample_data(ps1)$sample_or_control == "control"
-  contamdf.prev <- decontam::isContaminant(ps1, method = "prevalence", neg = "is.neg")
+  contamdf.prev <- decontam::isContaminant(ps1, method = "prevalence", neg = "is.neg", threshold = 0.1)
 
 # How many contaminants are there?
   table(contamdf.prev$contaminant)
@@ -232,10 +232,14 @@
                                 ylab("Observed richness")
   Osmia_dev_Observed_fungi
 
-## Beta diversity without rarefaction ----  
+## Beta diversity with relative abundance data ----  
+  
+# Calculate the relative abundance of each otu
+  ps.prop <- phyloseq::transform_sample_counts(ps2, function(otu) otu/sum(otu))
+  ps.prop
   
 # Create a distance matrix using Bray Curtis dissimilarity
-  fung_bray <- phyloseq::distance(ps2, method = "bray")
+  fung_bray <- phyloseq::distance(ps.prop, method = "bray")
   
 # Convert to data frame
   samplefung <- data.frame(sample_data(ps2))
@@ -248,7 +252,7 @@
   fungi_perm_BH <- RVAideMemoire::pairwise.perm.manova(fung_bray, samplefung$sample_type, p.method = "BH")
   fungi_perm_BH
   
-## Test for homogeneity of multivariate dispersion without rarefaction ----
+## Test for homogeneity of multivariate dispersion with relative abundance data ----
   
 # Calculate the average distance of group members to the group centroid
   disp_fung <- vegan::betadisper(fung_bray, samplefung$sample_type)
@@ -259,14 +263,14 @@
   disp_fung_an
   
 # Which group dispersions differ?
-  disp_fung_ttest <- vegan::permutest(disp_fung, 
-                                      control = permControl(nperm = 999),
-                                      pairwise = TRUE)
-  disp_fung_ttest
+  #disp_fung_ttest <- vegan::permutest(disp_fung, 
+                                      #control = permControl(nperm = 999),
+                                      #pairwise = TRUE)
+ #disp_fung_ttest
   
 # Which group dispersions differ?
-  disp_fung_tHSD <- TukeyHSD(disp_fung)
-  disp_fung_tHSD
+  #disp_fung_tHSD <- TukeyHSD(disp_fung)
+  #disp_fung_tHSD
   
 ## Plot distance to centroid ----
   
@@ -293,11 +297,7 @@
   #xlab("Sample type") +
   #ylab("Distance to centroid")
   
-## Ordination without rarefaction ----
-  
-# Calculate the relative abundance of each otu
-  ps.prop <- phyloseq::transform_sample_counts(ps2, function(otu) otu/sum(otu))
-  ps.prop
+## Ordination with relative abundance data ----
   
 # PCoA using Bray-Curtis distance
   ord.pcoa.bray <- phyloseq::ordinate(ps.prop, method = "PCoA", distance = "bray")
@@ -523,14 +523,14 @@
                                     ggtitle("B")
   Osmia_dev_gen_relabund_fungi
 
-## Differential abundance without rarefaction ----
+## Differential abundance with relative abundance data ----
 # Resource: https://joey711.github.io/phyloseq-extensions/DESeq2.html  
   
 # Remove patterns in tax_table   
-  tax_table(ps2)[, colnames(tax_table(ps2))] <- gsub(tax_table(ps2)[, colnames(tax_table(ps2))], pattern = "[a-z]__", replacement = "")
+  tax_table(ps.prop)[, colnames(tax_table(ps.prop))] <- gsub(tax_table(ps.prop)[, colnames(tax_table(ps.prop))], pattern = "[a-z]__", replacement = "")
   
 # Convert from a phyloseq to a deseq obj
-  desq_obj <- phyloseq::phyloseq_to_deseq2(ps2, ~ sample_type)
+  desq_obj <- phyloseq::phyloseq_to_deseq2(ps.prop, ~ sample_type)
   
 # Calculate the geometric mean and remove rows with NA
   gm_mean <- function(x, na.rm = TRUE) {
@@ -767,7 +767,7 @@
   pre_dead <- DESeq2::results(desq_dds, contrast = c("sample_type", "pre.wintering.adult", "dead"))
   
 # Order differential abundances by their padj value
-  pre_dead<- pre_dead[order(pre_dead$padj, na.last = NA), ]
+  pre_dead <- pre_dead[order(pre_dead$padj, na.last = NA), ]
   
 # Filter data to only include padj < alpha and remove NAs
   pre_dead_p05 <- pre_dead[(pre_dead$padj < alpha & !is.na(pre_dead$padj)), ]
