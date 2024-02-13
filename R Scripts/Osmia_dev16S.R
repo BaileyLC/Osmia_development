@@ -139,9 +139,6 @@
   ps2 <- ps2 %>%
     phyloseq::subset_taxa(Phylum != "Cyanobacteria/Chloroplast")
 
-# What remains in the phyloseq object?
-  ps2
-
 # Remove samples without any reads  
   ps3 <- phyloseq::prune_samples(sample_sums(ps2) != 0, ps2)
   ps3
