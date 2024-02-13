@@ -1,4 +1,4 @@
-##### Project: Osmia developmental microbiome
+##### Project: Osmia Developmental Microbiome
 
 #### Owners: Bailey Crowley & Robert N. Schaeffer
 
@@ -266,7 +266,7 @@
 ## Beta diversity with relative abundance data ----
   
 # Calculate the relative abundance of each otu  
-  ps.prop_bact <- phyloseq::transform_sample_counts(ps3, function(otu) otu/sum(otu)) 
+  ps.prop_bact <- phyloseq::transform_sample_counts(ps3, function(otu) otu/sum(otu))
   
 # Create a distance matrix using Bray Curtis dissimilarity
   bact_bray <- phyloseq::distance(ps.prop_bact, method = "bray")
@@ -275,12 +275,23 @@
   samplebact <- data.frame(sample_data(ps3))
   
 # Perform the PERMANOVA to test effects of developmental stage on bacterial community composition
-  bact_perm <- vegan::adonis2(bact_bray ~ sample_type, data = samplebact)
-  bact_perm
+  bact_perm_relabund <- vegan::adonis2(bact_bray ~ sample_type, data = samplebact)
+  bact_perm_relabund
   
 # Follow up with pairwise comparisons - which sample types differ?
   bact_perm_BH <- RVAideMemoire::pairwise.perm.manova(bact_bray, samplebact$sample_type, p.method = "BH")
   bact_perm_BH
+  
+# Set permutations to deal with pseudoreplication of bee nests
+  perm_relabund <- how(within = Within(type = "free"),
+                       plots = Plots(type = "none"),
+                       blocks = samplebact$nesting_tube,
+                       observed = FALSE,
+                       complete = FALSE)
+  
+# Perform the PERMANOVA to test effects of developmental stage on bacterial community composition, dealing with pseudoreplication
+  bact_perm_relabund_pseudo <- vegan::adonis2(bact_bray ~ sample_type, permutations = perm_relabund, data = samplebact)
+  bact_perm_relabund_pseudo
   
 ## Test for homogeneity of multivariate dispersion with relative abundance data ----
   
@@ -299,7 +310,7 @@
   disp_bact_ttest
   
 # Which group dispersions differ?
-  disp_bact_tHSD <- TukeyHSD(disp_bact)
+  disp_bact_tHSD <- stats::TukeyHSD(disp_bact)
   disp_bact_tHSD
   
 ## Plot distance to centroid ----
@@ -371,7 +382,7 @@
 
 # Set seed and rarefy  
   set.seed(1234)
-  rareps_bact <- phyloseq::rarefy_even_depth(ps3, sample.size = 20)
+  rareps_bact <- phyloseq::rarefy_even_depth(ps3, sample.size = 15)
 
 ## Beta diversity with rarefied data ----  
   
@@ -388,6 +399,17 @@
 # Follow up with pairwise comparisons - which sample types differ?
   bact_perm_BH_rare <- RVAideMemoire::pairwise.perm.manova(bact_bray_rare, samplebact_rare$sample_type, p.method = "BH")
   bact_perm_BH_rare
+  
+# Set permutations to deal with pseudoreplication of bee nests
+  perm_rare <- how(within = Within(type = "free"),
+                   plots = Plots(type = "none"),
+                   blocks = samplebact_rare$nesting_tube,
+                   observed = FALSE,
+                   complete = FALSE)
+  
+# Perform the PERMANOVA to test effects of developmental stage on bacterial community composition, dealing with pseudoreplication
+  bact_perm_rare_pseudo <- vegan::adonis2(bact_bray_rare ~ sample_type, permutations = perm_rare, data = samplebact_rare)
+  bact_perm_rare_pseudo
   
 ## Test for homogeneity of multivariate dispersion with rarefied data ----
 
@@ -406,7 +428,7 @@
   disp_bact_ttest_rare
   
 # Which group dispersions differ?
-  disp_bact_tHSD_rare <- TukeyHSD(disp_bact_rare)
+  disp_bact_tHSD_rare <- stats::TukeyHSD(disp_bact_rare)
   disp_bact_tHSD_rare
   
 # Plot distance to centroid
