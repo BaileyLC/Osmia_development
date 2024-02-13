@@ -135,7 +135,7 @@
   ps2 <- ps2 %>%
     phyloseq::subset_taxa(Kingdom != "Archaea")
 
-# Remove DNA from cyanobacteria & chlorplasts
+# Remove DNA from cyanobacteria & chloroplasts
   ps2 <- ps2 %>%
     phyloseq::subset_taxa(Phylum != "Cyanobacteria/Chloroplast")
 
