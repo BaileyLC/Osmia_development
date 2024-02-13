@@ -68,7 +68,7 @@
 
 # Determine which ASVs are contaminants based on prevalence (presence/absence) in negative controls
   sample_data(ps1)$is.neg <- sample_data(ps1)$sample_or_control == "control"
-  contamdf.prev <- decontam::isContaminant(ps1, method = "prevalence", neg = "is.neg")
+  contamdf.prev <- decontam::isContaminant(ps1, method = "prevalence", neg = "is.neg", threshold = 0.1)
 
 # How many contaminants are there?
   table(contamdf.prev$contaminant)
@@ -262,10 +262,13 @@
                                 ylab("Observed richness")
   Osmia_dev_Observed_bact
   
-## Beta diversity without rarefaction ----
+## Beta diversity with relative abundance data ----
+  
+# Calculate the relative abundance of each otu  
+  ps.prop_bact <- phyloseq::transform_sample_counts(ps3, function(otu) otu/sum(otu)) 
   
 # Create a distance matrix using Bray Curtis dissimilarity
-  bact_bray <- phyloseq::distance(ps3, method = "bray")
+  bact_bray <- phyloseq::distance(ps.prop_bact, method = "bray")
   
 # Convert to data frame
   samplebact <- data.frame(sample_data(ps3))
@@ -324,9 +327,6 @@
     #ylab("Distance to centroid")
   
 ## Ordination without rarefaction ----
-  
-# Calculate the relative abundance of each otu  
-  ps.prop_bact <- phyloseq::transform_sample_counts(ps3, function(otu) otu/sum(otu))
   
 # PCoA using Bray-Curtis distance
   ord.pcoa.bray <- phyloseq::ordinate(ps.prop_bact, method = "PCoA", distance = "bray")
