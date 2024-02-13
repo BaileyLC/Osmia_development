@@ -281,7 +281,7 @@
   bact_perm_BH <- RVAideMemoire::pairwise.perm.manova(bact_bray, samplebact$sample_type, p.method = "BH")
   bact_perm_BH
   
-## Test for homogeneity of multivariate dispersion without rarefaction ----
+## Test for homogeneity of multivariate dispersion with relative abundance data ----
   
 # Calculate the average distance of group members to the group centroid
   disp_bact <- vegan::betadisper(bact_bray, samplebact$sample_type)
@@ -326,7 +326,7 @@
     #xlab("Sample type") +
     #ylab("Distance to centroid")
   
-## Ordination without rarefaction ----
+## Ordination with relative abundance data ----
   
 # PCoA using Bray-Curtis distance
   ord.pcoa.bray <- phyloseq::ordinate(ps.prop_bact, method = "PCoA", distance = "bray")
@@ -576,11 +576,11 @@
                                     ggtitle("A")
   Osmia_dev_gen_relabund_bact
   
-## Differential abundance without rarefaction ----
+## Differential abundance with relative abundance data ----
 # Resource: https://joey711.github.io/phyloseq-extensions/DESeq2.html  
 
 # Convert from a phyloseq to a deseq obj
-  desq_obj <- phyloseq::phyloseq_to_deseq2(ps3, ~ sample_type)
+  desq_obj <- phyloseq::phyloseq_to_deseq2(ps.prop_bact, ~ sample_type)
   
 # Calculate the geometric mean and remove rows with NA
   gm_mean <- function(x, na.rm = TRUE) {
