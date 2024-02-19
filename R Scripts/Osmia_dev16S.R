@@ -115,10 +115,10 @@
 # Make data.frame of prevalence in positive and negative samples
   df.pres <- data.frame(prevalence.pos = taxa_sums(ps.pos.presence), 
                         prevalence.neg = taxa_sums(ps.neg.presence),
-                        contam.comb = contamdf.comb$contaminant)
+                        contam.comb05 = contamdf.comb05$contaminant)
 
 # Plot
-  ggplot(data = df.pres, aes(x = prevalence.neg, y = prevalence.pos, color = contam.comb)) + 
+  ggplot(data = df.pres, aes(x = prevalence.neg, y = prevalence.pos, color = contam.comb05)) + 
     geom_point() +
     xlab("Prevalence (Controls)") +
     ylab("Prevalence (Samples)")
