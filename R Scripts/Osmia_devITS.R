@@ -37,11 +37,13 @@
   sampleID <- samples$sampleID
   nesting_tube <- samples$nesting_tube
   sample_or_control <- samples$sample_or_control
+  DNA_conc <- samples$DNA_conc
   sampleinfo <- data.frame(extractionID = extractionID,
                            sample_type = sample_type,
                            sampleID = sampleID,
                            nesting_tube = nesting_tube,
-                           sample_or_control = sample_or_control)
+                           sample_or_control = sample_or_control,
+                           DNA_conc = DNA_conc)
   rownames(sampleinfo) <- samples.out
 
 # Format your data to work with phyloseq
@@ -67,24 +69,36 @@
   ggplot(data = df, aes(x = Index, y = LibrarySize, color = sample_type)) + 
     geom_point()
 
+# Determine which ASVs are contaminants based on frequency of DNA in negative controls
+  contamdf.freq <- decontam::isContaminant(ps1, conc = DNA_conc, method = "frequency", threshold = 0.1)
+  table(contamdf.freq$contaminant)
+  head(which(contamdf.freq$contaminant))
+  
+# Determine which ASVs are contaminants based on frequency of DNA in negative controls with a higher threshold
+  contamdf.freq05 <- decontam::isContaminant(ps1, conc = DNA_conc, method = "frequency", threshold = 0.5)
+  table(contamdf.freq05$contaminant)
+  head(which(contamdf.freq05$contaminant))
+  
 # Determine which ASVs are contaminants based on prevalence (presence/absence) in negative controls
   sample_data(ps1)$is.neg <- sample_data(ps1)$sample_or_control == "control"
   contamdf.prev <- decontam::isContaminant(ps1, method = "prevalence", neg = "is.neg", threshold = 0.1)
-
-# How many contaminants are there?
   table(contamdf.prev$contaminant)
-
-# Which ASVs are contaminants?
   head(which(contamdf.prev$contaminant))
 
 # Determine which ASVs are contaminants based on prevalence (presence/absence) higher than 0.5 in negative controls
   contamdf.prev05 <- decontam::isContaminant(ps1, method = "prevalence", neg = "is.neg", threshold = 0.5)
-
-# How many contaminants are there?
   table(contamdf.prev05$contaminant)
-
-# Which ASVs are contaminants?
   head(which(contamdf.prev05$contaminant))
+  
+# Determine which ASVs are contaminants based on prevalence (presence/absence) and frequency in negative controls
+  contamdf.comb <- decontam::isContaminant(ps1, conc = DNA_conc, neg = "is.neg", method = "combined", threshold = 0.1)
+  table(contamdf.comb$contaminant)
+  head(which(contamdf.comb$contaminant))
+  
+# Determine which ASVs are contaminants based on prevalence (presence/absence) and frequency in negative controls with a higher threshold  
+  contamdf.comb05 <- decontam::isContaminant(ps1, conc = DNA_conc, neg = "is.neg", method = "combined", threshold = 0.5)
+  table(contamdf.comb05$contaminant)
+  head(which(contamdf.comb05$contaminant))
 
 # Make phyloseq object of presence-absence in negative controls
   ps.neg <- phyloseq::prune_samples(sample_data(ps1)$sample_or_control == "control", ps1)
@@ -101,16 +115,16 @@
 # Make data.frame of prevalence in positive and negative samples
   df.pres <- data.frame(prevalence.pos = taxa_sums(ps.pos.presence), 
                         prevalence.neg = taxa_sums(ps.neg.presence),
-                        contam.prev = contamdf.prev$contaminant)
+                        contam.comb05 = contamdf.comb05$contaminant)
 
 # Plot
-  ggplot(data = df.pres, aes(x = prevalence.neg, y = prevalence.pos, color = contam.prev)) + 
+  ggplot(data = df.pres, aes(x = prevalence.neg, y = prevalence.pos, color = contam.comb05)) + 
     geom_point() +
     xlab("Prevalence (Controls)") +
     ylab("Prevalence (Samples)")
 
 # Make a new phyloseq object without contaminant taxa 
-  ps.noncontam <- phyloseq::prune_taxa(!contamdf.prev05$contaminant, ps1)
+  ps.noncontam <- phyloseq::prune_taxa(!contamdf.comb05$contaminant, ps1)
   ps.noncontam
 
 # Remove control samples used for identifying contaminants
@@ -165,12 +179,13 @@
 
 ## Alpha diversity ----
 
+# All pollen and bee samples  
+  
 # Calculate species richness
   fungrich <- phyloseq::estimate_richness(ps3, split = TRUE, measures = c("Shannon", "Simpson", "Observed"))
 
 # Build df with metadata
   fungrich$sample_type <- sample_data(ps3)$sample_type
-  fungrich$sampleID <- sample_data(ps3)$sampleID
   fungrich$nesting_tube <- sample_data(ps3)$nesting_tube
 
 # Plot species richness  
@@ -182,16 +197,16 @@
   fungrich <- fungrich[complete.cases(fungrich), ]
 
 # Examine the effects of sample_type on Shannon richness
-  mod4 <- nlme::lme(Shannon ~ sample_type, random = ~1|nesting_tube, data = fungrich)
-  anova(mod4)
+  mod7 <- nlme::lme(Shannon ~ sample_type, random = ~1|nesting_tube, data = fungrich)
+  anova(mod7)
 
 # Examine the effects of sample_type on Simpson richness
-  mod5 <- nlme::lme(Simpson ~ sample_type, random = ~1|nesting_tube, data = fungrich)
-  anova(mod5)
+  mod8 <- nlme::lme(Simpson ~ sample_type, random = ~1|nesting_tube, data = fungrich)
+  anova(mod8)
 
 # Examine the effects of sample_type on observed richness
-  mod6 <- nlme::lme(Observed ~ sample_type, random = ~1|nesting_tube, data = fungrich)
-  anova(mod6)
+  mod9 <- nlme::lme(Observed ~ sample_type, random = ~1|nesting_tube, data = fungrich)
+  anova(mod9)
 
 # Order samples on x-axis
   fungrich$sample_type <- factor(fungrich$sample_type, levels = c("initial provision", "final provision", "larva", "pre-wintering adult", "emerged", "dead"))
@@ -240,7 +255,41 @@
                                 ylab("Observed richness")
   Osmia_dev_Observed_fungi
 
+# Only bee samples
+  
+# Subset phyloseq object to only include samples from larvae, pre-wintering adults, emerged adults, and dead adults
+  ps4 <- phyloseq::subset_samples(ps3, sample_type != "initial provision")
+  ps4 <- phyloseq::subset_samples(ps4, sample_type != "final provision")
+  ps4
+
+# Build df with metadata
+  fungrich_bee <- phyloseq::estimate_richness(ps4, split = TRUE, measures = c("Shannon", "Simpson", "Observed"))
+  fungrich_bee$sample_type <- sample_data(ps4)$sample_type
+  fungrich_bee$nesting_tube <- sample_data(ps4)$nesting_tube
+  
+# Plot species richness  
+  phyloseq::plot_richness(ps3, x = "sample_type", measures = c("Shannon", "Simpson", "Observed"), color = "nesting_tube") + 
+    theme_bw()
+  
+# Remove samples with 0 species richness 
+  fungrich_bee[fungrich_bee == 0] <- NA
+  fungrich_bee <- fungrich_bee[complete.cases(fungrich_bee), ]
+  
+# Examine the effects of sample_type on Shannon richness
+  mod7 <- nlme::lme(Shannon ~ sample_type, random = ~1|nesting_tube, data = fungrich_bee)
+  anova(mod7)
+  
+  # Examine the effects of sample_type on Simpson richness
+  mod8 <- nlme::lme(Simpson ~ sample_type, random = ~1|nesting_tube, data = fungrich_bee)
+  anova(mod8)
+  
+  # Examine the effects of sample_type on observed richness
+  mod9 <- nlme::lme(Observed ~ sample_type, random = ~1|nesting_tube, data = fungrich_bee)
+  anova(mod9)
+  
 ## Beta diversity with relative abundance data ----  
+  
+# All pollen and bee samples  
   
 # Calculate the relative abundance of each otu
   ps.prop_fung <- phyloseq::transform_sample_counts(ps3, function(otu) otu/sum(otu))
@@ -271,7 +320,40 @@
   fung_perm_pseudo <- vegan::adonis2(fung_bray ~ sample_type, permutations = perm_relabund, data = samplefung)
   fung_perm_pseudo
   
+# Only bee samples
+  
+# Calculate the relative abundance of each otu
+  ps.prop_fung_bee <- phyloseq::transform_sample_counts(ps4, function(otu) otu/sum(otu))
+  ps.prop_fung_bee
+  
+# Create a distance matrix using Bray Curtis dissimilarity
+  fung_bray_bee <- phyloseq::distance(ps.prop_fung_bee, method = "bray")
+  
+# Convert to data frame
+  samplefung_bee <- data.frame(sample_data(ps4))
+  
+# Perform the PERMANOVA to test effects of developmental stage on fungal community composition
+  fung_perm_bee <- vegan::adonis2(fung_bray_bee ~ sample_type, data = samplefung_bee)
+  fung_perm_bee
+  
+# Follow up with pairwise comparisons - which sample types differ?
+  #fungi_perm_BH_bee <- RVAideMemoire::pairwise.perm.manova(fung_bray_bee, samplefung_bee$sample_type, p.method = "BH")
+  #fungi_perm_BH_bee
+  
+# Set permutations to deal with pseudoreplication of bee nests
+  perm_relabund_bee <- how(within = Within(type = "free"),
+                           plots = Plots(type = "none"),
+                           blocks = samplefung_bee$nesting_tube,
+                           observed = FALSE,
+                           complete = FALSE)
+  
+# Perform the PERMANOVA to test effects of developmental stage on fungal community composition, dealing with pseudoreplication
+  fung_perm_pseudo_bee <- vegan::adonis2(fung_bray_bee ~ sample_type, permutations = perm_relabund_bee, data = samplefung_bee)
+  fung_perm_pseudo_bee
+  
 ## Test for homogeneity of multivariate dispersion with relative abundance data ----
+  
+# All pollen and bee samples  
   
 # Calculate the average distance of group members to the group centroid
   disp_fung <- vegan::betadisper(fung_bray, samplefung$sample_type)
@@ -291,8 +373,28 @@
   #disp_fung_tHSD <- stats::TukeyHSD(disp_fung)
   #disp_fung_tHSD
   
-## Plot distance to centroid ----
+# Only bee samples
   
+# Calculate the average distance of group members to the group centroid
+  disp_fung_bee <- vegan::betadisper(fung_bray_bee, samplefung_bee$sample_type)
+  disp_fung_bee
+  
+# Do any of the group dispersions differ?
+  disp_fung_an_bee <- anova(disp_fung_bee)
+  disp_fung_an_bee
+  
+# Which group dispersions differ?
+  disp_fung_ttest_bee <- vegan::permutest(disp_fung_bee, 
+                                          control = permControl(nperm = 999),
+                                          pairwise = TRUE)
+  disp_fung_ttest_bee
+  
+# Which group dispersions differ?
+  disp_fung_tHSD_bee <- stats::TukeyHSD(disp_fung_bee)
+  disp_fung_tHSD_bee
+  
+## Plot distance to centroid ----
+
 # Create df with sample metadata
   #sam_dat <- as.data.frame(sample_data(ps2))
   
@@ -318,6 +420,8 @@
   
 ## Ordination with relative abundance data ----
   
+# All pollen and bee samples  
+  
 # PCoA using Bray-Curtis distance
   ord.pcoa.bray <- phyloseq::ordinate(ps.prop_fung, method = "PCoA", distance = "bray")
   
@@ -335,7 +439,28 @@
                             labs(title = "B")
   Osmia_dev_PCoA_fungi  
   
+# Only bee samples
+  
+# PCoA using Bray-Curtis distance
+  ord.pcoa.bray_bee <- phyloseq::ordinate(ps.prop_fung_bee, method = "PCoA", distance = "bray")
+  
+# Plot ordination
+  Osmia_dev_PCoA_fungi_bee <- plot_ordination(ps.prop_fung_bee, ord.pcoa.bray_bee, color = "sample_type") + 
+                                  theme_bw() +
+                                  theme(text = element_text(size = 16)) +
+                                  theme(legend.justification = "left", 
+                                        legend.title = element_text(size = 16, colour = "black"), 
+                                        legend.text = element_text(size = 14, colour = "black")) + 
+                                  theme(panel.grid.major = element_blank(),
+                                        panel.grid.minor = element_blank()) +
+                                  geom_point(size = 3) +
+                                  scale_color_manual(values = c("#616161", "#9575CD", "#E4511E", "#FDD835", "#43A047", "#0288D1")) +
+                                  labs(title = "B")
+  Osmia_dev_PCoA_fungi_bee 
+  
 ## Rarefaction ----
+  
+# All pollen and bee samples
 
 # Produce rarefaction curves
   tab <- otu_table(ps3)
@@ -358,9 +483,36 @@
 
 # Set seed and rarefy
   set.seed(1234)
-  fung_rareps <- phyloseq::rarefy_even_depth(ps3, sample.size = 30)
+  fung_rareps <- phyloseq::rarefy_even_depth(ps3, sample.size = 20)
+
+# Bee samples only
+  
+# Produce rarefaction curves
+  tab_bee <- otu_table(ps4)
+  class(tab_bee) <- "matrix"
+  tab_bee <- t(tab_bee)
+  
+# Save rarefaction data as a "tidy" df
+  rare_tidy_fungi_bee <- vegan::rarecurve(tab_bee, label = FALSE, tidy = TRUE)
+  
+# Plot rarefaction curve
+  Osmia_dev_rare_fungi_bee <- ggplot(rare_tidy_fungi_bee, aes(x = Sample, y = Species, group = Site)) +
+                                geom_line() +
+                                theme_bw() +
+                                theme(panel.grid.major = element_blank(),
+                                      panel.grid.minor = element_blank()) +
+                                labs(title = "B") + 
+                                xlab("Number of reads") +
+                                ylab("Number of species")
+  Osmia_dev_rare_fungi_bee
+  
+# Set seed and rarefy
+  set.seed(1234)
+  fung_rareps_bee <- phyloseq::rarefy_even_depth(ps4, sample.size = 20)
 
 ## Beta diversity with rarefied data ----  
+  
+# All pollen and bee samples  
   
 # Create a distance matrix using Bray Curtis dissimilarity
   fung_bray_rare <- phyloseq::distance(fung_rareps, method = "bray")
@@ -373,8 +525,8 @@
   fung_perm_rare
   
 # Follow up with pairwise comparisons - which sample types differ?
-  fungi_perm_BH_rare <- RVAideMemoire::pairwise.perm.manova(fung_bray_rare, samplefung_rare$sample_type, p.method = "BH")
-  fungi_perm_BH_rare  
+  #fungi_perm_BH_rare <- RVAideMemoire::pairwise.perm.manova(fung_bray_rare, samplefung_rare$sample_type, p.method = "BH")
+  #fungi_perm_BH_rare  
   
 # Set permutations to deal with pseudoreplication of bee nests
   perm_rare <- how(within = Within(type = "free"),
@@ -386,8 +538,37 @@
 # Perform the PERMANOVA to test effects of developmental stage on fungal community composition
   fung_perm_rare_pseudo <- vegan::adonis2(fung_bray_rare ~ sample_type, permutations = perm_rare, data = samplefung_rare)
   fung_perm_rare_pseudo
+  
+# Only bee samples
+  
+# Create a distance matrix using Bray Curtis dissimilarity
+  fung_bray_rare_bee <- phyloseq::distance(fung_rareps_bee, method = "bray")
+  
+# Convert to data frame
+  samplefung_rare_bee <- data.frame(sample_data(fung_rareps_bee))
+  
+# Perform the PERMANOVA to test effects of developmental stage on fungal community composition
+  fung_perm_rare_bee <- vegan::adonis2(fung_bray_rare_bee ~ sample_type, data = samplefung_rare_bee)
+  fung_perm_rare_bee
+  
+# Follow up with pairwise comparisons - which sample types differ?
+  #fungi_perm_BH_rare_bee <- RVAideMemoire::pairwise.perm.manova(fung_bray_rare_bee, samplefung_rare_bee$sample_type, p.method = "BH")
+  #fungi_perm_BH_rare_bee  
+  
+# Set permutations to deal with pseudoreplication of bee nests
+  perm_rare_bee <- how(within = Within(type = "free"),
+                       plots = Plots(type = "none"),
+                       blocks = samplefung_rare_bee$nesting_tube,
+                       observed = FALSE,
+                       complete = FALSE)
+  
+# Perform the PERMANOVA to test effects of developmental stage on fungal community composition
+  fung_perm_rare_pseudo <- vegan::adonis2(fung_bray_rare_bee ~ sample_type, permutations = perm_rare_bee, data = samplefung_rare_bee)
+  fung_perm_rare_pseudo
 
 ## Test for homogeneity of multivariate dispersion with rarefied data ----
+  
+# All pollen and bee samples  
   
 # Calculate the average distance of group members to the group centroid
   disp_fung_rare <- vegan::betadisper(fung_bray_rare, samplefung_rare$sample_type)
@@ -406,9 +587,31 @@
 # Which group dispersions differ?
   disp_fung_tHSD_rare <- stats::TukeyHSD(disp_fung_rare)
   disp_fung_tHSD_rare
+  
+# Only bee samples
+  
+# Calculate the average distance of group members to the group centroid
+  disp_fung_rare_bee <- vegan::betadisper(fung_bray_rare_bee, samplefung_rare_bee$sample_type)
+  disp_fung_rare_bee
+  
+# Do any of the group dispersions differ?
+  disp_fung_an_rare_bee <- anova(disp_fung_rare_bee)
+  disp_fung_an_rare_bee
+  
+# Which group dispersions differ?
+  disp_fung_ttest_rare_bee <- vegan::permutest(disp_fung_rare_bee, 
+                                               control = permControl(nperm = 999),
+                                               pairwise = TRUE)
+  disp_fung_ttest_rare_bee
+  
+# Which group dispersions differ?
+  disp_fung_tHSD_rare_bee <- stats::TukeyHSD(disp_fung_rare_bee)
+  disp_fung_tHSD_rare_bee
 
 ## Ordination with rarefied data ----
 
+# All pollen and bee samples  
+  
 # Calculate the relative abundance of each otu
   ps.prop_rare <- phyloseq::transform_sample_counts(fung_rareps, function(otu) otu/sum(otu))
   ps.prop_rare
@@ -429,6 +632,29 @@
                                   scale_color_manual(values = c("#616161", "#9575CD", "#E4511E", "#FDD835", "#43A047", "#0288D1")) +
                                   labs(title = "B")
   Osmia_dev_PCoA_fungi_rare
+  
+# Only bee samples
+  
+# Calculate the relative abundance of each otu
+  ps.prop_rare_bee <- phyloseq::transform_sample_counts(fung_rareps_bee, function(otu) otu/sum(otu))
+  ps.prop_rare_bee
+  
+# PCoA using Bray-Curtis distance
+  ord.pcoa.bray_rare_bee <- phyloseq::ordinate(ps.prop_rare_bee, method = "PCoA", distance = "bray")
+  
+# Plot ordination
+  Osmia_dev_PCoA_fungi_rare_bee <- plot_ordination(ps.prop_rare_bee, ord.pcoa.bray_rare_bee, color = "sample_type") + 
+                                      theme_bw() +
+                                      theme(text = element_text(size = 16)) +
+                                      theme(legend.justification = "left", 
+                                            legend.title = element_text(size = 16, colour = "black"), 
+                                            legend.text = element_text(size = 14, colour = "black")) + 
+                                      theme(panel.grid.major = element_blank(),
+                                            panel.grid.minor = element_blank()) +
+                                      geom_point(size = 3) +
+                                      scale_color_manual(values = c("#616161", "#9575CD", "#E4511E", "#FDD835", "#43A047", "#0288D1")) +
+                                      labs(title = "B")
+  Osmia_dev_PCoA_fungi_rare_bee
 
 ## Stacked community plot ----
 
