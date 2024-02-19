@@ -206,7 +206,6 @@
   
 # Build df with metadata 
   bactrich$sample_type <- sample_data(ps3)$sample_type
-  bactrich$sampleID <- sample_data(ps3)$sampleID
   bactrich$nesting_tube <- sample_data(ps3)$nesting_tube
   
 # Plot Shannon, Simpson & observed alpha diversity
@@ -344,32 +343,32 @@
 # Only bee samples
   
 # Calculate the relative abundance of each otu  
-  ps.prop_bact_bees <- phyloseq::transform_sample_counts(ps4, function(otu) otu/sum(otu))
+  ps.prop_bact_bee <- phyloseq::transform_sample_counts(ps4, function(otu) otu/sum(otu))
   
 # Create a distance matrix using Bray Curtis dissimilarity
-  bact_bray_bees <- phyloseq::distance(ps.prop_bact_bees, method = "bray")
+  bact_bray_bee <- phyloseq::distance(ps.prop_bact_bee, method = "bray")
   
 # Convert to data frame
-  samplebact_bees <- data.frame(sample_data(ps4))
+  samplebact_bee <- data.frame(sample_data(ps4))
   
 # Perform the PERMANOVA to test effects of developmental stage on bacterial community composition
-  bact_perm_relabund_bees <- vegan::adonis2(bact_bray_bees ~ sample_type, data = samplebact_bees)
-  bact_perm_relabund_bees
+  bact_perm_relabund_bee <- vegan::adonis2(bact_bray_bee ~ sample_type, data = samplebact_bee)
+  bact_perm_relabund_bee
   
 # Follow up with pairwise comparisons - which sample types differ?
-  bact_perm_BH_bees <- RVAideMemoire::pairwise.perm.manova(bact_bray_bees, samplebact_bees$sample_type, p.method = "BH")
-  bact_perm_BH_bees
+  bact_perm_BH_bee <- RVAideMemoire::pairwise.perm.manova(bact_bray_bee, samplebact_bee$sample_type, p.method = "BH")
+  bact_perm_BH_bee
   
 # Set permutations to deal with pseudoreplication of bee nests
-  perm_relabund_bees <- how(within = Within(type = "free"),
-                            plots = Plots(type = "none"),
-                            blocks = samplebact_bees$nesting_tube,
-                            observed = FALSE,
-                            complete = FALSE)
+  perm_relabund_bee <- how(within = Within(type = "free"),
+                           plots = Plots(type = "none"),
+                           blocks = samplebact_bee$nesting_tube,
+                           observed = FALSE,
+                           complete = FALSE)
   
 # Perform the PERMANOVA to test effects of developmental stage on bacterial community composition, dealing with pseudoreplication
-  bact_perm_relabund_pseudo_bees <- vegan::adonis2(bact_bray_bees ~ sample_type, permutations = perm_relabund_bees, data = samplebact_bees)
-  bact_perm_relabund_pseudo_bees
+  bact_perm_relabund_pseudo_bee <- vegan::adonis2(bact_bray_bee ~ sample_type, permutations = perm_relabund_bee, data = samplebact_bee)
+  bact_perm_relabund_pseudo_bee
   
 ## Test for homogeneity of multivariate dispersion with relative abundance data ----
   
@@ -396,22 +395,22 @@
 # Only bee samples
   
 # Calculate the average distance of group members to the group centroid
-  disp_bact_bees <- vegan::betadisper(bact_bray_bees, samplebact_bees$sample_type)
-  disp_bact_bees
+  disp_bact_bee <- vegan::betadisper(bact_bray_bee, samplebact_bee$sample_type)
+  disp_bact_bee
   
 # Do any of the group dispersions differ?
-  disp_bact_an_bees <- anova(disp_bact_bees)
-  disp_bact_an_bees
+  disp_bact_an_bee <- anova(disp_bact_bee)
+  disp_bact_an_bee
   
 # Which group dispersions differ?
-  disp_bact_ttest_bees <- vegan::permutest(disp_bact_bees, 
-                                           control = permControl(nperm = 999),
-                                           pairwise = TRUE)
-  disp_bact_ttest_bees
+  disp_bact_ttest_bee <- vegan::permutest(disp_bact_bee, 
+                                          control = permControl(nperm = 999),
+                                          pairwise = TRUE)
+  disp_bact_ttest_bee
   
 # Which group dispersions differ?
-  disp_bact_tHSD_bees <- stats::TukeyHSD(disp_bact_bees)
-  disp_bact_tHSD_bees
+  disp_bact_tHSD_bee <- stats::TukeyHSD(disp_bact_bee)
+  disp_bact_tHSD_bee
   
 ## Plot distance to centroid ----
   
@@ -464,10 +463,10 @@
 # Only bee samples  
   
 # PCoA using Bray-Curtis distance
-  ord.pcoa.bray_bees <- phyloseq::ordinate(ps.prop_bact_bees, method = "PCoA", distance = "bray")
+  ord.pcoa.bray_bee <- phyloseq::ordinate(ps.prop_bact_bee, method = "PCoA", distance = "bray")
   
 # Plot ordination
-  Osmia_dev_PCoA_bact_bees <- plot_ordination(ps.prop_bact_bees, ord.pcoa.bray_bees, color = "sample_type") + 
+  Osmia_dev_PCoA_bact_bee <- plot_ordination(ps.prop_bact_bee, ord.pcoa.bray_bee, color = "sample_type") + 
                                   theme_bw() +
                                   theme(text = element_text(size = 16)) +
                                   theme(legend.justification = "left", 
@@ -480,7 +479,7 @@
                                   scale_color_manual(values = c("#616161", "#E4511E", "#FDD835", "#43A047", "#0288D1")) + 
                                   labs(color = "Developmental Stage") +
                                   ggtitle("A")
-  Osmia_dev_PCoA_bact_bees
+  Osmia_dev_PCoA_bact_bee
   
 ## Rarefaction ----
   
@@ -512,15 +511,15 @@
 # Only bee samples
   
 # Produce rarefaction curves
-  tab_bees <- otu_table(ps4)
-  class(tab_bees) <- "matrix"
-  tab_bees <- t(tab_bees)
+  tab_bee <- otu_table(ps4)
+  class(tab_bee) <- "matrix"
+  tab_bee <- t(tab_bee)
   
 # Save rarefaction data as a "tidy" df
-  rare_tidy_bact_bees <- vegan::rarecurve(tab_bees, label = FALSE, tidy = TRUE)
+  rare_tidy_bact_bee <- vegan::rarecurve(tab_bee, label = FALSE, tidy = TRUE)
   
 # Plot rarefaction curve
-  Osmia_dev_rare_bact_bees <- ggplot(rare_tidy_bact_bees, aes(x = Sample, y = Species, group = Site)) +
+  Osmia_dev_rare_bact_bee <- ggplot(rare_tidy_bact_bee, aes(x = Sample, y = Species, group = Site)) +
                                   geom_line() +
                                   theme_bw() +
                                   theme(panel.grid.major = element_blank(),
@@ -528,11 +527,11 @@
                                   labs(title = "A") + 
                                   xlab("Number of reads") +
                                   ylab("Number of species")
-  Osmia_dev_rare_bact_bees
+  Osmia_dev_rare_bact_bee
   
 # Set seed and rarefy  
   set.seed(1234)
-  rareps_bact_bees <- phyloseq::rarefy_even_depth(ps4, sample.size = 20)
+  rareps_bact_bee <- phyloseq::rarefy_even_depth(ps4, sample.size = 20)
   
 ## Beta diversity with rarefied data ----  
   
@@ -566,29 +565,29 @@
 # Only bee samples  
   
 # Create a distance matrix using Bray Curtis dissimilarity
-  bact_bray_rare_bees <- phyloseq::distance(rareps_bact_bees, method = "bray")
+  bact_bray_rare_bee <- phyloseq::distance(rareps_bact_bee, method = "bray")
   
 # Convert to data frame
-  samplebact_rare_bees <- data.frame(sample_data(rareps_bact_bees))
+  samplebact_rare_bee <- data.frame(sample_data(rareps_bact_bee))
   
 # Perform the PERMANOVA to test effects of developmental stage on bacterial community composition
-  bact_perm_rare_bees <- vegan::adonis2(bact_bray_rare_bees ~ sample_type, data = samplebact_rare_bees)
-  bact_perm_rare_bees
+  bact_perm_rare_bee <- vegan::adonis2(bact_bray_rare_bee ~ sample_type, data = samplebact_rare_bee)
+  bact_perm_rare_bee
   
 # Follow up with pairwise comparisons - which sample types differ?
-  bact_perm_BH_rare_bees <- RVAideMemoire::pairwise.perm.manova(bact_bray_rare_bees, samplebact_rare_bees$sample_type, p.method = "BH")
-  bact_perm_BH_rare_bees
+  bact_perm_BH_rare_bee <- RVAideMemoire::pairwise.perm.manova(bact_bray_rare_bee, samplebact_rare_bee$sample_type, p.method = "BH")
+  bact_perm_BH_rare_bee
   
 # Set permutations to deal with pseudoreplication of bee nests
-  perm_rare_bees <- how(within = Within(type = "free"),
-                        plots = Plots(type = "none"),
-                        blocks = samplebact_rare_bees$nesting_tube,
-                        observed = FALSE,
-                        complete = FALSE)
+  perm_rare_bee <- how(within = Within(type = "free"),
+                       plots = Plots(type = "none"),
+                       blocks = samplebact_rare_bee$nesting_tube,
+                       observed = FALSE,
+                       complete = FALSE)
   
 # Perform the PERMANOVA to test effects of developmental stage on bacterial community composition, dealing with pseudoreplication
-  bact_perm_rare_pseudo_bees <- vegan::adonis2(bact_bray_rare_bees ~ sample_type, permutations = perm_rare_bees, data = samplebact_rare_bees)
-  bact_perm_rare_pseudo
+  bact_perm_rare_pseudo_bee <- vegan::adonis2(bact_bray_rare_bee ~ sample_type, permutations = perm_rare_bee, data = samplebact_rare_bee)
+  bact_perm_rare_pseudo_bee
   
 ## Test for homogeneity of multivariate dispersion with rarefied data ----
 
@@ -615,22 +614,22 @@
 # Only bee samples
   
 # Calculate the average distance of group members to the group centroid
-  disp_bact_rare_bees <- vegan::betadisper(bact_bray_rare_bees, samplebact_rare_bees$sample_type)
-  disp_bact_rare_bees
+  disp_bact_rare_bee <- vegan::betadisper(bact_bray_rare_bee, samplebact_rare_bee$sample_type)
+  disp_bact_rare_bee
   
 # Do any of the group dispersions differ?
-  disp_bact_an_rare_bees <- anova(disp_bact_rare_bees)
-  disp_bact_an_rare_bees
+  disp_bact_an_rare_bee <- anova(disp_bact_rare_bee)
+  disp_bact_an_rare_bee
   
 # Which group dispersions differ?
-  disp_bact_ttest_rare_bees <- vegan::permutest(disp_bact_rare_bees, 
-                                                control = permControl(nperm = 999),
-                                                pairwise = TRUE)
-  disp_bact_ttest_rare_bees
+  disp_bact_ttest_rare_bee <- vegan::permutest(disp_bact_rare_bee, 
+                                               control = permControl(nperm = 999),
+                                               pairwise = TRUE)
+  disp_bact_ttest_rare_bee
   
 # Which group dispersions differ?
-  disp_bact_tHSD_rare_bees <- stats::TukeyHSD(disp_bact_rare_bees)
-  disp_bact_tHSD_rare_bees
+  disp_bact_tHSD_rare_bee <- stats::TukeyHSD(disp_bact_rare_bee)
+  disp_bact_tHSD_rare_bee
   
 # Plot distance to centroid
   
