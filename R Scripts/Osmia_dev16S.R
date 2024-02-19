@@ -124,7 +124,7 @@
     ylab("Prevalence (Samples)")
 
 # Make a new phyloseq object without contaminant taxa 
-  ps.noncontam <- phyloseq::prune_taxa(!contamdf.comb$contaminant, ps1)
+  ps.noncontam <- phyloseq::prune_taxa(!contamdf.comb05$contaminant, ps1)
   ps.noncontam
 
 # Remove control samples
