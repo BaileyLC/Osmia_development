@@ -276,16 +276,16 @@
   fungrich_bee <- fungrich_bee[complete.cases(fungrich_bee), ]
   
 # Examine the effects of sample_type on Shannon richness
-  mod7 <- nlme::lme(Shannon ~ sample_type, random = ~1|nesting_tube, data = fungrich_bee)
-  anova(mod7)
+  mod10 <- nlme::lme(Shannon ~ sample_type, random = ~1|nesting_tube, data = fungrich_bee)
+  anova(mod10)
   
   # Examine the effects of sample_type on Simpson richness
-  mod8 <- nlme::lme(Simpson ~ sample_type, random = ~1|nesting_tube, data = fungrich_bee)
-  anova(mod8)
+  mod11 <- nlme::lme(Simpson ~ sample_type, random = ~1|nesting_tube, data = fungrich_bee)
+  anova(mod11)
   
   # Examine the effects of sample_type on observed richness
-  mod9 <- nlme::lme(Observed ~ sample_type, random = ~1|nesting_tube, data = fungrich_bee)
-  anova(mod9)
+  mod12 <- nlme::lme(Observed ~ sample_type, random = ~1|nesting_tube, data = fungrich_bee)
+  anova(mod12)
   
 ## Beta diversity with relative abundance data ----  
   
