@@ -11,6 +11,7 @@
 
 # Load necessary packages
   library(phyloseq) # Version 1.44.0
+  library(plotrix) # Version 3.8-4
   library(decontam) # Version 1.20.0
   library(ggplot2) # Version 3.4.3
   library(vegan) # Version 2.6-4
@@ -52,9 +53,10 @@
                   tax_table(taxa))
   ps1
 
-# Display total number of reads and means per sample in phyloseq obj before processing
+# Display total number of reads, mean, and se in phyloseq obj before processing
   sum(sample_sums(ps1))
   mean(sample_sums(ps1))
+  print(plotrix::std.error(sample_sums(ps1)))
 
 ## Inspect & remove contaminants ----
 # Resource: https://benjjneb.github.io/decontam/vignettes/decontam_intro.html
@@ -138,9 +140,10 @@
 # Remove samples without any reads  
   ps3 <- phyloseq::prune_samples(sample_sums(ps2) != 0, ps2)
 
-# Display total number of reads and means per sample in phyloseq obj after processing
+# Display total number of reads, mean, and se in phyloseq obj after processing
   sum(sample_sums(ps3))
   mean(sample_sums(ps3))
+  print(plotrix::std.error(sample_sums(ps3)))
   
 # Save sample metadata
   meta <- sample_data(ps3)
@@ -279,11 +282,11 @@
   mod10 <- nlme::lme(Shannon ~ sample_type, random = ~1|nesting_tube, data = fungrich_bee)
   anova(mod10)
   
-  # Examine the effects of sample_type on Simpson richness
+# Examine the effects of sample_type on Simpson richness
   mod11 <- nlme::lme(Simpson ~ sample_type, random = ~1|nesting_tube, data = fungrich_bee)
   anova(mod11)
   
-  # Examine the effects of sample_type on observed richness
+# Examine the effects of sample_type on observed richness
   mod12 <- nlme::lme(Observed ~ sample_type, random = ~1|nesting_tube, data = fungrich_bee)
   anova(mod12)
   
@@ -406,7 +409,7 @@
   #disp_df <- merge(sam_dat, disp_fung_df, by = "extractionID")
   
 # Plot
-  #ggplot(disp_df, aes(x = sample_type, y = disp_bact$distance, color = sample_type)) + 
+  #ggplot(disp_df, aes(x = sample_type, y = disp_fung$distance, color = sample_type)) + 
   #geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(width = 0.1)) + 
   #geom_jitter(size = 1, alpha = 0.9) +
   #theme_bw() +
@@ -456,10 +459,10 @@
                                   geom_point(size = 3) +
                                   scale_color_manual(values = c("#616161", "#9575CD", "#E4511E", "#FDD835", "#43A047", "#0288D1")) +
                                   labs(title = "B")
-  Osmia_dev_PCoA_fungi_bee 
+  Osmia_dev_PCoA_fungi_bee
   
 ## Rarefaction ----
-  
+
 # All pollen and bee samples
 
 # Produce rarefaction curves
@@ -568,7 +571,7 @@
 
 ## Test for homogeneity of multivariate dispersion with rarefied data ----
   
-# All pollen and bee samples  
+# All pollen and bee samples
   
 # Calculate the average distance of group members to the group centroid
   disp_fung_rare <- vegan::betadisper(fung_bray_rare, samplefung_rare$sample_type)
