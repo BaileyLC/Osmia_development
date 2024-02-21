@@ -11,6 +11,7 @@
 
 # Load necessary packages
   library(phyloseq) # Version 1.44.0
+  library(plotrix) # Version 3.8-4
   library(decontam) # Version 1.20.0
   library(ggplot2) # Version 3.4.3
   library(vegan) # Version 2.6-4
@@ -52,9 +53,10 @@
                   tax_table(taxa))
   ps1
   
-# Display total number of reads and means per sample in phyloseq obj before processing
+# Display total number of reads, mean, and se in phyloseq obj before processing
   sum(sample_sums(ps1))
   mean(sample_sums(ps1))
+  print(plotrix::std.error(sample_sums(ps1)))
 
 ## Inspect & remove contaminants ----
 # Resource: https://benjjneb.github.io/decontam/vignettes/decontam_intro.html
@@ -161,9 +163,10 @@
   ps3 <- phyloseq::prune_samples(sample_sums(ps2) != 0, ps2)
   ps3
 
-# Display total number of reads and means per sample in phyloseq obj after processing
+# Display total number of reads, mean, and se in phyloseq obj after processing
   sum(sample_sums(ps3))
   mean(sample_sums(ps3))
+  print(plotrix::std.error(sample_sums(ps3)))
   
 # Save sample metadata
   meta <- sample_data(ps3)
@@ -591,7 +594,7 @@
   
 ## Test for homogeneity of multivariate dispersion with rarefied data ----
 
-# All pollen and bee samples  
+# All pollen and bee samples
   
 # Calculate the average distance of group members to the group centroid
   disp_bact_rare <- vegan::betadisper(bact_bray_rare, samplebact_rare$sample_type)
