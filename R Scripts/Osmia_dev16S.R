@@ -10,9 +10,11 @@
   setwd("~/Downloads")
 
 # Load necessary packages
+  library(stringr) # Version 1.5.1
   library(phyloseq) # Version 1.44.0
   library(plotrix) # Version 3.8-4
   library(decontam) # Version 1.20.0
+  library(microbiome) # Version 1.22.0
   library(ggplot2) # Version 3.4.3
   library(vegan) # Version 2.6-4
   library(magrittr) # Version 2.0.3
@@ -32,6 +34,7 @@
 
 # Re-create your df
   samples.out <- rownames(seqtab.nochim)
+  samples.out <- stringr::str_sort(samples.out, numeric = TRUE)
   samples <- data.frame(meta16S_dev)
   extractionID <- samples$extractionID
   sample_type <- samples$sample_type
@@ -52,7 +55,7 @@
                   sample_data(sampleinfo), 
                   tax_table(taxa))
   ps1
-  
+
 # Display total number of reads, mean, and se in phyloseq obj before processing
   sum(sample_sums(ps1))
   mean(sample_sums(ps1))
@@ -102,25 +105,25 @@
   table(contamdf.comb05$contaminant)
   head(which(contamdf.comb05$contaminant))
 
-# Make phyloseq object of presence-absence in negative controls
+# Make phyloseq object of negative controls
   ps.neg <- phyloseq::prune_samples(sample_data(ps1)$sample_or_control == "control", ps1)
 
-# Calculate taxa abundance in samples from sample counts
+# Transform abundances in negative controls
   ps.neg.presence <- phyloseq::transform_sample_counts(ps.neg, function(abund) 1*(abund > 0))
 
-# Make phyloseq object of presence-absence in true positive samples
+# Make phyloseq object of samples
   ps.pos <- phyloseq::prune_samples(sample_data(ps1)$sample_or_control == "sample", ps1)
 
-# Calculate taxa abundance in samples from sample counts
+# Transform abundances in samples
   ps.pos.presence <- phyloseq::transform_sample_counts(ps.pos, function(abund) 1*(abund > 0))
 
-# Make data.frame of prevalence in positive and negative samples
+# Make df of prevalence in positive and negative samples
   df.pres <- data.frame(prevalence.pos = taxa_sums(ps.pos.presence), 
                         prevalence.neg = taxa_sums(ps.neg.presence),
-                        contam.comb05 = contamdf.comb05$contaminant)
+                        contamdf.comb = contamdf.comb$contaminant)
 
 # Plot
-  ggplot(data = df.pres, aes(x = prevalence.neg, y = prevalence.pos, color = contam.comb05)) + 
+  ggplot(data = df.pres, aes(x = prevalence.neg, y = prevalence.pos, color = contamdf.comb)) + 
     geom_point() +
     xlab("Prevalence (Controls)") +
     ylab("Prevalence (Samples)")
@@ -168,13 +171,22 @@
   mean(sample_sums(ps3))
   print(plotrix::std.error(sample_sums(ps3)))
   
+# Calculate the reads per sample
+  reads_sample <- microbiome::readcount(ps3)
+  head(reads_sample)
+  
+# Add reads per sample to meta data
+  sample_data(ps3)$reads_sample <- reads_sample
+  
 # Save sample metadata
   meta <- sample_data(ps3)
   
-# How many samples for each developmental stage?
+# How many samples, mean, and se for each developmental stage?
   meta %>%
     group_by(sample_type) %>%
-    summarise(N = n())
+    summarise(N = n(),
+              mean = mean(reads_sample),
+              se = sd(reads_sample)/sqrt(N))
   
 # Save taxonomic and ASV counts
   write.csv(tax_table(ps3), "Osmia_dev_16Staxa.csv")
@@ -215,24 +227,31 @@
   phyloseq::plot_richness(ps3, x = "sample_type", measures = c("Shannon", "Simpson", "Observed"), color = "nesting_tube") + 
               theme_bw()
   
-# Remove samples with 0 species reads 
+# Remove samples with 0 reads 
   bactrich[bactrich == 0] <- NA
   bactrich <- bactrich[complete.cases(bactrich), ]
   
 # Examine the effects of sample_type on Shannon index
   mod1 <- nlme::lme(Shannon ~ sample_type, random = ~1|nesting_tube, data = bactrich)
-  anova(mod1)
+  stats::anova(mod1)
   
 # Examine the effects of sample_type on Simpson index
   mod2 <- nlme::lme(Simpson ~ sample_type, random = ~1|nesting_tube, data = bactrich)
-  anova(mod2)
+  stats::anova(mod2)
   
 # Examine the effects of sample_type on observed richness
   mod3 <- nlme::lme(Observed ~ sample_type, random = ~1|nesting_tube, data = bactrich)
-  anova(mod3)
-  
+  stats::anova(mod3)
+
 # Order samples on x-axis
   bactrich$sample_type <- factor(bactrich$sample_type, levels = c("initial provision", "final provision", "larva", "pre-wintering adult", "dead"))
+  
+# Set color scheme  
+  dev_colors <- c("initial provision" = "#FDD835",
+                  "final provision" = "#E4511E",
+                  "larva" = "#43A047",
+                  "pre-wintering adult" = "#0288D1",
+                  "dead" = "#616161")  
   
 # Boxplot of Shannon index
   Osmia_dev_Shannon_bact <- ggplot(bactrich, aes(x = sample_type, y = Shannon, color = sample_type)) + 
@@ -243,7 +262,8 @@
                                 theme(panel.grid.major = element_blank(),
                                       panel.grid.minor = element_blank()) +
                                 scale_color_manual(name = "Developmental Stage",
-                                                   values = c("#FDD835", "#E4511E", "#43A047", "#0288D1", "#616161")) +
+                                                   values = dev_colors) +
+                                scale_x_discrete(labels = c('fresh pollen', 'aged pollen', 'larvae', 'pre-wintering adults', 'dead adults')) +
                                 labs(title = "A") +
                                 xlab("Sample type") +
                                 ylab("Shannon index")
@@ -258,7 +278,8 @@
                                    theme(panel.grid.major = element_blank(),
                                          panel.grid.minor = element_blank()) +
                                    scale_color_manual(name = "Developmental Stage",
-                                                      values = c("#FDD835", "#E4511E", "#43A047", "#0288D1", "#616161")) +
+                                                      values = dev_colors) +
+                                   scale_x_discrete(labels = c('fresh pollen', 'aged pollen', 'larvae', 'pre-wintering adults', 'dead adults')) +
                                    labs(title = "A") +
                                    xlab("Sample type") +
                                    ylab("Simpson index")
@@ -273,7 +294,8 @@
                                 theme(panel.grid.major = element_blank(),
                                       panel.grid.minor = element_blank()) +
                                 scale_color_manual(name = "Developmental Stage",
-                                                   values = c("#FDD835", "#E4511E", "#43A047", "#0288D1", "#616161")) +
+                                                   values = dev_colors) +
+                                scale_x_discrete(labels = c('fresh pollen', 'aged pollen', 'larvae', 'pre-wintering adults', 'dead adults')) +
                                 labs(title = "A") +
                                 xlab("Sample type") +
                                 ylab("Observed richness")
@@ -301,15 +323,15 @@
   
 # Examine the effects of sample_type on Shannon index
   mod4 <- nlme::lme(Shannon ~ sample_type, random = ~1|nesting_tube, data = bee_rich)
-  anova(mod4)
+  stats::anova(mod4)
   
 # Examine the effects of sample_type on Simpson index
   mod5 <- nlme::lme(Simpson ~ sample_type, random = ~1|nesting_tube, data = bee_rich)
-  anova(mod5)
+  stats::anova(mod5)
   
 # Examine the effects of sample_type on observed richness
   mod6 <- nlme::lme(Observed ~ sample_type, random = ~1|nesting_tube, data = bee_rich)
-  anova(mod6)
+  stats::anova(mod6)
   
 ## Beta diversity with relative abundance data ----
   
@@ -333,11 +355,11 @@
   bact_perm_BH
   
 # Set permutations to deal with pseudoreplication of bee nests
-  perm_relabund <- how(within = Within(type = "free"),
-                       plots = Plots(type = "none"),
-                       blocks = samplebact$nesting_tube,
-                       observed = FALSE,
-                       complete = FALSE)
+  perm_relabund <- permute::how(within = Within(type = "free"),
+                            plots = Plots(type = "none"),
+                            blocks = samplebact$nesting_tube,
+                            observed = FALSE,
+                            complete = FALSE)
   
 # Perform the PERMANOVA to test effects of developmental stage on bacterial community composition, dealing with pseudoreplication
   bact_perm_relabund_pseudo <- vegan::adonis2(bact_bray ~ sample_type, permutations = perm_relabund, data = samplebact)
@@ -363,11 +385,11 @@
   bact_perm_BH_bee
   
 # Set permutations to deal with pseudoreplication of bee nests
-  perm_relabund_bee <- how(within = Within(type = "free"),
-                           plots = Plots(type = "none"),
-                           blocks = samplebact_bee$nesting_tube,
-                           observed = FALSE,
-                           complete = FALSE)
+  perm_relabund_bee <- permute::how(within = Within(type = "free"),
+                                    plots = Plots(type = "none"),
+                                    blocks = samplebact_bee$nesting_tube,
+                                    observed = FALSE,
+                                    complete = FALSE)
   
 # Perform the PERMANOVA to test effects of developmental stage on bacterial community composition, dealing with pseudoreplication
   bact_perm_relabund_pseudo_bee <- vegan::adonis2(bact_bray_bee ~ sample_type, permutations = perm_relabund_bee, data = samplebact_bee)
@@ -382,7 +404,7 @@
   disp_bact
   
 # Do any of the group dispersions differ?
-  disp_bact_an <- anova(disp_bact)
+  disp_bact_an <- stats::anova(disp_bact)
   disp_bact_an
   
 # Which group dispersions differ?
@@ -402,7 +424,7 @@
   disp_bact_bee
   
 # Do any of the group dispersions differ?
-  disp_bact_an_bee <- anova(disp_bact_bee)
+  disp_bact_an_bee <- stats::anova(disp_bact_bee)
   disp_bact_an_bee
   
 # Which group dispersions differ?
@@ -449,18 +471,18 @@
   
 # Plot ordination
   Osmia_dev_PCoA_bact <- plot_ordination(ps.prop_bact, ord.pcoa.bray, color = "sample_type") + 
-                                         theme_bw() +
-                                         theme(text = element_text(size = 16)) +
-                                         theme(legend.justification = "left", 
-                                               legend.title = element_text(size = 16, colour = "black"), 
-                                               legend.text = element_text(size = 14, colour = "black")) +
-                                         theme(legend.position = "none") +
-                                         theme(panel.grid.major = element_blank(),
-                                               panel.grid.minor = element_blank()) +
-                                         geom_point(size = 3) +
-                                         scale_color_manual(values = c("#616161", "#E4511E", "#FDD835", "#43A047", "#0288D1")) + 
-                                         labs(color = "Developmental Stage") +
-                                         ggtitle("A")
+                            theme_bw() +
+                            theme(text = element_text(size = 16)) +
+                            theme(legend.justification = "left", 
+                                  legend.title = element_text(size = 16, colour = "black"), 
+                                  legend.text = element_text(size = 14, colour = "black")) +
+                            theme(legend.position = "none") +
+                            theme(panel.grid.major = element_blank(),
+                                  panel.grid.minor = element_blank()) +
+                            geom_point(size = 3) +
+                            scale_color_manual(values = dev_colors) + 
+                            labs(color = "Developmental Stage") +
+                            ggtitle("A")
   Osmia_dev_PCoA_bact
 
 # Only bee samples  
@@ -479,7 +501,7 @@
                                   theme(panel.grid.major = element_blank(),
                                         panel.grid.minor = element_blank()) +
                                   geom_point(size = 3) +
-                                  scale_color_manual(values = c("#616161", "#E4511E", "#FDD835", "#43A047", "#0288D1")) + 
+                                  scale_color_manual(values = dev_colors) + 
                                   labs(color = "Developmental Stage") +
                                   ggtitle("A")
   Osmia_dev_PCoA_bact_bee
@@ -509,7 +531,7 @@
 
 # Set seed and rarefy  
   set.seed(1234)
-  rareps_bact <- phyloseq::rarefy_even_depth(ps3, sample.size = 18)
+  rareps_bact <- phyloseq::rarefy_even_depth(ps3, sample.size = 20)
 
 # Only bee samples
   
@@ -555,11 +577,11 @@
   #bact_perm_BH_rare
   
 # Set permutations to deal with pseudoreplication of bee nests
-  perm_rare <- how(within = Within(type = "free"),
-                   plots = Plots(type = "none"),
-                   blocks = samplebact_rare$nesting_tube,
-                   observed = FALSE,
-                   complete = FALSE)
+  perm_rare <- permute::how(within = Within(type = "free"),
+                            plots = Plots(type = "none"),
+                            blocks = samplebact_rare$nesting_tube,
+                            observed = FALSE,
+                            complete = FALSE)
   
 # Perform the PERMANOVA to test effects of developmental stage on bacterial community composition, dealing with pseudoreplication
   bact_perm_rare_pseudo <- vegan::adonis2(bact_bray_rare ~ sample_type, permutations = perm_rare, data = samplebact_rare)
@@ -582,11 +604,11 @@
   bact_perm_BH_rare_bee
   
 # Set permutations to deal with pseudoreplication of bee nests
-  perm_rare_bee <- how(within = Within(type = "free"),
-                       plots = Plots(type = "none"),
-                       blocks = samplebact_rare_bee$nesting_tube,
-                       observed = FALSE,
-                       complete = FALSE)
+  perm_rare_bee <- permute::how(within = Within(type = "free"),
+                                plots = Plots(type = "none"),
+                                blocks = samplebact_rare_bee$nesting_tube,
+                                observed = FALSE,
+                                complete = FALSE)
   
 # Perform the PERMANOVA to test effects of developmental stage on bacterial community composition, dealing with pseudoreplication
   bact_perm_rare_pseudo_bee <- vegan::adonis2(bact_bray_rare_bee ~ sample_type, permutations = perm_rare_bee, data = samplebact_rare_bee)
@@ -601,7 +623,7 @@
   disp_bact_rare
   
 # Do any of the group dispersions differ?
-  disp_bact_an_rare <- anova(disp_bact_rare)
+  disp_bact_an_rare <- stats::anova(disp_bact_rare)
   disp_bact_an_rare
   
 # Which group dispersions differ?
@@ -621,7 +643,7 @@
   disp_bact_rare_bee
   
 # Do any of the group dispersions differ?
-  disp_bact_an_rare_bee <- anova(disp_bact_rare_bee)
+  disp_bact_an_rare_bee <- stats::anova(disp_bact_rare_bee)
   disp_bact_an_rare_bee
   
 # Which group dispersions differ?
@@ -681,15 +703,15 @@
   
 # Order samples on x-axis
   y3$sample_type <- factor(y3$sample_type, levels = c("initial provision", "final provision", "larva", "pre-wintering adult", "dead"))
-  
-# Plot Family by sample type  
+
+# Plot Family by sample type
   ggplot(data = y3, aes(x = sample_type, y = Abundance, fill = Family)) + 
     geom_bar(stat = "identity", position = "fill") + 
     scale_fill_manual(values = colors) + 
     theme(legend.position = "right") +
     ylab("Relative abundance") + 
     ylim(0, 1.0) +
-    xlab("Treatment") +
+    xlab("Sample Type") +
     theme_bw() + 
     theme(text = element_text(size = 16)) +
     theme(panel.grid.major = element_blank(),
@@ -710,14 +732,15 @@
                                     theme(legend.position = "right") +
                                     ylab("Relative abundance") + 
                                     ylim(0, 1.0) +
-                                    xlab("Treatment") +
+                                    xlab("Sample") +
                                     theme_bw() + 
                                     theme(text = element_text(size = 14)) +
                                     theme(panel.grid.major = element_blank(),
                                           panel.grid.minor = element_blank()) + 
                                     theme(legend.justification = "left", 
                                           legend.title = element_text(size = 14, colour = "black"), 
-                                          legend.text = element_text(size = 10, colour = "black")) + 
+                                          legend.text = element_text(size = 10, colour = "black"),
+                                          strip.text = element_text(size = 8)) + 
                                     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
                                     guides(fill = guide_legend(ncol = 3)) +
                                     ggtitle("A")
@@ -745,7 +768,7 @@
     theme(legend.position = "right") +
     ylab("Relative abundance") + 
     ylim(0, 1.0) +
-    xlab("Treatment") +
+    xlab("Sample Type") +
     theme_bw() + 
     theme(text = element_text(size = 14)) +
     theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + 
@@ -765,14 +788,15 @@
                                     theme(legend.position = "right") +
                                     ylab("Relative abundance") + 
                                     ylim(0, 1.0) +
-                                    xlab("Treatment") +
+                                    xlab("Sample") +
                                     theme_bw() + 
                                     theme(text = element_text(size = 14)) +
                                     theme(panel.grid.major = element_blank(), 
                                           panel.grid.minor = element_blank()) + 
                                     theme(legend.justification = "left", 
                                           legend.title = element_text(size = 14, colour = "black"), 
-                                          legend.text = element_text(size = 10, colour = "black")) + 
+                                          legend.text = element_text(size = 10, colour = "black"),
+                                          strip.text = element_text(size = 8)) + 
                                     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
                                     guides(fill = guide_legend(ncol = 3)) +
                                     ggtitle("A")
@@ -795,10 +819,10 @@
 # Estimate size factors
   desq_dds <- DESeq2::estimateSizeFactors(desq_obj, geoMeans = geoMeans)
   
-  # Fit a local regression
+# Fit a local regression
   desq_dds <- DESeq2::DESeq(desq_dds, fitType = "local")
   
-  # Set significance factor  
+# Set significance factor  
   alpha <- 0.05
   
 # Initial vs final provisions
