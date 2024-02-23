@@ -223,7 +223,7 @@
   bactrich$sample_type <- sample_data(ps3)$sample_type
   bactrich$nesting_tube <- sample_data(ps3)$nesting_tube
   
-# Plot Shannon, Simpson & observed alpha diversity
+# Plot alpha diversity
   phyloseq::plot_richness(ps3, x = "sample_type", measures = c("Shannon", "Simpson", "Observed"), color = "nesting_tube") + 
               theme_bw()
   
@@ -305,12 +305,14 @@
   ps4 <- phyloseq::subset_samples(ps4, sample_type != "aged pollen")
   ps4
   
-# Build df with metadata 
+# Estimate Shannon, Simpson & observed richness
   bee_rich <- phyloseq::estimate_richness(ps4, split = TRUE, measures = c("Shannon", "Simpson", "Observed"))
+  
+# Build df with metadata
   bee_rich$sample_type <- sample_data(ps4)$sample_type
   bee_rich$nesting_tube <- sample_data(ps4)$nesting_tube
   
-# Plot Shannon, Simpson & observed alpha diversity
+# Plot alpha diversity
   phyloseq::plot_richness(ps4, x = "sample_type", measures = c("Shannon", "Simpson", "Observed"), color = "nesting_tube") + 
       theme_bw()
   
@@ -436,32 +438,7 @@
 # Which group dispersions differ?
   disp_bact_tHSD_bee <- stats::TukeyHSD(disp_bact_bee)
   disp_bact_tHSD_bee
-  
-## Plot distance to centroid ----
-  
-# Create df with sample metadata
-  #sam_dat <- as.data.frame(sample_data(ps3))
-  
-# Create df with distance to centroid measures
-  #disp_bact_df <- as.data.frame(disp_bact$distances)
-  #disp_bact_df$extractionID <- row.names(disp_bact_df)
-  
-# Merge dfs
-  #disp_df <- merge(sam_dat, disp_bact_df, by = "extractionID")
 
-# Plot
-  #ggplot(disp_df, aes(x = sample_type, y = disp_bact$distance, color = sample_type)) + 
-    #geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(width = 0.1)) + 
-    #geom_jitter(size = 1, alpha = 0.9) +
-    #theme_bw() +
-    #theme(legend.position = "none") +
-    #theme(panel.grid.major = element_blank(),
-          #panel.grid.minor = element_blank()) +
-    #scale_color_manual(values = c("#FDD835", "#E4511E", "#43A047", "#0288D1", "#616161")) +
-    #labs(title = "A") +
-    #xlab("Sample type") +
-    #ylab("Distance to centroid")
-  
 ## Ordination with relative abundance data ----
   
 # All pollen and bee samples
@@ -469,7 +446,7 @@
 # PCoA using Bray-Curtis distance
   ord.pcoa.bray <- phyloseq::ordinate(ps.prop_bact, method = "PCoA", distance = "bray")
   
-# Order samples on x-axis
+# Order samples
   sample_data(ps.prop_bact)$sample_type <- factor(sample_data(ps.prop_bact)$sample_type, levels = c("fresh pollen egg", "aged pollen", "larva", "pre-wintering adult", "dead adult"))
   
 # Plot ordination
@@ -494,7 +471,7 @@
 # PCoA using Bray-Curtis distance
   ord.pcoa.bray_bee <- phyloseq::ordinate(ps.prop_bact_bee, method = "PCoA", distance = "bray")
   
-# Order samples on x-axis
+# Order samples
   sample_data(ps.prop_bact_bee)$sample_type <- factor(sample_data(ps.prop_bact_bee)$sample_type, levels = c("larva", "pre-wintering adult", "dead adult"))
   
 # Plot ordination
@@ -664,31 +641,67 @@
   disp_bact_tHSD_rare_bee <- stats::TukeyHSD(disp_bact_rare_bee)
   disp_bact_tHSD_rare_bee
   
-# Plot distance to centroid
+## Ordination with rarefied data ----
   
-# Create df with sample metadata
-  #sam_dat_rare <- as.data.frame(sample_data(ps3))
+# All pollen and bee samples
   
-# Create df with distance to centroid measures
-  #disp_bact_df_rare <- as.data.frame(disp_bact_rare$distances)
+# Calculate the relative abundance of each otu
+  ps.prop_rare <- phyloseq::transform_sample_counts(rareps_bact, function(otu) otu/sum(otu))
+  ps.prop_rare
   
-# Merge dfs
-  #disp_df_rare <- merge(sam_dat_rare, disp_bact_df_rare, by = 0)
+# PCoA using Bray-Curtis distance
+  ord.pcoa.bray_rare <- phyloseq::ordinate(ps.prop_rare, method = "PCoA", distance = "bray")
   
-# Plot
-  #ggplot(disp_df_rare, aes(x = sample_type, y = disp_bact_rare$distance, color = sample_type)) + 
-    #geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(width = 0.1)) + 
-    #geom_jitter(size = 1, alpha = 0.9) +
-    #theme_bw() +
-    #theme(legend.position = "none") +
-    #theme(panel.grid.major = element_blank(),
-          #panel.grid.minor = element_blank()) +
-    #scale_color_manual(values = c("#FDD835", "#E4511E", "#43A047", "#0288D1", "#616161")) +
-    #labs(title = "A") +
-    #xlab("Sample type") +
-    #ylab("Distance to centroid")
+# Order samples
+  sample_data(ps.prop_rare)$sample_type <- factor(sample_data(ps.prop_rare)$sample_type, levels = c("fresh pollen egg", "aged pollen", "larva", "pre-wintering adult", "dead adult"))
   
-## Stacked community plot ----
+# Plot ordination
+  Osmia_dev_PCoA_bact_rare <- plot_ordination(ps.prop_rare, ord.pcoa.bray_rare, color = "sample_type") + 
+                                  theme_bw() +
+                                  theme(text = element_text(size = 16)) +
+                                  theme(legend.justification = "left", 
+                                        legend.title = element_text(size = 16, colour = "black"), 
+                                        legend.text = element_text(size = 14, colour = "black")) +
+                                  theme(legend.position = "none") +
+                                  theme(panel.grid.major = element_blank(),
+                                        panel.grid.minor = element_blank()) +
+                                  geom_point(size = 3) +
+                                  scale_color_manual(values = dev_colors,
+                                                     labels = c('fresh pollen + egg', 'aged pollen', 'larvae', 'pre-wintering adults', 'dead adults')) + 
+                                  labs(color = "Developmental Stage") +
+                                  ggtitle("A")
+  Osmia_dev_PCoA_bact_rare
+  
+# Only bee samples  
+  
+# Calculate the relative abundance of each otu
+  ps.prop_rare_bee <- phyloseq::transform_sample_counts(rareps_bact_bee, function(otu) otu/sum(otu))
+  ps.prop_rare_bee
+  
+# PCoA using Bray-Curtis distance
+  ord.pcoa.bray_rare_bee <- phyloseq::ordinate(ps.prop_rare_bee, method = "PCoA", distance = "bray")
+  
+# Order samples
+  sample_data(ps.prop_rare_bee)$sample_type <- factor(sample_data(ps.prop_rare_bee)$sample_type, levels = c("larva", "pre-wintering adult", "dead adult"))
+  
+# Plot ordination
+  Osmia_dev_PCoA_bact_rare_bee <- plot_ordination(ps.prop_rare_bee, ord.pcoa.bray_rare_bee, color = "sample_type") + 
+                                      theme_bw() +
+                                      theme(text = element_text(size = 16)) +
+                                      theme(legend.justification = "left", 
+                                            legend.title = element_text(size = 16, colour = "black"), 
+                                            legend.text = element_text(size = 14, colour = "black")) +
+                                      theme(legend.position = "none") +
+                                      theme(panel.grid.major = element_blank(),
+                                            panel.grid.minor = element_blank()) +
+                                      geom_point(size = 3) +
+                                      scale_color_manual(values = dev_colors,
+                                                         labels = c("larvae", "pre-wintering adults", "dead adults")) + 
+                                      labs(color = "Developmental Stage") +
+                                      ggtitle("A")
+  Osmia_dev_PCoA_bact_rare_bee
+  
+## Stacked community plots ----
   
 # Generate colorblind friendly palette
   Okabe_Ito <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#000000")
@@ -731,7 +744,7 @@
           panel.grid.minor = element_blank()) + 
     theme(legend.justification = "left",
           legend.title = element_text(size = 16, colour = "black"), 
-          legend.text = element_text(size = 14, colour = "black")) + 
+          legend.text = element_text(size = 8, colour = "black")) + 
     guides(fill = guide_legend(ncol = 3)) +
     ggtitle("Bacteria")
   
@@ -753,7 +766,7 @@
                                           panel.grid.minor = element_blank()) + 
                                     theme(legend.justification = "left", 
                                           legend.title = element_text(size = 14, colour = "black"), 
-                                          legend.text = element_text(size = 10, colour = "black"),
+                                          legend.text = element_text(size = 8, colour = "black"),
                                           strip.text = element_text(size = 8)) + 
                                     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
                                     guides(fill = guide_legend(ncol = 3)) +
@@ -789,7 +802,7 @@
     theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + 
     theme(legend.justification = "left", 
           legend.title = element_text(size = 14, colour = "black"), 
-          legend.text = element_text(size = 10, colour = "black")) + 
+          legend.text = element_text(size = 8, colour = "black")) + 
     guides(fill = guide_legend(ncol = 3)) +
     ggtitle("Bacteria")
   
@@ -811,7 +824,7 @@
                                           panel.grid.minor = element_blank()) + 
                                     theme(legend.justification = "left", 
                                           legend.title = element_text(size = 14, colour = "black"), 
-                                          legend.text = element_text(size = 10, colour = "black"),
+                                          legend.text = element_text(size = 8, colour = "black"),
                                           strip.text = element_text(size = 8)) + 
                                     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
                                     guides(fill = guide_legend(ncol = 3)) +
