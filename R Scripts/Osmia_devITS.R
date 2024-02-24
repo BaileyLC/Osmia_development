@@ -242,10 +242,15 @@
                                 theme(legend.position = "none") +
                                 theme(panel.grid.major = element_blank(),
                                       panel.grid.minor = element_blank()) +
+                                theme(axis.text.x = element_text(size = 12, colour = "black"),
+                                      axis.text.y = element_text(size = 12, colour = "black"),
+                                      axis.title.x = element_text(size = 16, colour = "black"),
+                                      axis.title.y = element_text(size = 16, colour = "black")) +
                                 scale_color_manual(values = dev_colors) +
                                 scale_x_discrete(labels = c('fresh pollen + egg', 'aged pollen', 'larvae', 'pre-wintering adults', 'dead adults')) +
                                 labs(title = "B") +
                                 xlab("Sample type") +
+                                ylim(0, 5) +
                                 ylab("Shannon index")
   Osmia_dev_Shannon_fungi
 
@@ -257,10 +262,15 @@
                                 theme(legend.position = "none") +
                                 theme(panel.grid.major = element_blank(),
                                       panel.grid.minor = element_blank()) +
+                                theme(axis.text.x = element_text(size = 12, colour = "black"),
+                                      axis.text.y = element_text(size = 12, colour = "black"),
+                                      axis.title.x = element_text(size = 16, colour = "black"),
+                                      axis.title.y = element_text(size = 16, colour = "black")) +
                                 scale_color_manual(values = dev_colors) +
                                 scale_x_discrete(labels = c('fresh pollen + egg', 'aged pollen', 'larvae', 'pre-wintering adults', 'dead adults')) +
                                 labs(title = "B") +
                                 xlab("Sample Type") +
+                                ylim(0, 1) +
                                 ylab("Simpson Index")
   Osmia_dev_Simpson_fungi
 
@@ -272,11 +282,16 @@
                                 theme(legend.position = "none") +
                                 theme(panel.grid.major = element_blank(),
                                       panel.grid.minor = element_blank()) +
+                                theme(axis.text.x = element_text(size = 12, colour = "black"),
+                                      axis.text.y = element_text(size = 12, colour = "black"),
+                                      axis.title.x = element_text(size = 14, colour = "black"),
+                                      axis.title.y = element_text(size = 14, colour = "black")) +
                                 scale_color_manual(name = "Developmental Stage",
                                                    values = dev_colors) +
                                 scale_x_discrete(labels = c('fresh pollen + egg', 'aged pollen', 'larvae', 'pre-wintering adults', 'dead adults')) +
                                 labs(title = "B") +
                                 xlab("Sample Type") +
+                                ylim(0, 40) +
                                 ylab("Observed Richness")
   Osmia_dev_Observed_fungi
 
@@ -436,13 +451,15 @@
 # Plot ordination
   Osmia_dev_PCoA_fungi <- plot_ordination(ps.prop_fung, ord.pcoa.bray, color = "sample_type") + 
                             theme_bw() +
-                            theme(text = element_text(size = 16)) +
-                            theme(legend.justification = "left", 
-                                  legend.title = element_text(size = 16, colour = "black"), 
-                                  legend.text = element_text(size = 14, colour = "black")) + 
+                            theme(text = element_text(size = 16),
+                                  legend.justification = "left") + 
                             theme(panel.grid.major = element_blank(),
                                   panel.grid.minor = element_blank()) +
-                            geom_point(size = 3) +
+                            theme(axis.text.x = element_text(size = 12, colour = "black"),
+                                  axis.text.y = element_text(size = 12, colour = "black"),
+                                  axis.title.x = element_text(size = 14, colour = "black"),
+                                  axis.title.y = element_text(size = 14, colour = "black")) +
+                            geom_point(size = 4) +
                             scale_color_manual(values = dev_colors,
                                                labels = c('fresh pollen + egg', 'aged pollen', 'larvae', 'pre-wintering adults', 'dead adults')) +
                             labs(title = "B",
@@ -460,13 +477,15 @@
 # Plot ordination
   Osmia_dev_PCoA_fungi_bee <- plot_ordination(ps.prop_fung_bee, ord.pcoa.bray_bee, color = "sample_type") + 
                                   theme_bw() +
-                                  theme(text = element_text(size = 16)) +
                                   theme(legend.justification = "left", 
-                                        legend.title = element_text(size = 16, colour = "black"), 
-                                        legend.text = element_text(size = 14, colour = "black")) + 
+                                        text = element_text(size = 16)) + 
                                   theme(panel.grid.major = element_blank(),
                                         panel.grid.minor = element_blank()) +
-                                  geom_point(size = 3) +
+                                  theme(axis.text.x = element_text(size = 12, colour = "black"),
+                                        axis.text.y = element_text(size = 12, colour = "black"),
+                                        axis.title.x = element_text(size = 14, colour = "black"),
+                                        axis.title.y = element_text(size = 14, colour = "black")) +
+                                  geom_point(size = 4) +
                                   scale_color_manual(values = dev_colors,
                                                      labels = c("larvae", "pre-wintering adults", "dead adults")) +
                                   labs(title = "B",
@@ -644,16 +663,19 @@
 # Plot ordination
   Osmia_dev_PCoA_fungi_rare <- plot_ordination(ps.prop_rare, ord.pcoa.bray_rare, color = "sample_type") + 
                                   theme_bw() +
-                                  theme(text = element_text(size = 16)) +
                                   theme(legend.justification = "left", 
-                                        legend.title = element_text(size = 16, colour = "black"), 
-                                        legend.text = element_text(size = 14, colour = "black")) + 
+                                        text = element_text(size = 16)) + 
                                   theme(panel.grid.major = element_blank(),
                                         panel.grid.minor = element_blank()) +
-                                  geom_point(size = 3) +
+                                  theme(axis.text.x = element_text(size = 12, colour = "black"),
+                                        axis.text.y = element_text(size = 12, colour = "black"),
+                                        axis.title.x = element_text(size = 14, colour = "black"),
+                                        axis.title.y = element_text(size = 14, colour = "black")) +
+                                  geom_point(size = 4) +
                                   scale_color_manual(values = dev_colors,
                                                      labels = c('fresh pollen + egg', 'aged pollen', 'larvae', 'pre-wintering adults', 'dead adults')) +
-                                  labs(title = "B")
+                                  labs(title = "B",
+                                       color = "Sample Type")
   Osmia_dev_PCoA_fungi_rare
   
 # Only bee samples
@@ -671,16 +693,19 @@
 # Plot ordination
   Osmia_dev_PCoA_fungi_rare_bee <- plot_ordination(ps.prop_rare_bee, ord.pcoa.bray_rare_bee, color = "sample_type") + 
                                       theme_bw() +
-                                      theme(text = element_text(size = 16)) +
                                       theme(legend.justification = "left", 
-                                            legend.title = element_text(size = 16, colour = "black"), 
-                                            legend.text = element_text(size = 14, colour = "black")) + 
+                                            text = element_text(size = 16)) + 
                                       theme(panel.grid.major = element_blank(),
                                             panel.grid.minor = element_blank()) +
-                                      geom_point(size = 3) +
+                                      theme(axis.text.x = element_text(size = 12, colour = "black"),
+                                            axis.text.y = element_text(size = 12, colour = "black"),
+                                            axis.title.x = element_text(size = 14, colour = "black"),
+                                            axis.title.y = element_text(size = 14, colour = "black")) +
+                                      geom_point(size = 4) +
                                       scale_color_manual(values = dev_colors,
                                                          labels = c('larvae', 'pre-wintering adults', 'dead adults')) +
-                                      labs(title = "B")
+                                      labs(title = "B",
+                                           color = "Sample Type")
   Osmia_dev_PCoA_fungi_rare_bee
 
 ## Stacked community plots ----
@@ -707,9 +732,6 @@
   y9$Family[y9$Abundance < 0.01] <- "Family < 1% abund."
   y9$Family <- as.factor(y9$Family)
   head(y9)
-  
-# Save relative abundance data
-  write.csv(y9, "Osmia_dev_Fam_fungi_relabund.csv")
 
 # Order samples on x-axis
   y9$sample_type <- factor(y9$sample_type, levels = c("fresh pollen egg", "aged pollen", "larva", "pre-wintering adult", "dead adult"))
@@ -731,7 +753,7 @@
           legend.text = element_text(size = 8, colour = "black")) + 
     guides(fill = guide_legend(ncol = 3)) +
     ggtitle("Fungi")
-
+  
 # Plot Family for each sample
   Osmia_dev_fam_relabund_fungi <- ggplot(data = y9, aes(x = sampleID, y = Abundance, fill = Family)) + 
                                     geom_bar(stat = "identity", position = "fill") + 
@@ -753,6 +775,7 @@
                                           legend.text = element_text(size = 8, colour = "black"),
                                           strip.text = element_text(size = 8)) + 
                                     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+                                    theme(panel.spacing.x=unit(0.1, "lines")) +
                                     guides(fill = guide_legend(ncol = 3)) +
                                     ggtitle("B")
   Osmia_dev_fam_relabund_fungi
@@ -765,9 +788,6 @@
   y12$Genus[y12$Abundance < 0.01] <- "Genera < 1% abund."
   y12$Genus <- as.factor(y12$Genus)
   head(y12)
-  
-# Save relative abundance data
-  write.csv(y12, "Osmia_dev_Gen_fungi_relabund.csv")
 
 # Order samples on x-axis
   y12$sample_type <- factor(y12$sample_type, levels = c("fresh pollen egg", "aged pollen", "larva", "pre-wintering adult", "dead adult"))
@@ -816,6 +836,52 @@
                                     ggtitle("B")
   Osmia_dev_gen_relabund_fungi
 
+# Agglomerate taxa by Genus
+  y10 <- phyloseq::tax_glom(fung_rareps, taxrank = 'Genus')
+  
+# Identify the top 15 genera
+  top15_fung_gen <- microbiome::top_taxa(y10, n = 15)
+  
+# Remove taxa that are not in the top 15  
+  ps.top15_fung_gen <- phyloseq::prune_taxa(top15_fung_gen, y10)
+  
+# Transform counts to relative abundances
+  ps.top15_fung_gen_trans <- phyloseq::transform_sample_counts(ps.top15_fung_gen, function(x) x/sum(x))
+  
+# Convert to a ggplot2-friendly df  
+  ps.top15_fung_gen_trans_melt <- phyloseq::psmelt(ps.top15_fung_gen_trans)
+  
+# Order samples on x-axis
+  ps.top15_fung_gen_trans_melt$sample_type <- factor(ps.top15_fung_gen_trans_melt$sample_type, levels = c("fresh pollen egg", "aged pollen", "larva", "pre-wintering adult", "dead adult"))
+  
+# Plot top 15 genera for each sample
+  Osmia_dev_15gen_relabund_fung <- ggplot(data = ps.top15_fung_gen_trans_melt, aes(x = sampleID, y = Abundance, fill = Genus)) + 
+                                      geom_bar(stat = "identity", position = "fill") + 
+                                      scale_fill_manual(values = colors) +
+                                      facet_grid(~ sample_type, 
+                                                 scale = "free", 
+                                                 space = "free",
+                                                 labeller = labeller(sample_type = new_labs)) +
+                                      ylab("Relative abundance") + 
+                                      ylim(0, 1.0) +
+                                      scale_x_discrete(expand = c(0, 1.5)) +
+                                      xlab("Sample") +
+                                      theme_bw() + 
+                                      theme(text = element_text(size = 16)) +
+                                      theme(panel.grid.major = element_blank(), 
+                                            panel.grid.minor = element_blank()) + 
+                                      theme(legend.position = "right",
+                                            legend.justification = "left", 
+                                            legend.title = element_text(size = 14, colour = "black"), 
+                                            legend.text = element_text(size = 8, colour = "black"),
+                                            strip.text = element_text(size = 7)) +
+                                      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+                                      theme(panel.spacing.x = unit(0.1, "lines")) +
+                                      guides(fill = guide_legend(ncol = 1)) +
+                                      labs(fill = "Genera") +
+                                      ggtitle("B")
+  Osmia_dev_15gen_relabund_fung
+  
 ## Differential abundance ----
 # Resource: https://joey711.github.io/phyloseq-extensions/DESeq2.html  
 
