@@ -28,31 +28,31 @@
 # Import data
   seqtab.nochim <- readRDS("Osmia_dev_seqs16S.rds")
   taxa <- readRDS("Osmia_dev_taxa16S.rds")
-  meta16S_dev <- read.csv("Osmia_dev_master - 16S_worked.csv")
+  meta16S.dev <- read.csv("Osmia_dev_master - 16S_worked.csv")
 
 ## Create phyloseq object ----
 
 # Re-create your df
   samples.out <- rownames(seqtab.nochim)
   samples.out <- stringr::str_sort(samples.out, numeric = TRUE)
-  samples <- data.frame(meta16S_dev)
+  samples <- data.frame(meta16S.dev)
   extractionID <- samples$extractionID
   sample_type <- samples$sample_type
   sampleID <- samples$sampleID
   nesting_tube <- samples$nesting_tube
   sample_or_control <- samples$sample_or_control
   DNA_conc <- samples$DNA_conc
-  sampleinfo <- data.frame(extractionID = extractionID,
+  sample.info <- data.frame(extractionID = extractionID,
                            sample_type = sample_type,
                            sampleID = sampleID,
                            nesting_tube = nesting_tube,
                            sample_or_control = sample_or_control,
                            DNA_conc = DNA_conc)
-  rownames(sampleinfo) <- samples.out
+  rownames(sample.info) <- samples.out
 
 # Format your data to work with phyloseq
   ps1 <- phyloseq(otu_table(seqtab.nochim, taxa_are_rows = FALSE),
-                  sample_data(sampleinfo), 
+                  sample_data(sample.info), 
                   tax_table(taxa))
   ps1
 
