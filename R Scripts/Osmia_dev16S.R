@@ -218,30 +218,30 @@
 # All pollen and bee samples
   
 # Estimate Shannon index, Simpson index & observed richness
-  bactrich <- phyloseq::estimate_richness(ps3, split = TRUE, measures = c("Shannon", "Simpson", "Observed"))
+  bact.rich <- phyloseq::estimate_richness(ps3, split = TRUE, measures = c("Shannon", "Simpson", "Observed"))
   
 # Build df with metadata 
-  bactrich$sample_type <- sample_data(ps3)$sample_type
-  bactrich$nesting_tube <- sample_data(ps3)$nesting_tube
+  bact.rich$sample_type <- sample_data(ps3)$sample_type
+  bact.rich$nesting_tube <- sample_data(ps3)$nesting_tube
   
 # Plot richness and diversity
   phyloseq::plot_richness(ps3, x = "sample_type", measures = c("Shannon", "Simpson", "Observed"), color = "nesting_tube") + 
               theme_bw()
   
 # Remove samples with 0 reads 
-  bactrich[bactrich == 0] <- NA
-  bactrich <- bactrich[complete.cases(bactrich), ]
+  bact.rich[bact.rich == 0] <- NA
+  bact.rich <- bact.rich[complete.cases(bact.rich), ]
   
 # Examine the effects of sample_type on Shannon index
-  mod1 <- nlme::lme(Shannon ~ sample_type, random = ~1|nesting_tube, data = bactrich)
+  mod1 <- nlme::lme(Shannon ~ sample_type, random = ~1|nesting_tube, data = bact.rich)
   stats::anova(mod1)
   
 # Examine the effects of sample_type on Simpson index
-  mod2 <- nlme::lme(Simpson ~ sample_type, random = ~1|nesting_tube, data = bactrich)
+  mod2 <- nlme::lme(Simpson ~ sample_type, random = ~1|nesting_tube, data = bact.rich)
   stats::anova(mod2)
   
 # Examine the effects of sample_type on observed richness
-  mod3 <- nlme::lme(Observed ~ sample_type, random = ~1|nesting_tube, data = bactrich)
+  mod3 <- nlme::lme(Observed ~ sample_type, random = ~1|nesting_tube, data = bact.rich)
   stats::anova(mod3)
   
 # Set color scheme  
@@ -252,10 +252,10 @@
                   "dead adult" = "#616161")  
   
 # Order samples on x-axis
-  bactrich$sample_type <- factor(bactrich$sample_type, levels = c("fresh pollen egg", "aged pollen", "larva", "pre-wintering adult", "dead adult"))
+  bact.rich$sample_type <- factor(bact.rich$sample_type, levels = c("fresh pollen egg", "aged pollen", "larva", "pre-wintering adult", "dead adult"))
   
 # Boxplot of Shannon index
-  Osmia.dev.Shannon.bact <- ggplot(bactrich, aes(x = sample_type, y = Shannon, color = sample_type)) + 
+  Osmia.dev.Shannon.bact <- ggplot(bact.rich, aes(x = sample_type, y = Shannon, color = sample_type)) + 
                                 geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(width = 0.1)) +
                                 geom_jitter(size = 1, alpha = 0.9) +
                                 theme_bw() +
@@ -275,7 +275,7 @@
   Osmia.dev.Shannon.bact
   
 # Boxplot of Simpson index
-  Osmia.dev.Simpson.bact <- ggplot(bactrich, aes(x = sample_type, y = Simpson, color = sample_type)) + 
+  Osmia.dev.Simpson.bact <- ggplot(bact.rich, aes(x = sample_type, y = Simpson, color = sample_type)) + 
                                    geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(width = 0.1)) +
                                    geom_jitter(size = 1, alpha = 0.9) +
                                    theme_bw() +
@@ -295,7 +295,7 @@
     Osmia.dev.Simpson.bact
 
 # Boxplot of Observed richness
-  Osmia.dev.Observed.bact <- ggplot(bactrich, aes(x = sample_type, y = Observed, color = sample_type)) + 
+  Osmia.dev.Observed.bact <- ggplot(bact.rich, aes(x = sample_type, y = Observed, color = sample_type)) + 
                                 geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(width = 0.1)) +
                                 geom_jitter(size = 1, alpha = 0.9) +
                                 theme_bw() +
