@@ -51,7 +51,7 @@
   rownames(sampleinfo) <- samples.out
 
 # Format your data to work with phyloseq
-  ps1 <- phyloseq(otu_table(seqtab.nochim, taxa_are_rows = FALSE), 
+  ps1 <- phyloseq(otu_table(seqtab.nochim, taxa_are_rows = FALSE),
                   sample_data(sampleinfo), 
                   tax_table(taxa))
   ps1
@@ -133,15 +133,14 @@
   ps.noncontam
 
 # Remove control samples
-  ps_sub <- phyloseq::subset_samples(ps.noncontam, sample_or_control != "control")
-  ps_sub
+  ps.sub <- phyloseq::subset_samples(ps.noncontam, sample_or_control != "control")
+  ps.sub
 
 # Remove DNA from mitochondria & chloroplast
-  ps2 <- ps_sub %>%
-    phyloseq::subset_taxa(
-      Kingdom == "Bacteria" &
-        Family  != "mitochondria" &
-        Class   != "Chloroplast"
+  ps2 <- ps.sub %>%
+    phyloseq::subset_taxa(Kingdom == "Bacteria" &
+                            Family  != "mitochondria" &
+                            Class   != "Chloroplast"
     )
 
 # Remove DNA from Eukarya, Eukaryota & Streptophyta
@@ -172,11 +171,11 @@
   print(plotrix::std.error(sample_sums(ps3)))
   
 # Calculate the reads per sample
-  reads_sample <- microbiome::readcount(ps3)
-  head(reads_sample)
+  reads.sample <- microbiome::readcount(ps3)
+  head(reads.sample)
   
 # Add reads per sample to meta data
-  sample_data(ps3)$reads_sample <- reads_sample
+  sample_data(ps3)$reads.sample <- reads.sample
   
 # Save sample metadata
   meta <- sample_data(ps3)
@@ -185,8 +184,10 @@
   meta %>%
     group_by(sample_type) %>%
     summarise(N = n(),
-              mean = mean(reads_sample),
-              se = sd(reads_sample)/sqrt(N))
+              mean = mean(reads.sample),
+              se = sd(reads.sample)/sqrt(N),
+              max = max(reads.sample),
+              min = min(reads.sample))
   
 # Save taxonomy and ASV counts data
   write.csv(tax_table(ps3), "Osmia_dev_16Staxa.csv")
@@ -212,18 +213,18 @@
     scale_y_log10() + 
     facet_wrap(~ type, 1, scales = "free")
   
-## Alpha diversity ----
+## Richness and alpha diversity ----
   
 # All pollen and bee samples
   
-# Estimate Shannon, Simpson & observed richness
+# Estimate Shannon index, Simpson index & observed richness
   bactrich <- phyloseq::estimate_richness(ps3, split = TRUE, measures = c("Shannon", "Simpson", "Observed"))
   
 # Build df with metadata 
   bactrich$sample_type <- sample_data(ps3)$sample_type
   bactrich$nesting_tube <- sample_data(ps3)$nesting_tube
   
-# Plot alpha diversity
+# Plot richness and diversity
   phyloseq::plot_richness(ps3, x = "sample_type", measures = c("Shannon", "Simpson", "Observed"), color = "nesting_tube") + 
               theme_bw()
   
@@ -244,7 +245,7 @@
   stats::anova(mod3)
   
 # Set color scheme  
-  dev_colors <- c("fresh pollen egg" = "#FDD835",
+  dev.colors <- c("fresh pollen egg" = "#FDD835",
                   "aged pollen" = "#E4511E",
                   "larva" = "#43A047",
                   "pre-wintering adult" = "#0288D1",
@@ -254,7 +255,7 @@
   bactrich$sample_type <- factor(bactrich$sample_type, levels = c("fresh pollen egg", "aged pollen", "larva", "pre-wintering adult", "dead adult"))
   
 # Boxplot of Shannon index
-  Osmia_dev_Shannon_bact <- ggplot(bactrich, aes(x = sample_type, y = Shannon, color = sample_type)) + 
+  Osmia.dev.Shannon.bact <- ggplot(bactrich, aes(x = sample_type, y = Shannon, color = sample_type)) + 
                                 geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(width = 0.1)) +
                                 geom_jitter(size = 1, alpha = 0.9) +
                                 theme_bw() +
@@ -265,16 +266,16 @@
                                       axis.text.y = element_text(size = 12, colour = "black"),
                                       axis.title.x = element_text(size = 14, colour = "black"),
                                       axis.title.y = element_text(size = 14, colour = "black")) +
-                                scale_color_manual(values = dev_colors) +
+                                scale_color_manual(values = dev.colors) +
                                 scale_x_discrete(labels = c('fresh pollen + egg', 'aged pollen', 'larvae', 'pre-wintering adults', 'dead adults')) +
                                 labs(title = "A") +
                                 xlab("Sample Type") +
                                 ylim(0, 5) +
                                 ylab("Shannon Index")
-  Osmia_dev_Shannon_bact
+  Osmia.dev.Shannon.bact
   
 # Boxplot of Simpson index
-  Osmia_dev_Simpson_bact <- ggplot(bactrich, aes(x = sample_type, y = Simpson, color = sample_type)) + 
+  Osmia.dev.Simpson.bact <- ggplot(bactrich, aes(x = sample_type, y = Simpson, color = sample_type)) + 
                                    geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(width = 0.1)) +
                                    geom_jitter(size = 1, alpha = 0.9) +
                                    theme_bw() +
@@ -285,16 +286,16 @@
                                          axis.text.y = element_text(size = 12, colour = "black"),
                                          axis.title.x = element_text(size = 14, colour = "black"),
                                          axis.title.y = element_text(size = 14, colour = "black")) +
-                                   scale_color_manual(values = dev_colors) +
+                                   scale_color_manual(values = dev.colors) +
                                    scale_x_discrete(labels = c('fresh pollen + egg', 'aged pollen', 'larvae', 'pre-wintering adults', 'dead adults')) +
                                    labs(title = "A") +
                                    xlab("Sample Type") +
                                    ylim(0, 1) +
                                    ylab("Simpson Index")
-    Osmia_dev_Simpson_bact
+    Osmia.dev.Simpson.bact
 
 # Boxplot of Observed richness
-  Osmia_dev_Observed_bact <- ggplot(bactrich, aes(x = sample_type, y = Observed, color = sample_type)) + 
+  Osmia.dev.Observed.bact <- ggplot(bactrich, aes(x = sample_type, y = Observed, color = sample_type)) + 
                                 geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(width = 0.1)) +
                                 geom_jitter(size = 1, alpha = 0.9) +
                                 theme_bw() +
@@ -305,13 +306,13 @@
                                       axis.text.y = element_text(size = 12, colour = "black"),
                                       axis.title.x = element_text(size = 14, colour = "black"),
                                       axis.title.y = element_text(size = 14, colour = "black")) +
-                                scale_color_manual(values = dev_colors) +
+                                scale_color_manual(values = dev.colors) +
                                 scale_x_discrete(labels = c('fresh pollen + egg', 'aged pollen', 'larvae', 'pre-wintering adults', 'dead adults')) +
                                 labs(title = "A") +
                                 xlab("Sample Type") +
                                 ylim(0, 40) +
                                 ylab("Observed Richness")
-  Osmia_dev_Observed_bact
+  Osmia.dev.Observed.bact
   
 # Only bee samples
   
@@ -320,31 +321,31 @@
   ps4 <- phyloseq::subset_samples(ps4, sample_type != "aged pollen")
   ps4
   
-# Estimate Shannon, Simpson & observed richness
-  bee_rich <- phyloseq::estimate_richness(ps4, split = TRUE, measures = c("Shannon", "Simpson", "Observed"))
+# Estimate Shannon index, Simpson index & observed richness
+  bee.rich <- phyloseq::estimate_richness(ps4, split = TRUE, measures = c("Shannon", "Simpson", "Observed"))
   
 # Build df with metadata
-  bee_rich$sample_type <- sample_data(ps4)$sample_type
-  bee_rich$nesting_tube <- sample_data(ps4)$nesting_tube
+  bee.rich$sample_type <- sample_data(ps4)$sample_type
+  bee.rich$nesting_tube <- sample_data(ps4)$nesting_tube
   
-# Plot alpha diversity
+# Plot richness and diversity
   phyloseq::plot_richness(ps4, x = "sample_type", measures = c("Shannon", "Simpson", "Observed"), color = "nesting_tube") + 
       theme_bw()
   
 # Remove samples with 0 species reads 
-  bee_rich[bee_rich == 0] <- NA
-  bee_rich <- bee_rich[complete.cases(bee_rich), ]
+  bee.rich[bee.rich == 0] <- NA
+  bee.rich <- bee.rich[complete.cases(bee.rich), ]
   
 # Examine the effects of sample_type on Shannon index
-  mod4 <- nlme::lme(Shannon ~ sample_type, random = ~1|nesting_tube, data = bee_rich)
+  mod4 <- nlme::lme(Shannon ~ sample_type, random = ~1|nesting_tube, data = bee.rich)
   stats::anova(mod4)
   
 # Examine the effects of sample_type on Simpson index
-  mod5 <- nlme::lme(Simpson ~ sample_type, random = ~1|nesting_tube, data = bee_rich)
+  mod5 <- nlme::lme(Simpson ~ sample_type, random = ~1|nesting_tube, data = bee.rich)
   stats::anova(mod5)
   
 # Examine the effects of sample_type on observed richness
-  mod6 <- nlme::lme(Observed ~ sample_type, random = ~1|nesting_tube, data = bee_rich)
+  mod6 <- nlme::lme(Observed ~ sample_type, random = ~1|nesting_tube, data = bee.rich)
   stats::anova(mod6)
   
 ## Beta diversity with relative abundance data ----
@@ -352,120 +353,108 @@
 # All pollen and bee samples
   
 # Calculate the relative abundance of each otu  
-  ps.prop_bact <- phyloseq::transform_sample_counts(ps3, function(otu) otu/sum(otu))
+  ps.prop.bact <- phyloseq::transform_sample_counts(ps3, function(otu) otu/sum(otu))
   
 # Save relative abundance data
-  write.csv(otu_table(ps.prop_bact), "Osmia_dev_16Sotu_relabund.csv")
+  write.csv(otu_table(ps.prop.bact), "Osmia_dev_16Sotu_relabund.csv")
   
 # Create a distance matrix using Bray Curtis dissimilarity
-  bact_bray <- phyloseq::distance(ps.prop_bact, method = "bray")
+  bact.bray <- phyloseq::distance(ps.prop.bact, method = "bray")
   
 # Convert to data frame
-  samplebact <- data.frame(sample_data(ps3))
+  sample.bact <- data.frame(sample_data(ps3))
   
 # Perform the PERMANOVA to test effects of developmental stage on bacterial community composition
-  bact_perm_relabund <- vegan::adonis2(bact_bray ~ sample_type, data = samplebact)
-  bact_perm_relabund
+  bact.perm.relabund <- vegan::adonis2(bact.bray ~ sample_type, data = sample.bact)
+  bact.perm.relabund
   
 # Follow up with pairwise comparisons - which sample types differ?
-  bact_perm_BH <- RVAideMemoire::pairwise.perm.manova(bact_bray, samplebact$sample_type, p.method = "BH")
-  bact_perm_BH
+  bact.perm.BH <- RVAideMemoire::pairwise.perm.manova(bact.bray, sample.bact$sample_type, p.method = "BH")
+  bact.perm.BH
   
 # Set permutations to deal with pseudoreplication of bee nests
-  perm_relabund <- permute::how(within = Within(type = "free"),
+  perm.relabund <- permute::how(within = Within(type = "free"),
                             plots = Plots(type = "none"),
-                            blocks = samplebact$nesting_tube,
+                            blocks = sample.bact$nesting_tube,
                             observed = FALSE,
                             complete = FALSE)
   
 # Perform the PERMANOVA to test effects of developmental stage on bacterial community composition, dealing with pseudoreplication
-  bact_perm_relabund_pseudo <- vegan::adonis2(bact_bray ~ sample_type, permutations = perm_relabund, data = samplebact)
-  bact_perm_relabund_pseudo
+  bact.perm.relabund.pseudo <- vegan::adonis2(bact.bray ~ sample_type, permutations = perm.relabund, data = sample.bact)
+  bact.perm.relabund.pseudo
   
 # Only bee samples
   
 # Calculate the relative abundance of each otu  
-  ps.prop_bact_bee <- phyloseq::transform_sample_counts(ps4, function(otu) otu/sum(otu))
+  ps.prop.bact.bee <- phyloseq::transform_sample_counts(ps4, function(otu) otu/sum(otu))
   
 # Create a distance matrix using Bray Curtis dissimilarity
-  bact_bray_bee <- phyloseq::distance(ps.prop_bact_bee, method = "bray")
+  bact.bray.bee <- phyloseq::distance(ps.prop.bact.bee, method = "bray")
   
 # Convert to data frame
-  samplebact_bee <- data.frame(sample_data(ps4))
+  sample.bact.bee <- data.frame(sample_data(ps4))
   
 # Perform the PERMANOVA to test effects of developmental stage on bacterial community composition
-  bact_perm_relabund_bee <- vegan::adonis2(bact_bray_bee ~ sample_type, data = samplebact_bee)
-  bact_perm_relabund_bee
+  bact.perm.relabund.bee <- vegan::adonis2(bact.bray.bee ~ sample_type, data = sample.bact.bee)
+  bact.perm.relabund.bee
   
 # Follow up with pairwise comparisons - which sample types differ?
-  bact_perm_BH_bee <- RVAideMemoire::pairwise.perm.manova(bact_bray_bee, samplebact_bee$sample_type, p.method = "BH")
-  bact_perm_BH_bee
+  bact.perm.BH.bee <- RVAideMemoire::pairwise.perm.manova(bact.bray.bee, sample.bact.bee$sample_type, p.method = "BH")
+  bact.perm.BH.bee
   
 # Set permutations to deal with pseudoreplication of bee nests
-  perm_relabund_bee <- permute::how(within = Within(type = "free"),
+  perm.relabund.bee <- permute::how(within = Within(type = "free"),
                                     plots = Plots(type = "none"),
-                                    blocks = samplebact_bee$nesting_tube,
+                                    blocks = sample.bact.bee$nesting_tube,
                                     observed = FALSE,
                                     complete = FALSE)
   
 # Perform the PERMANOVA to test effects of developmental stage on bacterial community composition, dealing with pseudoreplication
-  bact_perm_relabund_pseudo_bee <- vegan::adonis2(bact_bray_bee ~ sample_type, permutations = perm_relabund_bee, data = samplebact_bee)
-  bact_perm_relabund_pseudo_bee
+  bact.perm.relabund.pseudo.bee <- vegan::adonis2(bact.bray.bee ~ sample_type, permutations = perm.relabund.bee, data = sample.bact.bee)
+  bact.perm.relabund.pseudo.bee
   
 ## Test for homogeneity of multivariate dispersion with relative abundance data ----
   
 # All pollen and bee samples  
   
 # Calculate the average distance of group members to the group centroid
-  disp_bact <- vegan::betadisper(bact_bray, samplebact$sample_type)
-  disp_bact
+  disp.bact <- vegan::betadisper(bact.bray, sample.bact$sample_type)
+  disp.bact
   
 # Do any of the group dispersions differ?
-  disp_bact_an <- stats::anova(disp_bact)
-  disp_bact_an
+  disp.bact.an <- stats::anova(disp.bact)
+  disp.bact.an
   
 # Which group dispersions differ?
-  disp_bact_ttest <- vegan::permutest(disp_bact, 
-                                      control = permControl(nperm = 999),
-                                      pairwise = TRUE)
-  disp_bact_ttest
-  
-# Which group dispersions differ?
-  disp_bact_tHSD <- stats::TukeyHSD(disp_bact)
-  disp_bact_tHSD
+  disp.bact.tHSD <- stats::TukeyHSD(disp.bact)
+  disp.bact.tHSD
   
 # Only bee samples
   
 # Calculate the average distance of group members to the group centroid
-  disp_bact_bee <- vegan::betadisper(bact_bray_bee, samplebact_bee$sample_type)
-  disp_bact_bee
+  disp.bact.bee <- vegan::betadisper(bact.bray.bee, sample.bact.bee$sample_type)
+  disp.bact.bee
   
 # Do any of the group dispersions differ?
-  disp_bact_an_bee <- stats::anova(disp_bact_bee)
-  disp_bact_an_bee
+  disp.bact.an.bee <- stats::anova(disp.bact.bee)
+  disp.bact.an.bee
   
 # Which group dispersions differ?
-  disp_bact_ttest_bee <- vegan::permutest(disp_bact_bee, 
-                                          control = permControl(nperm = 999),
-                                          pairwise = TRUE)
-  disp_bact_ttest_bee
-  
-# Which group dispersions differ?
-  disp_bact_tHSD_bee <- stats::TukeyHSD(disp_bact_bee)
-  disp_bact_tHSD_bee
+  disp.bact.tHSD.bee <- stats::TukeyHSD(disp.bact.bee)
+  disp.bact.tHSD.bee
 
 ## Ordination with relative abundance data ----
   
 # All pollen and bee samples
   
 # PCoA using Bray-Curtis distance
-  ord.pcoa.bray <- phyloseq::ordinate(ps.prop_bact, method = "PCoA", distance = "bray")
+  ord.pcoa.bray <- phyloseq::ordinate(ps.prop.bact, method = "PCoA", distance = "bray")
   
 # Order samples
-  sample_data(ps.prop_bact)$sample_type <- factor(sample_data(ps.prop_bact)$sample_type, levels = c("fresh pollen egg", "aged pollen", "larva", "pre-wintering adult", "dead adult"))
+  sample_data(ps.prop.bact)$sample_type <- factor(sample_data(ps.prop.bact)$sample_type, levels = c("fresh pollen egg", "aged pollen", "larva", "pre-wintering adult", "dead adult"))
   
 # Plot ordination
-  Osmia_dev_PCoA_bact <- plot_ordination(ps.prop_bact, ord.pcoa.bray, color = "sample_type") + 
+  Osmia.dev.PCoA.bact <- plot_ordination(ps.prop.bact, ord.pcoa.bray, color = "sample_type") + 
                             theme_bw() +
                             theme(legend.position = "none",
                                   text = element_text(size = 16)) +
@@ -476,22 +465,22 @@
                                   axis.title.x = element_text(size = 14, colour = "black"),
                                   axis.title.y = element_text(size = 14, colour = "black")) +
                             geom_point(size = 4) +
-                            scale_color_manual(values = dev_colors,
+                            scale_color_manual(values = dev.colors,
                                                labels = c('fresh pollen + egg', 'aged pollen', 'larvae', 'pre-wintering adults', 'dead adults')) + 
                             labs(title = "A",
                                  color = "Sample Type")
-  Osmia_dev_PCoA_bact
+  Osmia.dev.PCoA.bact
 
 # Only bee samples  
   
 # PCoA using Bray-Curtis distance
-  ord.pcoa.bray_bee <- phyloseq::ordinate(ps.prop_bact_bee, method = "PCoA", distance = "bray")
+  ord.pcoa.bray.bee <- phyloseq::ordinate(ps.prop.bact.bee, method = "PCoA", distance = "bray")
   
 # Order samples
-  sample_data(ps.prop_bact_bee)$sample_type <- factor(sample_data(ps.prop_bact_bee)$sample_type, levels = c("larva", "pre-wintering adult", "dead adult"))
+  sample_data(ps.prop.bact.bee)$sample_type <- factor(sample_data(ps.prop.bact.bee)$sample_type, levels = c("larva", "pre-wintering adult", "dead adult"))
   
 # Plot ordination
-  Osmia_dev_PCoA_bact_bee <- plot_ordination(ps.prop_bact_bee, ord.pcoa.bray_bee, color = "sample_type") + 
+  Osmia.dev.PCoA.bact.bee <- plot_ordination(ps.prop.bact.bee, ord.pcoa.bray.bee, color = "sample_type") + 
                                   theme_bw() +
                                   theme(legend.position = "none",
                                         text = element_text(size = 16)) +
@@ -502,11 +491,11 @@
                                         axis.title.x = element_text(size = 14, colour = "black"),
                                         axis.title.y = element_text(size = 14, colour = "black")) +
                                   geom_point(size = 4) +
-                                  scale_color_manual(values = dev_colors,
+                                  scale_color_manual(values = dev.colors,
                                                      labels = c("larvae", "pre-wintering adults", "dead adults")) + 
                                   labs(title = "A",
                                        color = "Sample Type")
-  Osmia_dev_PCoA_bact_bee
+  Osmia.dev.PCoA.bact.bee
   
 ## Rarefaction ----
   
@@ -518,10 +507,10 @@
   tab <- t(tab)
   
 # Save rarefaction data as a "tidy" df
-  rare_tidy_bact <- vegan::rarecurve(tab, label = FALSE, tidy = TRUE)
+  rare.tidy.bact <- vegan::rarecurve(tab, label = FALSE, tidy = TRUE)
   
 # Plot rarefaction curve
-  Osmia_dev_rare_bact <- ggplot(rare_tidy_bact, aes(x = Sample, y = Species, group = Site)) +
+  Osmia.dev.rare.bact <- ggplot(rare.tidy.bact, aes(x = Sample, y = Species, group = Site)) +
                             geom_line() +
                             theme_bw() +
                             theme(panel.grid.major = element_blank(),
@@ -529,24 +518,24 @@
                             labs(title = "A") + 
                             xlab("Number of reads") +
                             ylab("Number of species")
-  Osmia_dev_rare_bact
+  Osmia.dev.rare.bact
 
 # Set seed and rarefy  
   set.seed(1234)
-  rareps_bact <- phyloseq::rarefy_even_depth(ps3, sample.size = 16)
+  rareps.bact <- phyloseq::rarefy_even_depth(ps3, sample.size = 16)
 
 # Only bee samples
   
 # Produce rarefaction curves
-  tab_bee <- otu_table(ps4)
-  class(tab_bee) <- "matrix"
-  tab_bee <- t(tab_bee)
+  tab.bee <- otu_table(ps4)
+  class(tab.bee) <- "matrix"
+  tab.bee <- t(tab.bee)
   
 # Save rarefaction data as a "tidy" df
-  rare_tidy_bact_bee <- vegan::rarecurve(tab_bee, label = FALSE, tidy = TRUE)
+  rare.tidy.bact.bee <- vegan::rarecurve(tab.bee, label = FALSE, tidy = TRUE)
   
 # Plot rarefaction curve
-  Osmia_dev_rare_bact_bee <- ggplot(rare_tidy_bact_bee, aes(x = Sample, y = Species, group = Site)) +
+  Osmia.dev.rare.bact.bee <- ggplot(rare.tidy.bact.bee, aes(x = Sample, y = Species, group = Site)) +
                                   geom_line() +
                                   theme_bw() +
                                   theme(panel.grid.major = element_blank(),
@@ -554,126 +543,114 @@
                                   labs(title = "A") + 
                                   xlab("Number of reads") +
                                   ylab("Number of species")
-  Osmia_dev_rare_bact_bee
+  Osmia.dev.rare.bact.bee
   
 # Set seed and rarefy  
   set.seed(1234)
-  rareps_bact_bee <- phyloseq::rarefy_even_depth(ps4, sample.size = 15)
+  rareps.bact.bee <- phyloseq::rarefy_even_depth(ps4, sample.size = 15)
   
 ## Beta diversity with rarefied data ----  
   
 # All pollen and bee samples  
   
 # Create a distance matrix using Bray Curtis dissimilarity
-  bact_bray_rare <- phyloseq::distance(rareps_bact, method = "bray")
+  bact.bray.rare <- phyloseq::distance(rareps.bact, method = "bray")
   
 # Convert to data frame
-  samplebact_rare <- data.frame(sample_data(rareps_bact))
+  sample.bact.rare <- data.frame(sample_data(rareps.bact))
   
 # Perform the PERMANOVA to test effects of developmental stage on bacterial community composition
-  bact_perm_rare <- vegan::adonis2(bact_bray_rare ~ sample_type, data = samplebact_rare)
-  bact_perm_rare
+  bact.perm.rare <- vegan::adonis2(bact.bray.rare ~ sample_type, data = sample.bact.rare)
+  bact.perm.rare
   
 # Follow up with pairwise comparisons - which sample types differ?
-  bact_perm_BH_rare <- RVAideMemoire::pairwise.perm.manova(bact_bray_rare, samplebact_rare$sample_type, p.method = "BH")
-  bact_perm_BH_rare
+  bact.perm.BH.rare <- RVAideMemoire::pairwise.perm.manova(bact.bray.rare, sample.bact.rare$sample_type, p.method = "BH")
+  bact.perm.BH.rare
   
 # Set permutations to deal with pseudoreplication of bee nests
-  perm_rare <- permute::how(within = Within(type = "free"),
+  perm.rare <- permute::how(within = Within(type = "free"),
                             plots = Plots(type = "none"),
-                            blocks = samplebact_rare$nesting_tube,
+                            blocks = sample.bact.rare$nesting_tube,
                             observed = FALSE,
                             complete = FALSE)
   
 # Perform the PERMANOVA to test effects of developmental stage on bacterial community composition, dealing with pseudoreplication
-  bact_perm_rare_pseudo <- vegan::adonis2(bact_bray_rare ~ sample_type, permutations = perm_rare, data = samplebact_rare)
-  bact_perm_rare_pseudo
+  bact.perm.rare.pseudo <- vegan::adonis2(bact.bray.rare ~ sample_type, permutations = perm.rare, data = sample.bact.rare)
+  bact.perm.rare.pseudo
   
 # Only bee samples  
   
 # Create a distance matrix using Bray Curtis dissimilarity
-  bact_bray_rare_bee <- phyloseq::distance(rareps_bact_bee, method = "bray")
+  bact.bray.rare.bee <- phyloseq::distance(rareps.bact.bee, method = "bray")
   
 # Convert to data frame
-  samplebact_rare_bee <- data.frame(sample_data(rareps_bact_bee))
+  sample.bact.rare.bee <- data.frame(sample_data(rareps.bact.bee))
   
 # Perform the PERMANOVA to test effects of developmental stage on bacterial community composition
-  bact_perm_rare_bee <- vegan::adonis2(bact_bray_rare_bee ~ sample_type, data = samplebact_rare_bee)
-  bact_perm_rare_bee
+  bact.perm.rare.bee <- vegan::adonis2(bact.bray.rare.bee ~ sample_type, data = sample.bact.rare.bee)
+  bact.perm.rare.bee
   
 # Follow up with pairwise comparisons - which sample types differ?
-  bact_perm_BH_rare_bee <- RVAideMemoire::pairwise.perm.manova(bact_bray_rare_bee, samplebact_rare_bee$sample_type, p.method = "BH")
-  bact_perm_BH_rare_bee
+  bact.perm.BH.rare.bee <- RVAideMemoire::pairwise.perm.manova(bact.bray.rare.bee, sample.bact.rare.bee$sample_type, p.method = "BH")
+  bact.perm.BH.rare.bee
   
 # Set permutations to deal with pseudoreplication of bee nests
-  perm_rare_bee <- permute::how(within = Within(type = "free"),
+  perm.rare.bee <- permute::how(within = Within(type = "free"),
                                 plots = Plots(type = "none"),
-                                blocks = samplebact_rare_bee$nesting_tube,
+                                blocks = sample.bact.rare.bee$nesting_tube,
                                 observed = FALSE,
                                 complete = FALSE)
   
 # Perform the PERMANOVA to test effects of developmental stage on bacterial community composition, dealing with pseudoreplication
-  bact_perm_rare_pseudo_bee <- vegan::adonis2(bact_bray_rare_bee ~ sample_type, permutations = perm_rare_bee, data = samplebact_rare_bee)
-  bact_perm_rare_pseudo_bee
+  bact.perm.rare.pseudo.bee <- vegan::adonis2(bact.bray.rare.bee ~ sample_type, permutations = perm.rare.bee, data = sample.bact.rare.bee)
+  bact.perm.rare.pseudo.bee
   
 ## Test for homogeneity of multivariate dispersion with rarefied data ----
 
 # All pollen and bee samples
   
 # Calculate the average distance of group members to the group centroid
-  disp_bact_rare <- vegan::betadisper(bact_bray_rare, samplebact_rare$sample_type)
-  disp_bact_rare
+  disp.bact.rare <- vegan::betadisper(bact.bray.rare, sample.bact.rare$sample_type)
+  disp.bact.rare
   
 # Do any of the group dispersions differ?
-  disp_bact_an_rare <- stats::anova(disp_bact_rare)
-  disp_bact_an_rare
+  disp.bact.an.rare <- stats::anova(disp.bact.rare)
+  disp.bact.an.rare
   
 # Which group dispersions differ?
-  disp_bact_ttest_rare <- vegan::permutest(disp_bact_rare, 
-                                           control = permControl(nperm = 999),
-                                           pairwise = TRUE)
-  disp_bact_ttest_rare
-  
-# Which group dispersions differ?
-  disp_bact_tHSD_rare <- stats::TukeyHSD(disp_bact_rare)
-  disp_bact_tHSD_rare
+  disp.bact.tHSD.rare <- stats::TukeyHSD(disp.bact.rare)
+  disp.bact.tHSD.rare
   
 # Only bee samples
   
 # Calculate the average distance of group members to the group centroid
-  disp_bact_rare_bee <- vegan::betadisper(bact_bray_rare_bee, samplebact_rare_bee$sample_type)
-  disp_bact_rare_bee
+  disp.bact.rare.bee <- vegan::betadisper(bact.bray.rare.bee, sample.bact.rare.bee$sample_type)
+  disp.bact.rare.bee
   
 # Do any of the group dispersions differ?
-  disp_bact_an_rare_bee <- stats::anova(disp_bact_rare_bee)
-  disp_bact_an_rare_bee
+  disp.bact.an.rare.bee <- stats::anova(disp.bact.rare.bee)
+  disp.bact.an.rare.bee
   
 # Which group dispersions differ?
-  disp_bact_ttest_rare_bee <- vegan::permutest(disp_bact_rare_bee, 
-                                               control = permControl(nperm = 999),
-                                               pairwise = TRUE)
-  disp_bact_ttest_rare_bee
-  
-# Which group dispersions differ?
-  disp_bact_tHSD_rare_bee <- stats::TukeyHSD(disp_bact_rare_bee)
-  disp_bact_tHSD_rare_bee
+  disp.bact.tHSD.rare.bee <- stats::TukeyHSD(disp.bact.rare.bee)
+  disp.bact.tHSD.rare.bee
   
 ## Ordination with rarefied data ----
   
 # All pollen and bee samples
   
 # Calculate the relative abundance of each otu
-  ps.prop_rare <- phyloseq::transform_sample_counts(rareps_bact, function(otu) otu/sum(otu))
-  ps.prop_rare
+  ps.prop.rare <- phyloseq::transform_sample_counts(rareps.bact, function(otu) otu/sum(otu))
+  ps.prop.rare
   
 # PCoA using Bray-Curtis distance
-  ord.pcoa.bray_rare <- phyloseq::ordinate(ps.prop_rare, method = "PCoA", distance = "bray")
+  ord.pcoa.bray.rare <- phyloseq::ordinate(ps.prop.rare, method = "PCoA", distance = "bray")
   
 # Order samples
-  sample_data(ps.prop_rare)$sample_type <- factor(sample_data(ps.prop_rare)$sample_type, levels = c("fresh pollen egg", "aged pollen", "larva", "pre-wintering adult", "dead adult"))
+  sample_data(ps.prop.rare)$sample_type <- factor(sample_data(ps.prop.rare)$sample_type, levels = c("fresh pollen egg", "aged pollen", "larva", "pre-wintering adult", "dead adult"))
   
 # Plot ordination
-  Osmia_dev_PCoA_bact_rare <- plot_ordination(ps.prop_rare, ord.pcoa.bray_rare, color = "sample_type") + 
+  Osmia.dev.PCoA.bact.rare <- plot_ordination(ps.prop.rare, ord.pcoa.bray.rare, color = "sample_type") + 
                                   theme_bw() +
                                   theme(legend.position = "none",
                                         text = element_text(size = 16)) +
@@ -684,26 +661,26 @@
                                         axis.title.x = element_text(size = 14, colour = "black"),
                                         axis.title.y = element_text(size = 14, colour = "black")) +
                                   geom_point(size = 4) +
-                                  scale_color_manual(values = dev_colors,
+                                  scale_color_manual(values = dev.colors,
                                                      labels = c('fresh pollen + egg', 'aged pollen', 'larvae', 'pre-wintering adults', 'dead adults')) + 
                                   labs(color = "Developmental Stage") +
                                   ggtitle("A")
-  Osmia_dev_PCoA_bact_rare
+  Osmia.dev.PCoA.bact.rare
   
 # Only bee samples
   
 # Calculate the relative abundance of each otu
-  ps.prop_rare_bee <- phyloseq::transform_sample_counts(rareps_bact_bee, function(otu) otu/sum(otu))
-  ps.prop_rare_bee
+  ps.prop.rare.bee <- phyloseq::transform_sample_counts(rareps.bact.bee, function(otu) otu/sum(otu))
+  ps.prop.rare.bee
   
 # PCoA using Bray-Curtis distance
-  ord.pcoa.bray_rare_bee <- phyloseq::ordinate(ps.prop_rare_bee, method = "PCoA", distance = "bray")
+  ord.pcoa.bray.rare.bee <- phyloseq::ordinate(ps.prop.rare.bee, method = "PCoA", distance = "bray")
   
 # Order samples
-  sample_data(ps.prop_rare_bee)$sample_type <- factor(sample_data(ps.prop_rare_bee)$sample_type, levels = c("larva", "pre-wintering adult", "dead adult"))
+  sample_data(ps.prop.rare.bee)$sample_type <- factor(sample_data(ps.prop.rare.bee)$sample_type, levels = c("larva", "pre-wintering adult", "dead adult"))
   
 # Plot ordination
-  Osmia_dev_PCoA_bact_rare_bee <- plot_ordination(ps.prop_rare_bee, ord.pcoa.bray_rare_bee, color = "sample_type") + 
+  Osmia.dev.PCoA.bact.rare.bee <- plot_ordination(ps.prop.rare.bee, ord.pcoa.bray.rare.bee, color = "sample_type") + 
                                       theme_bw() +
                                       theme(legend.position = "none",
                                             text = element_text(size = 16)) +
@@ -714,33 +691,42 @@
                                             axis.title.x = element_text(size = 14, colour = "black"),
                                             axis.title.y = element_text(size = 14, colour = "black")) +
                                       geom_point(size = 4) +
-                                      scale_color_manual(values = dev_colors,
+                                      scale_color_manual(values = dev.colors,
                                                          labels = c("larvae", "pre-wintering adults", "dead adults")) + 
                                       labs(color = "Developmental Stage") +
                                       ggtitle("A")
-  Osmia_dev_PCoA_bact_rare_bee
+  Osmia.dev.PCoA.bact.rare.bee
   
 ## Stacked community plots ----
   
 # Generate colorblind friendly palette
-  Okabe_Ito <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#000000")
+  Okabe.Ito <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#000000")
   
 # Stretch palette (define more intermediate color options)
-  okabe_ext <- unikn::usecol(Okabe_Ito, n = 80)
-  colors <- sample(okabe_ext) 
+  okabe.ext <- unikn::usecol(Okabe.Ito, n = 111)
+  colors <- sample(okabe.ext) 
   
 # New labels for facet_wrap
-  new_labs <- c("fresh pollen + egg", "aged pollen", "larvae", "pre-wintering adults", "dead adults")
-  names(new_labs) <- c("fresh pollen egg", "aged pollen", "larva", "pre-wintering adult", "dead adult")  
+  new.labs <- c("fresh pollen + egg", "aged pollen", "larvae", "pre-wintering adults", "dead adults")
+  names(new.labs) <- c("fresh pollen egg", "aged pollen", "larva", "pre-wintering adult", "dead adult")  
   
-# Sort data by Family 
-  y1 <- phyloseq::tax_glom(rareps_bact, taxrank = 'Family') # agglomerate taxa
+# Agglomerate taxa by Family
+  y1 <- phyloseq::tax_glom(ps3, taxrank = 'Family')
+  
+# Transform counts to relative abundances
   y2 <- phyloseq::transform_sample_counts(y1, function(x) x/sum(x))
+  
+# Convert to a ggplot2-friendly df
   y3 <- phyloseq::psmelt(y2)
+  
+# Ensure Family is a chr  
   y3$Family <- as.character(y3$Family)
+  
+# Group Family be less that 1% abundance and rename
   y3$Family[y3$Abundance < 0.01] <- "Family < 1% abund."
+  
+# Ensure Genus is a factor 
   y3$Family <- as.factor(y3$Family)
-  head(y3)
   
 # Order samples on x-axis
   y3$sample_type <- factor(y3$sample_type, levels = c("fresh pollen egg", "aged pollen", "larva", "pre-wintering adult", "dead adult"))
@@ -753,7 +739,7 @@
     ylab("Relative abundance") + 
     ylim(0, 1.0) +
     xlab("Sample Type") +
-    scale_x_discrete(labels = c("fresh pollen + egg", "aged pollen", "larvae", "pre-wintering adults", "dead adults")) +
+    scale_x_discrete(labels = new.labs) +
     theme_bw() +
     theme(text = element_text(size = 16)) +
     theme(panel.grid.major = element_blank(),
@@ -765,13 +751,13 @@
     ggtitle("Bacteria")
   
 # Plot Family for each sample
-  Osmia_dev_fam_relabund_bact <- ggplot(data = y3, aes(x = sampleID, y = Abundance, fill = Family)) + 
+  Osmia.dev.fam.relabund.bact <- ggplot(data = y3, aes(x = sampleID, y = Abundance, fill = Family)) + 
                                     geom_bar(stat = "identity", position = "fill") + 
                                     scale_fill_manual(values = colors) +
                                     facet_grid(~ sample_type,
                                                scale = "free", 
                                                space = "free",
-                                               labeller = labeller(sample_type = new_labs)) +
+                                               labeller = labeller(sample_type = new.labs)) +
                                     theme(legend.position = "right") +
                                     ylab("Relative abundance") + 
                                     ylim(0, 1.0) +
@@ -788,16 +774,25 @@
                                     theme(panel.spacing.x = unit(0.1, "lines")) +
                                     guides(fill = guide_legend(ncol = 3)) +
                                     ggtitle("A")
-  Osmia_dev_fam_relabund_bact
+  Osmia.dev.fam.relabund.bact
   
-# Sort data by Genus
-  y4 <- phyloseq::tax_glom(rareps_bact, taxrank = 'Genus')
+# Agglomerate taxa by Genus
+  y4 <- phyloseq::tax_glom(ps3, taxrank = 'Genus')
+  
+# Transform counts to relative abundances
   y5 <- phyloseq::transform_sample_counts(y4, function(x) x/sum(x))
+  
+# Convert to a ggplot2-friendly df
   y6 <- phyloseq::psmelt(y5)
+  
+# Ensure Genus is a chr   
   y6$Genus <- as.character(y6$Genus)
+  
+# Group Family be less that 1% abundance and rename
   y6$Genus[y6$Abundance < 0.01] <- "Genera < 1% abund."
+  
+# Ensure Genus is a factor  
   y6$Genus <- as.factor(y6$Genus)
-  head(y6)
 
 # Order samples on x-axis
   y6$sample_type <- factor(y6$sample_type, levels = c("fresh pollen egg", "aged pollen", "larva", "pre-wintering adult", "dead adult"))
@@ -810,7 +805,7 @@
     ylab("Relative abundance") + 
     ylim(0, 1.0) +
     xlab("Sample Type") +
-    scale_x_discrete(labels = c("fresh pollen + egg", "aged pollen", "larvae", "pre-wintering adults", "dead adults")) +
+    scale_x_discrete(labels = new.labs) +
     theme_bw() + 
     theme(text = element_text(size = 16)) +
     theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + 
@@ -821,59 +816,67 @@
     ggtitle("Bacteria")
   
 # Plot Genus for each sample
-  Osmia_dev_gen_relabund_bact <- ggplot(data = y6, aes(x = sampleID, y = Abundance, fill = Genus)) + 
+  Osmia.dev.gen.relabund.bact <- ggplot(data = y6, aes(x = sampleID, y = Abundance, fill = Genus)) + 
                                     geom_bar(stat = "identity", position = "fill") + 
                                     scale_fill_manual(values = colors) +
                                     facet_grid(~ sample_type, 
                                                scale = "free", 
                                                space = "free",
-                                               labeller = labeller(sample_type = new_labs)) +
+                                               labeller = labeller(sample_type = new.labs)) +
                                     theme(legend.position = "right") +
                                     ylab("Relative abundance") + 
                                     ylim(0, 1.0) +
+                                    scale_x_discrete(expand = c(0, 1.5)) +
                                     xlab("Sample") +
                                     theme_bw() + 
                                     theme(text = element_text(size = 16)) +
                                     theme(panel.grid.major = element_blank(), 
                                           panel.grid.minor = element_blank()) + 
                                     theme(legend.justification = "left", 
-                                          legend.title = element_text(size = 14, colour = "black"), 
-                                          legend.text = element_text(size = 8, colour = "black"),
-                                          strip.text = element_text(size = 7)) + 
+                                          legend.title = element_text(size = 16, colour = "black"), 
+                                          legend.text = element_text(size = 12, colour = "black"),
+                                          strip.text = element_text(size = 10)) + 
                                     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
-                                    theme(panel.spacing.x=unit(0.1, "lines")) +
+                                    theme(panel.spacing.x = unit(0.1, "lines")) +
                                     guides(fill = guide_legend(ncol = 3)) +
+                                    labs(fill = "Genera") +
                                     ggtitle("A")
-  Osmia_dev_gen_relabund_bact
+  Osmia.dev.gen.relabund.bact
+  
+# Save plot  
+  ggsave("Osmia_dev_16Sgenera.png", plot = Osmia.dev.gen.relabund.bact, width = 30, height = 10, unit = "in")
 
-# Top 15 Genera  
+# Top 15 Genera
   
 # Agglomerate taxa by Genus
-  y4 <- phyloseq::tax_glom(rareps_bact, taxrank = 'Genus')
+  y4 <- phyloseq::tax_glom(ps3, taxrank = 'Genus')
   
 # Identify the top 15 genera
-  top15_bact_gen <- microbiome::top_taxa(y4, n = 15)
+  top15.bact.gen <- microbiome::top_taxa(y4, n = 15)
   
 # Remove taxa that are not in the top 15
-  ps.top15_bact_gen <- phyloseq::prune_taxa(top15_bact_gen, y4)
+  ps.top15.bact.gen <- phyloseq::prune_taxa(top15.bact.gen, y4)
+  
+# Remove samples with 0 reads from the top 15 genera
+  ps.top15.bact.gen <- phyloseq::prune_samples(sample_sums(ps.top15.bact.gen) != 0, ps.top15.bact.gen)
   
 # Transform counts to relative abundances
-  ps.top15_bact_gen_trans <- phyloseq::transform_sample_counts(ps.top15_bact_gen, function(x) x/sum(x))
+  ps.top15.bact.gen.trans <- phyloseq::transform_sample_counts(ps.top15.bact.gen, function(x) x/sum(x))
   
 # Convert to a ggplot2-friendly df
-  ps.top15_bact_gen_trans_melt <- phyloseq::psmelt(ps.top15_bact_gen_trans)
+  ps.top15.bact.gen.trans.melt <- phyloseq::psmelt(ps.top15.bact.gen.trans)
   
 # Order samples on x-axis
-  ps.top15_bact_gen_trans_melt$sample_type <- factor(ps.top15_bact_gen_trans_melt$sample_type, levels = c("fresh pollen egg", "aged pollen", "larva", "pre-wintering adult", "dead adult"))
+  ps.top15.bact.gen.trans.melt$sample_type <- factor(ps.top15.bact.gen.trans.melt$sample_type, levels = c("fresh pollen egg", "aged pollen", "larva", "pre-wintering adult", "dead adult"))
   
 # Plot top 15 genera for each sample
-  Osmia_dev_15gen_relabund_bact <- ggplot(data = ps.top15_bact_gen_trans_melt, aes(x = sampleID, y = Abundance, fill = Genus)) + 
+  Osmia.dev.15gen.relabund.bact <- ggplot(data = ps.top15.bact.gen.trans.melt, aes(x = sampleID, y = Abundance, fill = Genus)) + 
                                       geom_bar(stat = "identity", position = "fill") + 
                                       scale_fill_manual(values = colors) +
                                       facet_grid(~ sample_type, 
                                                  scale = "free", 
                                                  space = "free",
-                                                 labeller = labeller(sample_type = new_labs)) +
+                                                 labeller = labeller(sample_type = new.labs)) +
                                       theme(legend.position = "right") +
                                       ylab("Relative abundance") + 
                                       ylim(0, 1.0) +
@@ -892,29 +895,29 @@
                                       guides(fill = guide_legend(ncol = 1)) +
                                       labs(fill = "Genera") +
                                       ggtitle("A")
-  Osmia_dev_15gen_relabund_bact
+  Osmia.dev.15gen.relabund.bact
 
 ## Differential abundance ----
 # Resource: https://joey711.github.io/phyloseq-extensions/DESeq2.html  
 
-# All pollen and bee samples  
+# All pollen and bee samples
   
 # Convert from a phyloseq to a deseq obj
-  desq_obj <- phyloseq::phyloseq_to_deseq2(rareps_bact, ~ sample_type)
+  desq.obj <- phyloseq::phyloseq_to_deseq2(rareps.bact, ~ sample_type)
   
 # Calculate the geometric mean and remove rows with NA
-  gm_mean <- function(x, na.rm = TRUE) {
+  gm.mean <- function(x, na.rm = TRUE) {
     exp(sum(log(x[x > 0]), na.rm = na.rm) / length(x))
   }
   
 # Add a count of 1 to all geometric means
-  geoMeans <- apply(counts(desq_obj), 1, gm_mean)
+  geoMeans <- apply(counts(desq.obj), 1, gm.mean)
 
 # Estimate size factors
-  desq_dds <- DESeq2::estimateSizeFactors(desq_obj, geoMeans = geoMeans)
+  desq.dds <- DESeq2::estimateSizeFactors(desq.obj, geoMeans = geoMeans)
   
 # Fit a local regression
-  desq_dds <- DESeq2::DESeq(desq_dds, fitType = "local")
+  desq.dds <- DESeq2::DESeq(desq.dds, fitType = "local")
   
 # Set significance factor  
   alpha <- 0.05
@@ -922,147 +925,147 @@
 # Fresh pollen + egg vs aged pollen
   
 # Extract results from differential abundance table for fresh pollen + egg vs aged pollen
-  init_final <- DESeq2::results(desq_dds, contrast = c("sample_type", "fresh pollen egg", "aged pollen"))
+  init.final <- DESeq2::results(desq.dds, contrast = c("sample_type", "fresh pollen egg", "aged pollen"))
   
 # Order differential abundances by their padj value
-  init_final <- init_final[order(init_final$padj, na.last = NA), ]
+  init.final <- init.final[order(init.final$padj, na.last = NA), ]
   
 # Filter data to only include padj < alpha and remove NAs
-  init_final_p05 <- init_final[(init_final$padj < alpha & !is.na(init_final$padj)), ]
+  init.final.p05 <- init.final[(init.final$padj < alpha & !is.na(init.final$padj)), ]
   
 # Check to see if any padj is below alpha
-  init_final_p05
+  init.final.p05
   
 # Fresh pollen egg vs larvae
   
 # Extract results from differential abundance table for fresh pollen egg vs larvae
-  init_larva <- DESeq2::results(desq_dds, contrast = c("sample_type", "fresh pollen egg", "larva"))
+  init.larva <- DESeq2::results(desq.dds, contrast = c("sample_type", "fresh pollen egg", "larva"))
   
 # Order differential abundances by their padj value
-  init_larva <- init_larva[order(init_larva$padj, na.last = NA), ]
+  init.larva <- init.larva[order(init.larva$padj, na.last = NA), ]
   
 # Filter data to only include padj < alpha and remove NAs
-  init_larva_p05 <- init_larva[(init_larva$padj < alpha & !is.na(init_larva$padj)), ]
+  init.larva.p05 <- init.larva[(init.larva$padj < alpha & !is.na(init.larva$padj)), ]
   
 # Check to see if any padj is below alpha
-  init_larva_p05
+  init.larva.p05
   
 # Fresh pollen + egg vs pre-wintering adults
   
 # Extract results from differential abundance table for fresh pollen + egg vs pre-wintering adults
-  init_pre <- DESeq2::results(desq_dds, contrast = c("sample_type", "fresh pollen egg", "pre.wintering.adult"))
+  init.pre <- DESeq2::results(desq.dds, contrast = c("sample_type", "fresh pollen egg", "pre.wintering.adult"))
   
 # Order differential abundances by their padj value
-  init_pre <- init_pre[order(init_pre$padj, na.last = NA), ]
+  init.pre <- init.pre[order(init.pre$padj, na.last = NA), ]
   
 # Filter data to only include padj < alpha and remove NAs
-  init_pre_p05 <- init_pre[(init_pre$padj < alpha & !is.na(init_pre$padj)), ]
+  init.pre.p05 <- init.pre[(init.pre$padj < alpha & !is.na(init.pre$padj)), ]
   
 # Check to see if any padj is below alpha
-  init_pre_p05
+  init.pre.p05
   
 # Fresh pollen + egg vs dead adults
   
 # Extract results from differential abundance table for fresh pollen + egg vs dead adults
-  init_dead <- DESeq2::results(desq_dds, contrast = c("sample_type", "fresh pollen egg", "dead adult"))
+  init.dead <- DESeq2::results(desq.dds, contrast = c("sample_type", "fresh pollen egg", "dead adult"))
   
 # Order differential abundances by their padj value
-  init_dead <- init_dead[order(init_dead$padj, na.last = NA), ]
+  init.dead <- init.dead[order(init.dead$padj, na.last = NA), ]
   
 # Filter data to only include padj < alpha and remove NAs
-  init_dead_p05 <- init_dead[(init_dead$padj < alpha & !is.na(init_dead$padj)), ]
+  init.dead.p05 <- init.dead[(init.dead$padj < alpha & !is.na(init.dead$padj)), ]
   
 # Check to see if any padj is below alpha
-  init_dead_p05
+  init.dead.p05
   
 # Aged pollen vs larvae
   
 # Extract results from differential abundance table for aged pollen vs larvae
-  final_larva <- DESeq2::results(desq_dds, contrast = c("sample_type", "aged pollen", "larva"))
+  final.larva <- DESeq2::results(desq.dds, contrast = c("sample_type", "aged pollen", "larva"))
   
 # Order differential abundances by their padj value
-  final_larva <- final_larva[order(final_larva$padj, na.last = NA), ]
+  final.larva <- final.larva[order(final.larva$padj, na.last = NA), ]
   
 # Filter data to only include padj < alpha and remove NAs
-  final_larva_p05 <- final_larva[(final_larva$padj < alpha & !is.na(final_larva$padj)), ]
+  final.larva.p05 <- final.larva[(final.larva$padj < alpha & !is.na(final.larva$padj)), ]
   
 # Check to see if any padj is below alpha
-  final_larva_p05
+  final.larva.p05
   
 # Aged pollen vs pre-wintering adults
   
 # Extract results from differential abundance table for aged pollen vs pre-wintering adults
-  final_pre <- DESeq2::results(desq_dds, contrast = c("sample_type", "aged pollen", "pre.wintering.adult"))
+  final.pre <- DESeq2::results(desq.dds, contrast = c("sample_type", "aged pollen", "pre.wintering.adult"))
   
 # Order differential abundances by their padj value
-  final_pre <- final_pre[order(final_pre$padj, na.last = NA), ]
+  final.pre <- final.pre[order(final.pre$padj, na.last = NA), ]
   
 # Filter data to only include padj < alpha and remove NAs
-  final_pre_p05 <- final_pre[(final_pre$padj < alpha & !is.na(final_pre$padj)), ]
+  final.pre.p05 <- final.pre[(final.pre$padj < alpha & !is.na(final.pre$padj)), ]
   
 # Check to see if any padj is below alpha
-  final_pre_p05
+  final.pre.p05
   
 # Aged pollen vs dead adults
   
 # Extract results from differential abundance table for aged pollen vs dead adults
-  final_dead <- DESeq2::results(desq_dds, contrast = c("sample_type", "aged pollen", "dead adult"))
+  final.dead <- DESeq2::results(desq.dds, contrast = c("sample_type", "aged pollen", "dead adult"))
   
 # Order differential abundances by their padj value
-  final_dead <- final_dead[order(final_dead$padj, na.last = NA), ]
+  final.dead <- final.dead[order(final.dead$padj, na.last = NA), ]
   
 # Filter data to only include padj < alpha and remove NAs
-  final_dead_p05 <- final_dead[(final_dead$padj < alpha & !is.na(final_dead$padj)), ]
+  final.dead.p05 <- final.dead[(final.dead$padj < alpha & !is.na(final.dead$padj)), ]
   
 # Check to see if any padj is below alpha
-  final_dead_p05
+  final.dead.p05
   
 # Larvae vs pre-wintering adults
   
 # Extract results from differential abundance table for larvae vs pre-wintering adults
-  larva_pre <- DESeq2::results(desq_dds, contrast = c("sample_type", "larva", "pre.wintering.adult"))
+  larva.pre <- DESeq2::results(desq.dds, contrast = c("sample_type", "larva", "pre.wintering.adult"))
   
 # Order differential abundances by their padj value
-  larva_pre <- larva_pre[order(larva_pre$padj, na.last = NA), ]
+  larva.pre <- larva.pre[order(larva.pre$padj, na.last = NA), ]
   
 # Filter data to only include padj < alpha and remove NAs
-  larva_pre_p05 <- larva_pre[(larva_pre$padj < alpha & !is.na(larva_pre$padj)), ]
+  larva.pre.p05 <- larva.pre[(larva.pre$padj < alpha & !is.na(larva.pre$padj)), ]
   
 # Check to see if any padj is below alpha
-  larva_pre_p05
+  larva.pre.p05
   
 # Larvae vs dead adults
   
 # Extract results from differential abundance table for larvae vs dead adults
-  larva_dead <- DESeq2::results(desq_dds, contrast = c("sample_type", "larva", "dead adult"))
+  larva.dead <- DESeq2::results(desq.dds, contrast = c("sample_type", "larva", "dead adult"))
   
 # Order differential abundances by their padj value
-  larva_dead <- larva_dead[order(larva_dead$padj, na.last = NA), ]
+  larva.dead <- larva.dead[order(larva.dead$padj, na.last = NA), ]
   
 # Filter data to only include padj < alpha and remove NAs
-  larva_dead_p05 <- larva_dead[(larva_dead$padj < alpha & !is.na(larva_dead$padj)), ]
+  larva.dead.p05 <- larva.dead[(larva.dead$padj < alpha & !is.na(larva.dead$padj)), ]
   
 # Check to see if any padj is below alpha
-  larva_dead_p05
+  larva.dead.p05
   
 # Only bee samples
   
 # Convert from a phyloseq to a deseq obj
-  desq_obj_bee <- phyloseq::phyloseq_to_deseq2(rareps_bact_bee, ~ sample_type)
+  desq.obj.bee <- phyloseq::phyloseq_to_deseq2(rareps.bact.bee, ~ sample_type)
   
 # Calculate the geometric mean and remove rows with NA
-  gm_mean <- function(x, na.rm = TRUE) {
+  gm.mean <- function(x, na.rm = TRUE) {
     exp(sum(log(x[x > 0]), na.rm = na.rm) / length(x))
   }
   
 # Add a count of 1 to all geometric means
-  geoMeans <- apply(counts(desq_obj_bee), 1, gm_mean)
+  geoMeans <- apply(counts(desq.obj.bee), 1, gm.mean)
   
 # Estimate size factors
-  desq_dds_bee <- DESeq2::estimateSizeFactors(desq_obj_bee, geoMeans = geoMeans)
+  desq.dds.bee <- DESeq2::estimateSizeFactors(desq.obj.bee, geoMeans = geoMeans)
   
 # Fit a local regression
-  desq_dds_bee <- DESeq2::DESeq(desq_dds_bee, fitType = "local")
+  desq.obj.bee <- DESeq2::DESeq(desq.obj.bee, fitType = "local")
   
 # Set significance factor  
   alpha <- 0.05
@@ -1070,42 +1073,42 @@
 # Larvae vs pre-wintering adults
   
 # Extract results from differential abundance table for larvae vs pre-wintering adults
-  larva_pre_bee <- DESeq2::results(desq_dds_bee, contrast = c("sample_type", "larva", "pre.wintering.adult"))
+  larva.pre.bee <- DESeq2::results(desq.dds.bee, contrast = c("sample_type", "larva", "pre.wintering.adult"))
   
 # Order differential abundances by their padj value
-  larva_pre_bee <- larva_pre_bee[order(larva_pre_bee$padj, na.last = NA), ]
+  larva.pre.bee <- larva.pre.bee[order(larva.pre.bee$padj, na.last = NA), ]
   
 # Filter data to only include padj < alpha and remove NAs
-  larva_pre_bee_p05 <- larva_pre_bee[(larva_pre_bee$padj < alpha & !is.na(larva_pre_bee$padj)), ]
+  larva.pre.bee.p05 <- larva.pre.bee[(larva.pre.bee$padj < alpha & !is.na(larva.pre.bee$padj)), ]
   
 # Check to see if any padj is below alpha
-  larva_pre_bee_p05
+  larva.pre.bee.p05
   
 # Larvae vs dead adults
   
 # Extract results from differential abundance table for larvae vs dead adults
-  larva_dead_bee <- DESeq2::results(desq_dds_bee, contrast = c("sample_type", "larva", "dead adult"))
+  larva.dead.bee <- DESeq2::results(desq.dds.bee, contrast = c("sample_type", "larva", "dead adult"))
   
 # Order differential abundances by their padj value
-  larva_dead_bee <- larva_dead_bee[order(larva_dead_bee$padj, na.last = NA), ]
+  larva.dead.bee <- larva.dead.bee[order(larva.dead.bee$padj, na.last = NA), ]
   
 # Filter data to only include padj < alpha and remove NAs
-  larva_dead_bee_p05 <- larva_dead_bee[(larva_dead_bee$padj < alpha & !is.na(larva_dead_bee$padj)), ]
+  larva.dead.bee.p05 <- larva.dead.bee[(larva.dead.bee$padj < alpha & !is.na(larva.dead.bee$padj)), ]
   
 # Check to see if any padj is below alpha
-  larva_dead_bee_p05
+  larva.dead.bee.p05
 
 # Pre-wintering vs dead adults
   
 # Extract results from differential abundance table for larvae vs dead adults
-  pre_dead_bee <- DESeq2::results(desq_dds_bee, contrast = c("sample_type", "pre.wintering.adult", "dead adult"))
+  pre.dead.bee <- DESeq2::results(desq.dds.bee, contrast = c("sample_type", "pre.wintering.adult", "dead adult"))
   
 # Order differential abundances by their padj value
-  pre_dead_bee <- pre_dead_bee[order(pre_dead_bee$padj, na.last = NA), ]
+  pre.dead.bee <- pre.dead.bee[order(pre.dead.bee$padj, na.last = NA), ]
   
 # Filter data to only include padj < alpha and remove NAs
-  pre_dead_bee_p05 <- pre_dead_bee[(pre_dead_bee$padj < alpha & !is.na(pre_dead_bee$padj)), ]
+  pre.dead.bee.p05 <- pre.dead.bee[(pre.dead.bee$padj < alpha & !is.na(pre.dead.bee$padj)), ]
   
 # Check to see if any padj is below alpha
-  pre_dead_bee_p05
+  pre.dead.bee.p05
   
