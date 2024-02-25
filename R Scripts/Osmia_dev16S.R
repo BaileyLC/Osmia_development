@@ -43,11 +43,11 @@
   sample_or_control <- samples$sample_or_control
   DNA_conc <- samples$DNA_conc
   sample.info <- data.frame(extractionID = extractionID,
-                           sample_type = sample_type,
-                           sampleID = sampleID,
-                           nesting_tube = nesting_tube,
-                           sample_or_control = sample_or_control,
-                           DNA_conc = DNA_conc)
+                            sample_type = sample_type,
+                            sampleID = sampleID,
+                            nesting_tube = nesting_tube,
+                            sample_or_control = sample_or_control,
+                            DNA_conc = DNA_conc)
   rownames(sample.info) <- samples.out
 
 # Format your data to work with phyloseq
