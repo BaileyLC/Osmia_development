@@ -16,49 +16,49 @@
 ## Shannon index ----
 
 # Create plot
-  Osmia_dev_Shannon <- Osmia_dev_Shannon_bact + Osmia_dev_Shannon_fungi + plot_layout(ncol = 1, nrow = 2)
-  Osmia_dev_Shannon
+  Osmia.dev.Shannon <- Osmia.dev.Shannon.bact + Osmia.dev.Shannon.fungi + plot_layout(ncol = 1, nrow = 2)
+  Osmia.dev.Shannon
   
 # Save plot  
-  ggsave("Osmia_dev_Shannon.png", plot = Osmia_dev_Shannon)
+  ggsave("Osmia_dev_Shannon.png", plot = Osmia.dev.Shannon)
   
 ## Simpson index ----
 
 # Create plot
-  Osmia_dev_Simpson <- Osmia_dev_Simpson_bact + Osmia_dev_Simpson_fungi + plot_layout(ncol = 1, nrow = 2)
-  Osmia_dev_Simpson
+  Osmia.dev.Simpson <- Osmia.dev.Simpson.bact + Osmia.dev.Simpson.fungi + plot_layout(ncol = 1, nrow = 2)
+  Osmia.dev.Simpson
   
 # Save plot  
-  ggsave("Osmia_dev_Simpson.png", plot = Osmia_dev_Simpson)
+  ggsave("Osmia_dev_Simpson.png", plot = Osmia.dev.Simpson)
   
 ## Observed richness ----
   
 # Create plot
-  Osmia_dev_Observed <- Osmia_dev_Observed_bact + Osmia_dev_Observed_fungi + plot_layout(ncol = 1, nrow = 2)
-  Osmia_dev_Observed
+  Osmia.dev.Observed <- Osmia.dev.Observed.bact + Osmia.dev.Observed.fungi + plot_layout(ncol = 1, nrow = 2)
+  Osmia.dev.Observed
   
 # Save plot  
-  ggsave("Osmia_dev_Observed.png", plot = Osmia_dev_Observed)
+  ggsave("Osmia_dev_Observed.png", plot = Osmia.dev.Observed)
   
 ## Rarefaction curves ----
 
 # All pollen and bee samples  
   
 # Create plot
-  Osmia_dev_rare <- Osmia_dev_rare_bact + Osmia_dev_rare_fungi + plot_layout(ncol = 1, nrow = 2)
-  Osmia_dev_rare
+  Osmia.dev.rare <- Osmia.dev.rare.bact + Osmia.dev.rare.fungi + plot_layout(ncol = 1, nrow = 2)
+  Osmia.dev.rare
   
 # Save plot
-  ggsave("Osmia_dev_rare.png", plot = Osmia_dev_rare)
+  ggsave("Osmia_dev_rare.png", plot = Osmia.dev.rare)
   
 # Only bee samples
   
 # Create plot
-  Osmia_dev_rare_bee <- Osmia_dev_rare_bact_bee + Osmia_dev_rare_fungi_bee + plot_layout(ncol = 1, nrow = 2)
-  Osmia_dev_rare_bee
+  Osmia.dev.rare.bee <- Osmia.dev.rare.bact.bee + Osmia.dev.rare.fungi.bee + plot_layout(ncol = 1, nrow = 2)
+  Osmia.dev.rare.bee
   
 # Save plot
-  ggsave("Osmia_dev_rare_bee.png", plot = Osmia_dev_rare_bee)
+  ggsave("Osmia_dev_rare_bee.png", plot = Osmia.dev.rare.bee)
   
 ## PCoA plots ----
   
@@ -67,64 +67,64 @@
 # Relative abundance data  
   
 # Create plot
-  Osmia_dev_PCoA_relabund <- Osmia_dev_PCoA_bact + Osmia_dev_PCoA_fungi + plot_layout(ncol = 2, nrow = 1)
-  Osmia_dev_PCoA_relabund
+  Osmia.dev.PCoA.relabund <- Osmia.dev.PCoA.bact + Osmia.dev.PCoA.fungi + plot_layout(ncol = 2, nrow = 1)
+  Osmia.dev.PCoA.relabund
   
 # Save plot
-  ggsave("Osmia_dev_PCoA_relabund.png", plot = Osmia_dev_PCoA_relabund)
+  ggsave("Osmia_dev_PCoA_relabund.png", plot = Osmia.dev.PCoA.relabund)
   
 # Rarefied data
   
 # Create plot
-  Osmia_dev_PCoA_rare <- Osmia_dev_PCoA_bact_rare + Osmia_dev_PCoA_fungi_rare + plot_layout(ncol = 2, nrow = 1)
-  Osmia_dev_PCoA_rare
+  Osmia.dev.PCoA.rare <- Osmia.dev.PCoA.bact.rare + Osmia.dev.PCoA.fungi.rare + plot_layout(ncol = 2, nrow = 1)
+  Osmia.dev.PCoA.rare
   
 # Save plot
-  ggsave("Osmia_dev_PCoA_rare.png", plot = Osmia_dev_PCoA_rare)
+  ggsave("Osmia_dev_PCoA_rare.png", plot = Osmia.dev.PCoA.rare)
 
 # Only bee samples
   
 # Relative abundance data  
   
 # Create plot
-  Osmia_dev_PCoA_relabund_bee <- Osmia_dev_PCoA_bact_bee + Osmia_dev_PCoA_fungi_bee + plot_layout(ncol = 2, nrow = 1)
-  Osmia_dev_PCoA_relabund_bee
+  Osmia.dev.PCoA.relabund.bee <- Osmia.dev.PCoA.bact.bee + Osmia.dev.PCoA.fungi.bee + plot_layout(ncol = 2, nrow = 1)
+  Osmia.dev.PCoA.relabund.bee
   
 # Save plot
-  ggsave("Osmia_dev_PCoA_relabund_bee.png", plot = Osmia_dev_PCoA_relabund_bee)
+  ggsave("Osmia_dev_PCoA_relabund_bee.png", plot = Osmia.dev.PCoA.relabund.bee)
   
 # Rarefied data
   
 # Create plot
-  Osmia_dev_PCoA_rare_bee <- Osmia_dev_PCoA_bact_rare_bee + Osmia_dev_PCoA_fungi_rare_bee + plot_layout(ncol = 2, nrow = 1)
-  Osmia_dev_PCoA_rare_bee
+  Osmia.dev.PCoA.rare.bee <- Osmia.dev.PCoA.bact.rare.bee + Osmia.dev.PCoA.fungi.rare.bee + plot_layout(ncol = 2, nrow = 1)
+  Osmia.dev.PCoA.rare.bee
   
 # Save plot
-  ggsave("Osmia_dev_PCoA_rare_bee.png", plot = Osmia_dev_PCoA_rare_bee)
+  ggsave("Osmia_dev_PCoA_rare_bee.png", plot = Osmia.dev.PCoA.rare.bee)
   
 ## Stacked Plot by Family ----
   
 # Create plot
-  Osmia_dev_fam_relabund <- Osmia_dev_fam_relabund_bact + Osmia_dev_fam_relabund_fungi + plot_layout(ncol = 1, nrow = 2)
-  Osmia_dev_fam_relabund
+  Osmia.dev.fam.relabund <- Osmia.dev.fam.relabund.bact + Osmia.dev.fam.relabund.fungi + plot_layout(ncol = 1, nrow = 2)
+  Osmia.dev.fam.relabund
   
 # Save plot
-  ggsave("Osmia_dev_fam_relabund.png", plot = Osmia_dev_fam_relabund)
+  ggsave("Osmia_dev_fam_relabund.png", plot = Osmia.dev.fam.relabund)
   
 ## Stacked Plot by Genus ----
   
 # Create plot
-  Osmia_dev_gen_relabund <- Osmia_dev_gen_relabund_bact + Osmia_dev_gen_relabund_fungi + plot_layout(ncol = 1, nrow = 2)
-  Osmia_dev_gen_relabund
+  Osmia.dev.gen.relabund <- Osmia.dev.gen.relabund.bact + Osmia.dev.gen.relabund.fungi + plot_layout(ncol = 1, nrow = 2)
+  Osmia.dev.gen.relabund
   
 # Save plot
-  ggsave("Osmia_dev_gen_relabund.png", plot = Osmia_dev_gen_relabund)
+  ggsave("Osmia_dev_gen_relabund.png", plot =  Osmia.dev.gen.relabund)
   
 ## Stacked Plot by Top 15 Genera ----
   
 # Create plot
-  Osmia_dev_gen_top15 <- Osmia_dev_15gen_relabund_bact + Osmia_dev_15gen_relabund_fung + plot_layout(ncol = 1, nrow = 2)
-  Osmia_dev_gen_top15
+  Osmia.dev.gen.top15 <- Osmia.dev.15gen.relabund.bact + Osmia.dev.15gen.relabund_fung + plot_layout(ncol = 1, nrow = 2)
+  Osmia.dev.gen.top15
   
 # Save plot
-  ggsave("Osmia_dev_gen_top15.png", plot = Osmia_dev_gen_top15, width = 15, height = 10, units = "in")
+  ggsave("Osmia_dev_gen_top15.png", plot = Osmia.dev.gen.top15, width = 15, height = 10, units = "in")
