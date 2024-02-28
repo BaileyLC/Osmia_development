@@ -722,10 +722,10 @@
 # Ensure Family is a chr  
   y3$Family <- as.character(y3$Family)
   
-# Group Family be less that 1% abundance and rename
+# Group Families with less that 1% abundance and rename
   y3$Family[y3$Abundance < 0.01] <- "Family < 1% abund."
   
-# Ensure Genus is a factor 
+# Ensure Family is a factor 
   y3$Family <- as.factor(y3$Family)
   
 # Order samples on x-axis
@@ -765,9 +765,9 @@
                                     theme_bw() + 
                                     theme(text = element_text(size = 16),
                                           legend.justification = "left", 
-                                          legend.title = element_text(size = 14, colour = "black"),
-                                          legend.text = element_text(size = 8, colour = "black"),
-                                          strip.text = element_text(size = 7)) +
+                                          legend.title = element_text(size = 16, colour = "black"),
+                                          legend.text = element_text(size = 12, colour = "black"),
+                                          strip.text = element_text(size = 14)) +
                                     theme(panel.grid.major = element_blank(),
                                           panel.grid.minor = element_blank()) + 
                                     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
@@ -788,7 +788,7 @@
 # Ensure Genus is a chr   
   y6$Genus <- as.character(y6$Genus)
   
-# Group Family be less that 1% abundance and rename
+# Group Genera with less that 1% abundance and rename
   y6$Genus[y6$Abundance < 0.01] <- "Genera < 1% abund."
   
 # Ensure Genus is a factor  
@@ -810,8 +810,8 @@
     theme(text = element_text(size = 16)) +
     theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + 
     theme(legend.justification = "left", 
-          legend.title = element_text(size = 14, colour = "black"), 
-          legend.text = element_text(size = 7, colour = "black")) + 
+          legend.title = element_text(size = 12, colour = "black"), 
+          legend.text = element_text(size = 14, colour = "black")) + 
     guides(fill = guide_legend(ncol = 3)) +
     ggtitle("Bacteria")
   
@@ -819,32 +819,29 @@
   Osmia.dev.gen.relabund.bact <- ggplot(data = y6, aes(x = sampleID, y = Abundance, fill = Genus)) + 
                                     geom_bar(stat = "identity", position = "fill") + 
                                     scale_fill_manual(values = colors) +
+                                    theme_bw() +
+                                    theme(legend.position = "right") +
                                     facet_grid(~ sample_type, 
                                                scale = "free", 
                                                space = "free",
-                                               labeller = labeller(sample_type = new.labs)) +
-                                    theme(legend.position = "right") +
+                                               labeller = as_labeller(new.labs, default = label_wrap_gen(multi_line = TRUE, width = 13))) +
                                     ylab("Relative abundance") + 
                                     ylim(0, 1.0) +
                                     scale_x_discrete(expand = c(0, 1.5)) +
                                     xlab("Sample") +
-                                    theme_bw() + 
                                     theme(text = element_text(size = 16)) +
                                     theme(panel.grid.major = element_blank(), 
                                           panel.grid.minor = element_blank()) + 
-                                    theme(legend.justification = "left", 
+                                    theme(legend.justification = "top", 
                                           legend.title = element_text(size = 16, colour = "black"), 
                                           legend.text = element_text(size = 12, colour = "black"),
-                                          strip.text = element_text(size = 10)) + 
+                                          strip.text = element_text(size = 14)) + 
                                     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
                                     theme(panel.spacing.x = unit(0.1, "lines")) +
-                                    guides(fill = guide_legend(ncol = 3)) +
-                                    labs(fill = "Genera") +
-                                    ggtitle("A")
+                                    guides(fill = guide_legend(ncol = 2)) +
+                                    labs(fill = "Genera",
+                                         title = "A")
   Osmia.dev.gen.relabund.bact
-  
-# Save plot  
-  ggsave("Osmia_dev_16Sgenera.png", plot = Osmia.dev.gen.relabund.bact, width = 30, height = 10, unit = "in")
 
 # Top 15 Genera
   
@@ -876,34 +873,34 @@
                                       facet_grid(~ sample_type, 
                                                  scale = "free", 
                                                  space = "free",
-                                                 labeller = labeller(sample_type = new.labs)) +
+                                                 labeller = as_labeller(new.labs, default = label_wrap_gen(multi_line = TRUE, width = 13))) +
                                       theme(legend.position = "right") +
                                       ylab("Relative abundance") + 
                                       ylim(0, 1.0) +
-                                      scale_x_discrete(expand = c(0, 1.5)) +
+                                      scale_x_discrete(expand = c(0, 3)) +
                                       xlab("Sample") +
                                       theme_bw() + 
                                       theme(text = element_text(size = 16)) +
                                       theme(panel.grid.major = element_blank(), 
                                             panel.grid.minor = element_blank()) + 
                                       theme(legend.justification = "left", 
-                                            legend.title = element_text(size = 14, colour = "black"), 
-                                            legend.text = element_text(size = 8, colour = "black"),
-                                            strip.text = element_text(size = 7)) + 
+                                            legend.title = element_text(size = 16, colour = "black"), 
+                                            legend.text = element_text(size = 12, colour = "black"),
+                                            strip.text = element_text(size = 14)) + 
                                       theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
                                       theme(panel.spacing.x = unit(0.1, "lines")) +
                                       guides(fill = guide_legend(ncol = 1)) +
-                                      labs(fill = "Genera") +
-                                      ggtitle("A")
+                                      labs(fill = "Genera",
+                                           title = "A")
   Osmia.dev.15gen.relabund.bact
 
-## Differential abundance ----
-# Resource: https://joey711.github.io/phyloseq-extensions/DESeq2.html  
+## Differential abundance with rarefied data ----
+# Resource: https://joey711.github.io/phyloseq-extensions/DESeq2.html
 
 # All pollen and bee samples
   
 # Convert from a phyloseq to a deseq obj
-  desq.obj <- phyloseq::phyloseq_to_deseq2(rareps.bact, ~ sample_type)
+  desq.obj.rare <- phyloseq::phyloseq_to_deseq2(rareps.bact, ~ sample_type)
   
 # Calculate the geometric mean and remove rows with NA
   gm.mean <- function(x, na.rm = TRUE) {
@@ -911,13 +908,13 @@
   }
   
 # Add a count of 1 to all geometric means
-  geoMeans <- apply(counts(desq.obj), 1, gm.mean)
+  geoMeans <- apply(counts(desq.obj.rare), 1, gm.mean)
 
 # Estimate size factors
-  desq.dds <- DESeq2::estimateSizeFactors(desq.obj, geoMeans = geoMeans)
+  desq.dds.rare <- DESeq2::estimateSizeFactors(desq.obj.rare, geoMeans = geoMeans)
   
 # Fit a local regression
-  desq.dds <- DESeq2::DESeq(desq.dds, fitType = "local")
+  desq.dds.rare <- DESeq2::DESeq(desq.dds.rare, fitType = "local")
   
 # Set significance factor  
   alpha <- 0.05
@@ -925,7 +922,7 @@
 # Fresh pollen + egg vs aged pollen
   
 # Extract results from differential abundance table for fresh pollen + egg vs aged pollen
-  init.final <- DESeq2::results(desq.dds, contrast = c("sample_type", "fresh pollen egg", "aged pollen"))
+  init.final <- DESeq2::results(desq.dds.rare, contrast = c("sample_type", "fresh pollen egg", "aged pollen"))
   
 # Order differential abundances by their padj value
   init.final <- init.final[order(init.final$padj, na.last = NA), ]
@@ -939,7 +936,7 @@
 # Fresh pollen egg vs larvae
   
 # Extract results from differential abundance table for fresh pollen egg vs larvae
-  init.larva <- DESeq2::results(desq.dds, contrast = c("sample_type", "fresh pollen egg", "larva"))
+  init.larva <- DESeq2::results(desq.dds.rare, contrast = c("sample_type", "fresh pollen egg", "larva"))
   
 # Order differential abundances by their padj value
   init.larva <- init.larva[order(init.larva$padj, na.last = NA), ]
@@ -953,7 +950,7 @@
 # Fresh pollen + egg vs pre-wintering adults
   
 # Extract results from differential abundance table for fresh pollen + egg vs pre-wintering adults
-  init.pre <- DESeq2::results(desq.dds, contrast = c("sample_type", "fresh pollen egg", "pre.wintering.adult"))
+  init.pre <- DESeq2::results(desq.dds.rare, contrast = c("sample_type", "fresh pollen egg", "pre.wintering.adult"))
   
 # Order differential abundances by their padj value
   init.pre <- init.pre[order(init.pre$padj, na.last = NA), ]
@@ -967,7 +964,7 @@
 # Fresh pollen + egg vs dead adults
   
 # Extract results from differential abundance table for fresh pollen + egg vs dead adults
-  init.dead <- DESeq2::results(desq.dds, contrast = c("sample_type", "fresh pollen egg", "dead adult"))
+  init.dead <- DESeq2::results(desq.dds.rare, contrast = c("sample_type", "fresh pollen egg", "dead adult"))
   
 # Order differential abundances by their padj value
   init.dead <- init.dead[order(init.dead$padj, na.last = NA), ]
@@ -981,7 +978,7 @@
 # Aged pollen vs larvae
   
 # Extract results from differential abundance table for aged pollen vs larvae
-  final.larva <- DESeq2::results(desq.dds, contrast = c("sample_type", "aged pollen", "larva"))
+  final.larva <- DESeq2::results(desq.dds.rare, contrast = c("sample_type", "aged pollen", "larva"))
   
 # Order differential abundances by their padj value
   final.larva <- final.larva[order(final.larva$padj, na.last = NA), ]
@@ -995,7 +992,7 @@
 # Aged pollen vs pre-wintering adults
   
 # Extract results from differential abundance table for aged pollen vs pre-wintering adults
-  final.pre <- DESeq2::results(desq.dds, contrast = c("sample_type", "aged pollen", "pre.wintering.adult"))
+  final.pre <- DESeq2::results(desq.dds.rare, contrast = c("sample_type", "aged pollen", "pre.wintering.adult"))
   
 # Order differential abundances by their padj value
   final.pre <- final.pre[order(final.pre$padj, na.last = NA), ]
@@ -1009,7 +1006,7 @@
 # Aged pollen vs dead adults
   
 # Extract results from differential abundance table for aged pollen vs dead adults
-  final.dead <- DESeq2::results(desq.dds, contrast = c("sample_type", "aged pollen", "dead adult"))
+  final.dead <- DESeq2::results(desq.dds.rare, contrast = c("sample_type", "aged pollen", "dead adult"))
   
 # Order differential abundances by their padj value
   final.dead <- final.dead[order(final.dead$padj, na.last = NA), ]
@@ -1023,7 +1020,7 @@
 # Larvae vs pre-wintering adults
   
 # Extract results from differential abundance table for larvae vs pre-wintering adults
-  larva.pre <- DESeq2::results(desq.dds, contrast = c("sample_type", "larva", "pre.wintering.adult"))
+  larva.pre <- DESeq2::results(desq.dds.rare, contrast = c("sample_type", "larva", "pre.wintering.adult"))
   
 # Order differential abundances by their padj value
   larva.pre <- larva.pre[order(larva.pre$padj, na.last = NA), ]
@@ -1037,7 +1034,7 @@
 # Larvae vs dead adults
   
 # Extract results from differential abundance table for larvae vs dead adults
-  larva.dead <- DESeq2::results(desq.dds, contrast = c("sample_type", "larva", "dead adult"))
+  larva.dead <- DESeq2::results(desq.dds.rare, contrast = c("sample_type", "larva", "dead adult"))
   
 # Order differential abundances by their padj value
   larva.dead <- larva.dead[order(larva.dead$padj, na.last = NA), ]
@@ -1051,7 +1048,7 @@
 # Only bee samples
   
 # Convert from a phyloseq to a deseq obj
-  desq.obj.bee <- phyloseq::phyloseq_to_deseq2(rareps.bact.bee, ~ sample_type)
+  desq.obj.rare.bee <- phyloseq::phyloseq_to_deseq2(rareps.bact.bee, ~ sample_type)
   
 # Calculate the geometric mean and remove rows with NA
   gm.mean <- function(x, na.rm = TRUE) {
@@ -1059,21 +1056,21 @@
   }
   
 # Add a count of 1 to all geometric means
-  geoMeans <- apply(counts(desq.obj.bee), 1, gm.mean)
+  geoMeans <- apply(counts(desq.obj.rare.bee), 1, gm.mean)
   
 # Estimate size factors
-  desq.dds.bee <- DESeq2::estimateSizeFactors(desq.obj.bee, geoMeans = geoMeans)
+  desq.dds.rare.bee <- DESeq2::estimateSizeFactors(desq.obj.rare.bee, geoMeans = geoMeans)
   
 # Fit a local regression
-  desq.obj.bee <- DESeq2::DESeq(desq.obj.bee, fitType = "local")
-  
+  desq.dds.rare.bee <- DESeq2::DESeq(desq.dds.rare.bee, fitType = "local")
+
 # Set significance factor  
   alpha <- 0.05
   
 # Larvae vs pre-wintering adults
   
 # Extract results from differential abundance table for larvae vs pre-wintering adults
-  larva.pre.bee <- DESeq2::results(desq.dds.bee, contrast = c("sample_type", "larva", "pre.wintering.adult"))
+  larva.pre.bee <- DESeq2::results(desq.dds.rare.bee, contrast = c("sample_type", "larva", "pre.wintering.adult"))
   
 # Order differential abundances by their padj value
   larva.pre.bee <- larva.pre.bee[order(larva.pre.bee$padj, na.last = NA), ]
@@ -1087,7 +1084,7 @@
 # Larvae vs dead adults
   
 # Extract results from differential abundance table for larvae vs dead adults
-  larva.dead.bee <- DESeq2::results(desq.dds.bee, contrast = c("sample_type", "larva", "dead adult"))
+  larva.dead.bee <- DESeq2::results(desq.dds.rare.bee, contrast = c("sample_type", "larva", "dead adult"))
   
 # Order differential abundances by their padj value
   larva.dead.bee <- larva.dead.bee[order(larva.dead.bee$padj, na.last = NA), ]
@@ -1101,7 +1098,7 @@
 # Pre-wintering vs dead adults
   
 # Extract results from differential abundance table for larvae vs dead adults
-  pre.dead.bee <- DESeq2::results(desq.dds.bee, contrast = c("sample_type", "pre.wintering.adult", "dead adult"))
+  pre.dead.bee <- DESeq2::results(desq.dds.rare.bee, contrast = c("sample_type", "pre.wintering.adult", "dead adult"))
   
 # Order differential abundances by their padj value
   pre.dead.bee <- pre.dead.bee[order(pre.dead.bee$padj, na.last = NA), ]
