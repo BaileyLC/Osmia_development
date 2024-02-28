@@ -51,22 +51,22 @@
   rownames(sample.info) <- samples.out
 
 # Format your data to work with phyloseq
-  ps1 <- phyloseq(otu_table(seqtab.nochim, taxa_are_rows = FALSE), 
+  ps5 <- phyloseq(otu_table(seqtab.nochim, taxa_are_rows = FALSE), 
                   sample_data(sample.info), 
                   tax_table(taxa))
-  ps1
+  ps5
 
 # Display total number of reads, mean, and se in phyloseq obj before processing
-  sum(sample_sums(ps1))
-  mean(sample_sums(ps1))
-  print(plotrix::std.error(sample_sums(ps1)))
+  sum(sample_sums(ps5))
+  mean(sample_sums(ps5))
+  print(plotrix::std.error(sample_sums(ps5)))
 
 ## Inspect & remove contaminants ----
 # Resource: https://benjjneb.github.io/decontam/vignettes/decontam_intro.html
 
 # Format data into a ggplot-friendly df
-  df <- as.data.frame(sample_data(ps1)) # Put sample_data into a ggplot-friendly data.frame
-  df$LibrarySize <- sample_sums(ps1)
+  df <- as.data.frame(sample_data(ps5)) # Put sample_data into a ggplot-friendly data.frame
+  df$LibrarySize <- sample_sums(ps5)
   df <- df[order(df$LibrarySize),]
   df$Index <- seq(nrow(df))
 
@@ -75,44 +75,44 @@
     geom_point()
 
 # Determine which ASVs are contaminants based on frequency of DNA in negative controls
-  contamdf.freq <- decontam::isContaminant(ps1, conc = DNA_conc, method = "frequency", threshold = 0.1)
+  contamdf.freq <- decontam::isContaminant(ps5, conc = DNA_conc, method = "frequency", threshold = 0.1)
   table(contamdf.freq$contaminant)
   head(which(contamdf.freq$contaminant))
   
 # Determine which ASVs are contaminants based on frequency of DNA in negative controls with a higher threshold
-  contamdf.freq05 <- decontam::isContaminant(ps1, conc = DNA_conc, method = "frequency", threshold = 0.5)
+  contamdf.freq05 <- decontam::isContaminant(ps5, conc = DNA_conc, method = "frequency", threshold = 0.5)
   table(contamdf.freq05$contaminant)
   head(which(contamdf.freq05$contaminant))
   
 # Determine which ASVs are contaminants based on prevalence (presence/absence) in negative controls
-  sample_data(ps1)$is.neg <- sample_data(ps1)$sample_or_control == "control"
-  contamdf.prev <- decontam::isContaminant(ps1, method = "prevalence", neg = "is.neg", threshold = 0.1)
+  sample_data(ps5)$is.neg <- sample_data(ps5)$sample_or_control == "control"
+  contamdf.prev <- decontam::isContaminant(ps5, method = "prevalence", neg = "is.neg", threshold = 0.1)
   table(contamdf.prev$contaminant)
   head(which(contamdf.prev$contaminant))
 
 # Determine which ASVs are contaminants based on prevalence (presence/absence) higher than 0.5 in negative controls
-  contamdf.prev05 <- decontam::isContaminant(ps1, method = "prevalence", neg = "is.neg", threshold = 0.5)
+  contamdf.prev05 <- decontam::isContaminant(ps5, method = "prevalence", neg = "is.neg", threshold = 0.5)
   table(contamdf.prev05$contaminant)
   head(which(contamdf.prev05$contaminant))
   
 # Determine which ASVs are contaminants based on prevalence (presence/absence) and frequency in negative controls
-  contamdf.comb <- decontam::isContaminant(ps1, conc = DNA_conc, neg = "is.neg", method = "combined", threshold = 0.1)
+  contamdf.comb <- decontam::isContaminant(ps5, conc = DNA_conc, neg = "is.neg", method = "combined", threshold = 0.1)
   table(contamdf.comb$contaminant)
   head(which(contamdf.comb$contaminant))
   
 # Determine which ASVs are contaminants based on prevalence (presence/absence) and frequency in negative controls with a higher threshold  
-  contamdf.comb05 <- decontam::isContaminant(ps1, conc = DNA_conc, neg = "is.neg", method = "combined", threshold = 0.5)
+  contamdf.comb05 <- decontam::isContaminant(ps5, conc = DNA_conc, neg = "is.neg", method = "combined", threshold = 0.5)
   table(contamdf.comb05$contaminant)
   head(which(contamdf.comb05$contaminant))
 
 # Make phyloseq object of presence-absence in negative controls
-  ps.neg <- phyloseq::prune_samples(sample_data(ps1)$sample_or_control == "control", ps1)
+  ps.neg <- phyloseq::prune_samples(sample_data(ps5)$sample_or_control == "control", ps5)
 
 # Calculate taxa abundance in samples from sample counts
   ps.neg.presence <- phyloseq::transform_sample_counts(ps.neg, function(abund) 1*(abund > 0))
 
 # Make phyloseq object of presence-absence in true positive samples
-  ps.pos <- phyloseq::prune_samples(sample_data(ps1)$sample_or_control == "sample", ps1)
+  ps.pos <- phyloseq::prune_samples(sample_data(ps5)$sample_or_control == "sample", ps5)
 
 # Calculate taxa abundance in samples from sample counts
   ps.pos.presence <- phyloseq::transform_sample_counts(ps.pos, function(abund) 1*(abund > 0))
@@ -129,7 +129,7 @@
     ylab("Prevalence (Samples)")
 
 # Make a new phyloseq object without contaminant taxa 
-  ps.noncontam <- phyloseq::prune_taxa(!contamdf.comb05$contaminant, ps1)
+  ps.noncontam <- phyloseq::prune_taxa(!contamdf.comb05$contaminant, ps5)
   ps.noncontam
 
 # Remove control samples used for identifying contaminants
@@ -137,27 +137,27 @@
   ps.sub
 
 # Remove DNA from Pseudogymnoascus, the causative agent of white-nose syndrome in bats
-  ps2 <- ps.sub %>%
+  ps6 <- ps.sub %>%
     phyloseq::subset_taxa(Genus != "g__Pseudogymnoascus")
   
 # Remove samples without any reads  
-  ps3 <- phyloseq::prune_samples(sample_sums(ps2) != 0, ps2)
-  ps3
+  ps7 <- phyloseq::prune_samples(sample_sums(ps6) != 0, ps6)
+  ps7
   
 # Display total number of reads, mean, and se in phyloseq obj after processing
-  sum(sample_sums(ps3))
-  mean(sample_sums(ps3))
-  print(plotrix::std.error(sample_sums(ps3)))
+  sum(sample_sums(ps7))
+  mean(sample_sums(ps7))
+  print(plotrix::std.error(sample_sums(ps7)))
 
 # Calculate the reads per sample
-  reads.sample <- microbiome::readcount(ps3)
+  reads.sample <- microbiome::readcount(ps7)
   head(reads.sample)
   
 # Add reads per sample to meta data
-  sample_data(ps3)$reads.sample <- reads.sample  
+  sample_data(ps7)$reads.sample <- reads.sample  
   
 # Save sample metadata
-  meta <- sample_data(ps3)
+  meta <- sample_data(ps7)
   
 # How many samples for each developmental stage?  
   meta %>%
@@ -169,23 +169,23 @@
               min = min(reads.sample))
   
 # Remove patterns in tax_table   
-  tax_table(ps3)[, colnames(tax_table(ps3))] <- gsub(tax_table(ps3)[, colnames(tax_table(ps3))], pattern = "[a-z]__", replacement = "")
+  tax_table(ps7)[, colnames(tax_table(ps7))] <- gsub(tax_table(ps7)[, colnames(tax_table(ps7))], pattern = "[a-z]__", replacement = "")
   
 # Save taxonomic and ASV counts
-  write.csv(tax_table(ps3), "Osmia_dev_ITStaxa.csv")
-  write.csv(otu_table(ps3), "Osmia_dev_ITSotu.csv")
+  write.csv(tax_table(ps7), "Osmia_dev_ITStaxa.csv")
+  write.csv(otu_table(ps7), "Osmia_dev_ITSotu.csv")
   
 # Add Seq to each taxa name
-  taxa_names(ps3) <- paste0("Seq", seq(ntaxa(ps3)))
+  taxa_names(ps7) <- paste0("Seq", seq(ntaxa(ps7)))
 
 # Create a df containing the number of reads per OTU
-  readsumsdf <- data.frame(nreads = sort(taxa_sums(ps3), TRUE), 
-                           sorted = 1:ntaxa(ps3),
+  readsumsdf <- data.frame(nreads = sort(taxa_sums(ps7), TRUE), 
+                           sorted = 1:ntaxa(ps7),
                            type = "OTUs")
 
 # Add a column containing the number of reads per sample
-  readsumsdf <- rbind(readsumsdf, data.frame(nreads = sort(sample_sums(ps3), TRUE), 
-                                             sorted = 1:nsamples(ps3), 
+  readsumsdf <- rbind(readsumsdf, data.frame(nreads = sort(sample_sums(ps7), TRUE), 
+                                             sorted = 1:nsamples(ps7), 
                                              type = "Samples"))
 
 # Plot number of reads per OTU & sample
@@ -200,14 +200,14 @@
 # All pollen and bee samples  
   
 # Estimate Shannon index, Simpson index & observed richness
-  fung.rich <- phyloseq::estimate_richness(ps3, split = TRUE, measures = c("Shannon", "Simpson", "Observed"))
+  fung.rich <- phyloseq::estimate_richness(ps7, split = TRUE, measures = c("Shannon", "Simpson", "Observed"))
 
 # Build df with metadata
-  fung.rich$sample_type <- sample_data(ps3)$sample_type
-  fung.rich$nesting_tube <- sample_data(ps3)$nesting_tube
+  fung.rich$sample_type <- sample_data(ps7)$sample_type
+  fung.rich$nesting_tube <- sample_data(ps7)$nesting_tube
 
 # Plot richness and diversity
-  phyloseq::plot_richness(ps3, x = "sample_type", measures = c("Shannon", "Simpson", "Observed"), color = "nesting_tube") + 
+  phyloseq::plot_richness(ps7, x = "sample_type", measures = c("Shannon", "Simpson", "Observed"), color = "nesting_tube") + 
               theme_bw()
 
 # Remove samples with 0 reads
@@ -300,19 +300,19 @@
 # Only bee samples
   
 # Subset phyloseq object to only include samples from larvae, pre-wintering adults, emerged adults, and dead adults
-  ps4 <- phyloseq::subset_samples(ps3, sample_type != "fresh pollen egg")
-  ps4 <- phyloseq::subset_samples(ps4, sample_type != "aged pollen")
-  ps4
+  ps8 <- phyloseq::subset_samples(ps7, sample_type != "fresh pollen egg")
+  ps8 <- phyloseq::subset_samples(ps8, sample_type != "aged pollen")
+  ps8
 
 # Estimate Shannon index, Simpson index & observed richness
-  fung.rich.bee <- phyloseq::estimate_richness(ps4, split = TRUE, measures = c("Shannon", "Simpson", "Observed"))
+  fung.rich.bee <- phyloseq::estimate_richness(ps8, split = TRUE, measures = c("Shannon", "Simpson", "Observed"))
   
 # Build df with metadata  
-  fung.rich.bee$sample_type <- sample_data(ps4)$sample_type
-  fung.rich.bee$nesting_tube <- sample_data(ps4)$nesting_tube
+  fung.rich.bee$sample_type <- sample_data(ps8)$sample_type
+  fung.rich.bee$nesting_tube <- sample_data(ps8)$nesting_tube
   
 # Plot richness and diversity
-  phyloseq::plot_richness(ps4, x = "sample_type", measures = c("Shannon", "Simpson", "Observed"), color = "nesting_tube") + 
+  phyloseq::plot_richness(ps8, x = "sample_type", measures = c("Shannon", "Simpson", "Observed"), color = "nesting_tube") + 
     theme_bw()
   
 # Remove samples with 0 reads 
@@ -336,7 +336,7 @@
 # All pollen and bee samples  
   
 # Calculate the relative abundance of each otu
-  ps.prop.fung <- phyloseq::transform_sample_counts(ps3, function(otu) otu/sum(otu))
+  ps.prop.fung <- phyloseq::transform_sample_counts(ps7, function(otu) otu/sum(otu))
   ps.prop.fung
   
 # Save relative abundance data
@@ -346,7 +346,7 @@
   fung.bray <- phyloseq::distance(ps.prop.fung, method = "bray")
   
 # Convert to data frame
-  sample.fung <- data.frame(sample_data(ps3))
+  sample.fung <- data.frame(sample_data(ps7))
   
 # Perform the PERMANOVA to test effects of developmental stage on fungal community composition
   fung.perm <- vegan::adonis2(fung.bray ~ sample_type, data = sample.fung)
@@ -370,14 +370,14 @@
 # Only bee samples
   
 # Calculate the relative abundance of each otu
-  ps.prop.fung.bee <- phyloseq::transform_sample_counts(ps4, function(otu) otu/sum(otu))
+  ps.prop.fung.bee <- phyloseq::transform_sample_counts(ps8, function(otu) otu/sum(otu))
   ps.prop.fung.bee
   
 # Create a distance matrix using Bray Curtis dissimilarity
   fung.bray.bee <- phyloseq::distance(ps.prop.fung.bee, method = "bray")
   
 # Convert to data frame
-  sample.fung.bee <- data.frame(sample_data(ps4))
+  sample.fung.bee <- data.frame(sample_data(ps8))
   
 # Perform the PERMANOVA to test effects of developmental stage on fungal community composition
   fung.perm.bee <- vegan::adonis2(fung.bray.bee ~ sample_type, data = sample.fung.bee)
@@ -487,7 +487,7 @@
 # All pollen and bee samples
 
 # Produce rarefaction curves
-  tab <- otu_table(ps3)
+  tab <- otu_table(ps7)
   class(tab) <- "matrix"
   tab <- t(tab)
   
@@ -507,12 +507,12 @@
 
 # Set seed and rarefy
   set.seed(1234)
-  fung.rareps <- phyloseq::rarefy_even_depth(ps3, sample.size = 20)
+  fung.rareps <- phyloseq::rarefy_even_depth(ps7, sample.size = 20)
 
 # Bee samples only
   
 # Produce rarefaction curves
-  tab.bee <- otu_table(ps4)
+  tab.bee <- otu_table(ps8)
   class(tab.bee) <- "matrix"
   tab.bee <- t(tab.bee)
   
@@ -532,7 +532,7 @@
   
 # Set seed and rarefy
   set.seed(1234)
-  fung.rareps.bee <- phyloseq::rarefy_even_depth(ps4, sample.size = 20)
+  fung.rareps.bee <- phyloseq::rarefy_even_depth(ps8, sample.size = 20)
 
 ## Beta diversity with rarefied data ----  
   
@@ -692,18 +692,18 @@
   Okabe.Ito <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#000000")
 
 # Stretch palette (define more intermediate color options)
-  okabe.ext <- unikn::usecol(Okabe.Ito, n = 98)
-  colors <- sample(okabe.ext)
+  #okabe.ext <- unikn::usecol(Okabe.Ito, n = 98)
+  #colors <- sample(okabe.ext)
 
 # Remove patterns in tax_table
-  tax_table(ps3)[, colnames(tax_table(ps3))] <- gsub(tax_table(ps3)[, colnames(tax_table(ps3))], pattern = "[a-z]__", replacement = "")
+  tax_table(ps7)[, colnames(tax_table(ps7))] <- gsub(tax_table(ps7)[, colnames(tax_table(ps7))], pattern = "[a-z]__", replacement = "")
 
 # New labels for facet_wrap
   new.labs <- c("fresh pollen + egg", "aged pollen", "larvae", "pre-wintering adults", "dead adults")
   names(new.labs) <- c("fresh pollen egg", "aged pollen", "larva", "pre-wintering adult", "dead adult")  
   
 # Agglomerate taxa by Family
-  y7 <- phyloseq::tax_glom(ps3, taxrank = 'Family') # agglomerate taxa
+  y7 <- phyloseq::tax_glom(ps7, taxrank = 'Family') # agglomerate taxa
   
 # Transform counts to relative abundances
   y8 <- phyloseq::transform_sample_counts(y7, function(x) x/sum(x))
@@ -737,12 +737,12 @@
     theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + 
     theme(legend.justification = "left", 
           legend.title = element_text(size = 14, colour = "black"), 
-          legend.text = element_text(size = 8, colour = "black")) + 
+          legend.text = element_text(size = 12, colour = "black")) + 
     guides(fill = guide_legend(ncol = 3)) +
-    ggtitle("Fungi")
+    labs(title = "Fungi")
   
 # Plot Family for each sample
-  Osmia.dev.fam.relabund.fungi <- ggplot(data = y9, aes(x = sampleID, y = Abundance, fill = Family)) + 
+  Osmia.dev.fam.relabund.fung <- ggplot(data = y9, aes(x = sampleID, y = Abundance, fill = Family)) + 
                                     geom_bar(stat = "identity", position = "fill") + 
                                     scale_fill_manual(values = colors) +
                                     facet_grid(~ sample_type, 
@@ -754,21 +754,21 @@
                                     ylim(0, 1.0) +
                                     xlab("Sample") +
                                     theme_bw() + 
-                                    theme(text = element_text(size = 14)) +
+                                    theme(text = element_text(size = 16)) +
                                     theme(panel.grid.major = element_blank(), 
                                           panel.grid.minor = element_blank()) + 
                                     theme(legend.justification = "left", 
-                                          legend.title = element_text(size = 14, colour = "black"), 
-                                          legend.text = element_text(size = 8, colour = "black"),
-                                          strip.text = element_text(size = 8)) + 
+                                          legend.title = element_text(size = 16, colour = "black"), 
+                                          legend.text = element_text(size = 12, colour = "black"),
+                                          strip.text = element_text(size = 14)) + 
                                     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
                                     theme(panel.spacing.x=unit(0.1, "lines")) +
                                     guides(fill = guide_legend(ncol = 3)) +
-                                    ggtitle("B")
-  Osmia.dev.fam.relabund.fungi
+                                    labs(title = "B")
+  Osmia.dev.fam.relabund.fung
 
 # Agglomerate taxa by Genus
-  y10 <- phyloseq::tax_glom(ps3, taxrank = 'Genus')
+  y10 <- phyloseq::tax_glom(ps7, taxrank = 'Genus')
   
 # Transform counts to relative abundances  
   y11 <- phyloseq::transform_sample_counts(y10, function(x) x/sum(x))
@@ -798,51 +798,49 @@
     xlab("Sample Type") +
     scale_x_discrete(labels = c("fresh pollen + egg", "aged pollen", "larvae", "pre-wintering adults", "emerged adults", "dead adults")) +
     theme_bw() + 
-    theme(text = element_text(size = 14)) +
+    theme(text = element_text(size = 16)) +
     theme(panel.grid.major = element_blank(), 
           panel.grid.minor = element_blank()) + 
     theme(legend.justification = "left", 
-          legend.title = element_text(size = 14, colour = "black"), 
-          legend.text = element_text(size = 8, colour = "black")) + 
+          legend.title = element_text(size = 12, colour = "black"), 
+          legend.text = element_text(size = 14, colour = "black")) + 
     guides(fill = guide_legend(ncol = 3)) +
-    ggtitle("Fungi")
+    labs(title = "Fungi")
 
 # New labels for facet wrap (because these include emerged adults)
   all.labs <- c("fresh pollen + egg", "aged pollen", "larvae", "pre-wintering adults", "emerged adults", "dead adults")
   names(all.labs) <- c("fresh pollen egg", "aged pollen", "larva", "pre-wintering adult", "emerged adult", "dead adult")
   
 # Plot Genus for each sample
-  Osmia.dev.gen.relabund.fungi <- ggplot(data = y12, aes(x = sampleID, y = Abundance, fill = Genus)) + 
+  Osmia.dev.gen.relabund.fung <- ggplot(data = y12, aes(x = sampleID, y = Abundance, fill = Genus)) + 
                                     geom_bar(stat = "identity", position = "fill") + 
                                     scale_fill_manual(values = colors) +
-                                    facet_grid(~ sample_type,
-                                               scale = "free",
-                                               space = "free",
-                                               labeller = labeller(sample_type = all.labs)) +
+                                    theme_bw() +
                                     theme(legend.position = "right") +
+                                    facet_grid(~ sample_type, 
+                                               scale = "free", 
+                                               space = "free",
+                                               labeller = as_labeller(all.labs, default = label_wrap_gen(multi_line = TRUE, width = 13))) +
                                     ylab("Relative abundance") + 
                                     ylim(0, 1.0) +
                                     scale_x_discrete(expand = c(0, 1.5)) +
-                                    xlab("Sample") +                                    
-                                    theme_bw() + 
+                                    xlab("Sample") +
                                     theme(text = element_text(size = 16)) +
                                     theme(panel.grid.major = element_blank(), 
                                           panel.grid.minor = element_blank()) + 
-                                    theme(legend.justification = "left", 
+                                    theme(legend.justification = "top", 
                                           legend.title = element_text(size = 16, colour = "black"), 
                                           legend.text = element_text(size = 12, colour = "black"),
-                                          strip.text = element_text(size = 10)) + 
+                                          strip.text = element_text(size = 14)) + 
                                     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
                                     theme(panel.spacing.x = unit(0.1, "lines")) +
-                                    guides(fill = guide_legend(ncol = 3)) +
-                                    labs(fill = "Genera") +
-                                    ggtitle("B")
-  Osmia.dev.gen.relabund.fungi
+                                    guides(fill = guide_legend(ncol = 2)) +
+                                    labs(fill = "Genera",
+                                         title = "B")
+  Osmia.dev.gen.relabund.fung
 
-  ggsave("Osmia_dev_ITSgenera.png", plot = Osmia.dev.gen.relabund.fungi, width = 30, height = 10, unit = "in")
-  
 # Agglomerate taxa by Genus
-  y10 <- phyloseq::tax_glom(ps3, taxrank = 'Genus')
+  y10 <- phyloseq::tax_glom(ps7, taxrank = 'Genus')
   
 # Identify the top 15 genera
   top15.fung.gen <- microbiome::top_taxa(y10, n = 15)
@@ -869,10 +867,10 @@
                                       facet_grid(~ sample_type, 
                                                  scale = "free", 
                                                  space = "free",
-                                                 labeller = labeller(sample_type = new.labs)) +
+                                                 labeller = as_labeller(new.labs, default = label_wrap_gen(multi_line = TRUE, width = 13))) +
                                       ylab("Relative abundance") + 
                                       ylim(0, 1.0) +
-                                      scale_x_discrete(expand = c(0, 1.5)) +
+                                      scale_x_discrete(expand = c(0, 3)) +
                                       xlab("Sample") +
                                       theme_bw() + 
                                       theme(text = element_text(size = 16)) +
@@ -880,14 +878,14 @@
                                             panel.grid.minor = element_blank()) + 
                                       theme(legend.position = "right",
                                             legend.justification = "left", 
-                                            legend.title = element_text(size = 14, colour = "black"), 
-                                            legend.text = element_text(size = 8, colour = "black"),
-                                            strip.text = element_text(size = 7)) +
+                                            legend.title = element_text(size = 16, colour = "black"), 
+                                            legend.text = element_text(size = 12, colour = "black"),
+                                            strip.text = element_text(size = 14)) +
                                       theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
                                       theme(panel.spacing.x = unit(0.1, "lines")) +
                                       guides(fill = guide_legend(ncol = 1)) +
-                                      labs(fill = "Genera") +
-                                      ggtitle("B")
+                                      labs(fill = "Genera",
+                                           title = "B")
   Osmia.dev.15gen.relabund.fung
   
 ## Differential abundance ----
