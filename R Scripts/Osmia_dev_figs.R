@@ -105,7 +105,7 @@
 ## Stacked Plot by Family ----
   
 # Create plot
-  Osmia.dev.fam.relabund <- Osmia.dev.fam.relabund.bact + Osmia.dev.fam.relabund.fungi + plot_layout(ncol = 1, nrow = 2)
+  Osmia.dev.fam.relabund <- Osmia.dev.fam.relabund.bact + Osmia.dev.fam.relabund.fung + plot_layout(ncol = 1, nrow = 2)
   Osmia.dev.fam.relabund
   
 # Save plot
@@ -114,16 +114,16 @@
 ## Stacked Plot by Genus ----
   
 # Create plot
-  Osmia.dev.gen.relabund <- Osmia.dev.gen.relabund.bact + Osmia.dev.gen.relabund.fungi + plot_layout(ncol = 1, nrow = 2)
+  Osmia.dev.gen.relabund <- Osmia.dev.gen.relabund.bact + Osmia.dev.gen.relabund.fung + plot_layout(ncol = 1, nrow = 2)
   Osmia.dev.gen.relabund
   
 # Save plot
-  ggsave("Osmia_dev_gen_relabund.png", plot =  Osmia.dev.gen.relabund)
+  ggsave("Osmia_dev_gen_relabund.png", plot =  Osmia.dev.gen.relabund, width = 23, height = 30, units = "in")
   
 ## Stacked Plot by Top 15 Genera ----
   
 # Create plot
-  Osmia.dev.gen.top15 <- Osmia.dev.15gen.relabund.bact + Osmia.dev.15gen.relabund_fung + plot_layout(ncol = 1, nrow = 2)
+  Osmia.dev.gen.top15 <- Osmia.dev.15gen.relabund.bact + Osmia.dev.15gen.relabund.fung + plot_layout(ncol = 1, nrow = 2)
   Osmia.dev.gen.top15
   
 # Save plot
