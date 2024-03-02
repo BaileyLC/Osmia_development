@@ -24,6 +24,14 @@
   library(RVAideMemoire) # Version 0.9-83-7
   library(DESeq2) # Version 1.40.2
   library(tidyverse) # Version 1.2.0
+  library(FSA) # Version 0.9.5
+
+# Set color scheme  
+  dev.colors <- c("fresh pollen egg" = "#FDD835",
+                  "aged pollen" = "#E4511E",
+                  "larva" = "#43A047",
+                  "pre-wintering adult" = "#0288D1",
+                  "dead adult" = "#616161")
 
 # Import data
   seqtab.nochim <- readRDS("Osmia_dev_seqs16S.rds")
@@ -243,14 +251,7 @@
 # Examine the effects of sample_type on observed richness
   mod3 <- nlme::lme(Observed ~ sample_type, random = ~1|nesting_tube, data = bact.rich)
   stats::anova(mod3)
-  
-# Set color scheme  
-  dev.colors <- c("fresh pollen egg" = "#FDD835",
-                  "aged pollen" = "#E4511E",
-                  "larva" = "#43A047",
-                  "pre-wintering adult" = "#0288D1",
-                  "dead adult" = "#616161")  
-  
+
 # Order samples on x-axis
   bact.rich$sample_type <- factor(bact.rich$sample_type, levels = c("fresh pollen egg", "aged pollen", "larva", "pre-wintering adult", "dead adult"))
   
@@ -1108,4 +1109,48 @@
   
 # Check to see if any padj is below alpha
   pre.dead.bee.p05
+  
+## Arsenophonus ----
+  
+# Agglomerate taxa by Genus
+  dev.bact.gen <- phyloseq::tax_glom(ps3, taxrank = 'Genus')
+  
+# Transform to relative abundance  
+  dev.bact.gen <- phyloseq::transform_sample_counts(dev.bact.gen, function(x) x/sum(x))
+  
+# Subset data to contain Arsenophonus only
+  dev.arsenophonus <- phyloseq::subset_taxa(dev.bact.gen, Genus == "Arsenophonus")
+  
+# Save data
+  write.csv(otu_table(dev.arsenophonus), "Osmia_dev_Arsenophonus_otu.csv")
+  
+# Import data
+  dev.arseno <- read.csv("Osmia_dev_Arsenophonus.csv")
+  
+# Remove samples with 0 relative abundance
+  dev.arseno[dev.arseno == 0] <- NA
+  dev.arseno <- dev.arseno[complete.cases(dev.arseno), ]
+  
+# Kruskal-Wallis test
+  stats::kruskal.test(rel_abund ~ sample_type, data = dev.arseno)
+  
+# Post-hoc test
+  FSA::dunnTest(rel_abund ~ sample_type, data = dev.arseno, method = "bh")
+  
+# Reorder x-axis
+  dev.arseno$sample_type <- factor(dev.arseno$sample_type, levels = c("fresh pollen egg", "aged pollen", "larva", "pre-wintering adult", "dead adult"))
+  
+# Plot
+  dev.arseno.rel.abund <- ggplot(dev.arseno, aes(x = sample_type, y = rel_abund, color = sample_type)) + 
+                              geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(width = 0.1)) +
+                              geom_jitter(size = 1, alpha = 0.9) +
+                              theme_bw() +
+                              theme(panel.grid.major = element_blank(),
+                                    panel.grid.minor = element_blank()) +
+                              scale_color_manual(name = "Sample Type", 
+                                                 values = dev.colors) +
+                              scale_x_discrete(labels = c('fresh pollen + egg', 'aged pollen', 'larvae', 'pre-wintering adults', 'dead adults')) +
+                              xlab("Sample Type") +
+                              ylab("Relative abundance")
+  dev.arseno.rel.abund
   
