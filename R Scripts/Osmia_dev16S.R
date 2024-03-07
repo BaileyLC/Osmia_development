@@ -263,12 +263,12 @@
                                 theme(legend.position = "none") +
                                 theme(panel.grid.major = element_blank(),
                                       panel.grid.minor = element_blank()) +
-                                theme(axis.text.x = element_text(size = 12, colour = "black"),
+                                theme(axis.text.x = element_blank(),
                                       axis.text.y = element_text(size = 12, colour = "black"),
-                                      axis.title.x = element_text(size = 14, colour = "black"),
-                                      axis.title.y = element_text(size = 14, colour = "black")) +
+                                      axis.title.x = element_blank(),
+                                      axis.title.y = element_text(size = 14, colour = "black"),
+                                      axis.ticks.x = element_blank()) +
                                 scale_color_manual(values = dev.colors) +
-                                scale_x_discrete(labels = c('fresh pollen + egg', 'aged pollen', 'larvae', 'pre-wintering adults', 'dead adults')) +
                                 labs(title = "A") +
                                 xlab("Sample Type") +
                                 ylim(0, 5) +
@@ -283,12 +283,12 @@
                                    theme(legend.position = "none") +
                                    theme(panel.grid.major = element_blank(),
                                          panel.grid.minor = element_blank()) +
-                                   theme(axis.text.x = element_text(size = 12, colour = "black"),
+                                   theme(axis.text.x = element_blank(),
                                          axis.text.y = element_text(size = 12, colour = "black"),
-                                         axis.title.x = element_text(size = 14, colour = "black"),
-                                         axis.title.y = element_text(size = 14, colour = "black")) +
+                                         axis.title.x = element_blank(),
+                                         axis.title.y = element_text(size = 14, colour = "black"),
+                                         axis.ticks.x = element_blank()) +
                                    scale_color_manual(values = dev.colors) +
-                                   scale_x_discrete(labels = c('fresh pollen + egg', 'aged pollen', 'larvae', 'pre-wintering adults', 'dead adults')) +
                                    labs(title = "A") +
                                    xlab("Sample Type") +
                                    ylim(0, 1) +
@@ -303,12 +303,12 @@
                                 theme(legend.position = "none") +
                                 theme(panel.grid.major = element_blank(),
                                       panel.grid.minor = element_blank()) +
-                                theme(axis.text.x = element_text(size = 12, colour = "black"),
+                                theme(axis.text.x = element_blank(),
                                       axis.text.y = element_text(size = 12, colour = "black"),
-                                      axis.title.x = element_text(size = 14, colour = "black"),
-                                      axis.title.y = element_text(size = 14, colour = "black")) +
+                                      axis.title.x = element_blank(),
+                                      axis.title.y = element_text(size = 14, colour = "black"),
+                                      axis.ticks.x = element_blank()) +
                                 scale_color_manual(values = dev.colors) +
-                                scale_x_discrete(labels = c('fresh pollen + egg', 'aged pollen', 'larvae', 'pre-wintering adults', 'dead adults')) +
                                 labs(title = "A") +
                                 xlab("Sample Type") +
                                 ylim(0, 40) +
@@ -472,7 +472,7 @@
                                  color = "Sample Type")
   Osmia.dev.PCoA.bact
 
-# Only bee samples  
+# Only bee samples
   
 # PCoA using Bray-Curtis distance
   ord.pcoa.bray.bee <- phyloseq::ordinate(ps.prop.bact.bee, method = "PCoA", distance = "bray")
@@ -515,8 +515,10 @@
                             geom_line() +
                             theme_bw() +
                             theme(panel.grid.major = element_blank(),
-                                  panel.grid.minor = element_blank()) +
+                                  panel.grid.minor = element_blank(),
+                                  axis.title.x = element_blank()) +
                             labs(title = "A") + 
+                            ylim(0, 15) +
                             xlab("Number of reads") +
                             ylab("Number of species")
   Osmia.dev.rare.bact
@@ -540,7 +542,8 @@
                                   geom_line() +
                                   theme_bw() +
                                   theme(panel.grid.major = element_blank(),
-                                        panel.grid.minor = element_blank()) +
+                                        panel.grid.minor = element_blank(),
+                                        axis.title.x = element_blank()) +
                                   labs(title = "A") + 
                                   xlab("Number of reads") +
                                   ylab("Number of species")
