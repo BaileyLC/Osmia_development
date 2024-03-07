@@ -25,6 +25,15 @@
   library(DESeq2) # Version 1.40.2
   library(tidyverse) # Version 1.2.0
 
+
+# Set color scheme  
+  dev.colors <- c("fresh pollen egg" = "#FDD835",
+                  "aged pollen" = "#E4511E",
+                  "larva" = "#43A047",
+                  "pre-wintering adult" = "#0288D1",
+                  "emerged adult" = "#673AB7",
+                  "dead adult" = "#616161")
+
 # Import data
   seqtab.nochim <- readRDS("Osmia_dev_seqsITS.rds")
   taxa <- readRDS("Osmia_dev_taxaITS.rds")
@@ -226,13 +235,6 @@
   mod9 <- nlme::lme(Observed ~ sample_type, random = ~1|nesting_tube, data = fung.rich)
   anova(mod9)
 
-# Set color scheme  
-  dev.colors <- c("fresh pollen egg" = "#FDD835",
-                  "aged pollen" = "#E4511E",
-                  "larva" = "#43A047",
-                  "pre-wintering adult" = "#0288D1",
-                  "dead adult" = "#616161")  
-  
 # Order samples on x-axis
   fung.rich$sample_type <- factor(fung.rich$sample_type, levels = c("fresh pollen egg", "aged pollen", "larva", "pre-wintering adult", "dead adult"))
   
@@ -244,14 +246,14 @@
                                 theme(legend.position = "none") +
                                 theme(panel.grid.major = element_blank(),
                                       panel.grid.minor = element_blank()) +
-                                theme(axis.text.x = element_text(size = 12, colour = "black"),
+                                theme(axis.text.x = element_text(size = 8, colour = "black"),
                                       axis.text.y = element_text(size = 12, colour = "black"),
-                                      axis.title.x = element_text(size = 16, colour = "black"),
-                                      axis.title.y = element_text(size = 16, colour = "black")) +
+                                      axis.title.x = element_text(size = 8, colour = "black"),
+                                      axis.title.y = element_text(size = 14, colour = "black")) +
                                 scale_color_manual(values = dev.colors) +
                                 scale_x_discrete(labels = c('fresh pollen + egg', 'aged pollen', 'larvae', 'pre-wintering adults', 'dead adults')) +
                                 labs(title = "B") +
-                                xlab("Sample type") +
+                                xlab("SampleType") +
                                 ylim(0, 5) +
                                 ylab("Shannon index")
   Osmia.dev.Shannon.fungi
@@ -331,7 +333,7 @@
   mod12 <- nlme::lme(Observed ~ sample_type, random = ~1|nesting_tube, data = fung.rich.bee)
   anova(mod12)
   
-## Beta diversity with relative abundance data ----  
+## Beta diversity with relative abundance data ---- 
   
 # All pollen and bee samples  
   
@@ -501,6 +503,7 @@
                             theme(panel.grid.major = element_blank(),
                                   panel.grid.minor = element_blank()) +
                             labs(title = "B") + 
+                            ylim(0, 15) +
                             xlab("Number of reads") +
                             ylab("Number of species")
   Osmia.dev.rare.fungi
@@ -579,10 +582,6 @@
   fung.perm.rare.bee <- vegan::adonis2(fung.bray.rare.bee ~ sample_type, data = sample.fung.rare.bee)
   fung.perm.rare.bee
   
-# Follow up with pairwise comparisons - which sample types differ?
-  #fungi.perm.BH.rare.bee <- RVAideMemoire::pairwise.perm.manova(fung.bray.rare.bee, sample.fung.rare.bee$sample_type, p.method = "BH")
-  #fungi.perm.BH.rare.bee  
-  
 # Set permutations to deal with pseudoreplication of bee nests
   perm.rare.bee <- how(within = Within(type = "free"),
                        plots = Plots(type = "none"),
@@ -626,7 +625,7 @@
 
 ## Ordination with rarefied data ----
 
-# All pollen and bee samples  
+# All pollen and bee samples
   
 # Calculate the relative abundance of each otu
   ps.prop.rare <- phyloseq::transform_sample_counts(fung.rareps, function(otu) otu/sum(otu))
@@ -692,8 +691,8 @@
   Okabe.Ito <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#000000")
 
 # Stretch palette (define more intermediate color options)
-  #okabe.ext <- unikn::usecol(Okabe.Ito, n = 98)
-  #colors <- sample(okabe.ext)
+  okabe.ext <- unikn::usecol(Okabe.Ito, n = 98)
+  colors <- sample(okabe.ext)
 
 # Remove patterns in tax_table
   tax_table(ps7)[, colnames(tax_table(ps7))] <- gsub(tax_table(ps7)[, colnames(tax_table(ps7))], pattern = "[a-z]__", replacement = "")
