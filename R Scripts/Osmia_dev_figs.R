@@ -20,8 +20,8 @@
   Osmia.dev.Shannon
   
 # Save plot  
-  ggsave("Osmia_dev_Shannon.png", plot = Osmia.dev.Shannon)
-  
+  ggsave("Osmia_dev_Shannon.png", plot = Osmia.dev.Shannon, width = 8, height = 5, units = "in")
+
 ## Simpson index ----
 
 # Create plot
@@ -29,7 +29,7 @@
   Osmia.dev.Simpson
   
 # Save plot  
-  ggsave("Osmia_dev_Simpson.png", plot = Osmia.dev.Simpson)
+  ggsave("Osmia_dev_Simpson.png", plot = Osmia.dev.Simpson, width = 8, height = 5, units = "in")
   
 ## Observed richness ----
   
@@ -38,7 +38,7 @@
   Osmia.dev.Observed
   
 # Save plot  
-  ggsave("Osmia_dev_Observed.png", plot = Osmia.dev.Observed)
+  ggsave("Osmia_dev_Observed.png", plot = Osmia.dev.Observed, width = 8, height = 5, units = "in")
   
 ## Rarefaction curves ----
 
@@ -49,7 +49,7 @@
   Osmia.dev.rare
   
 # Save plot
-  ggsave("Osmia_dev_rare.png", plot = Osmia.dev.rare)
+  ggsave("Osmia_dev_rare.png", plot = Osmia.dev.rare, width = 8, height = 5, units = "in")
   
 # Only bee samples
   
@@ -58,7 +58,7 @@
   Osmia.dev.rare.bee
   
 # Save plot
-  ggsave("Osmia_dev_rare_bee.png", plot = Osmia.dev.rare.bee)
+  ggsave("Osmia_dev_rare_bee.png", plot = Osmia.dev.rare.bee, width = 6, height = 5, units = "in")
   
 ## PCoA plots ----
   
@@ -71,7 +71,7 @@
   Osmia.dev.PCoA.relabund
   
 # Save plot
-  ggsave("Osmia_dev_PCoA_relabund.png", plot = Osmia.dev.PCoA.relabund)
+  ggsave("Osmia_dev_PCoA_relabund.png", plot = Osmia.dev.PCoA.relabund, width = 10, height = 4, units = "in")
   
 # Rarefied data
   
@@ -80,7 +80,7 @@
   Osmia.dev.PCoA.rare
   
 # Save plot
-  ggsave("Osmia_dev_PCoA_rare.png", plot = Osmia.dev.PCoA.rare)
+  ggsave("Osmia_dev_PCoA_rare.png", plot = Osmia.dev.PCoA.rare, width = 10, height = 4, units = "in")
 
 # Only bee samples
   
@@ -91,7 +91,7 @@
   Osmia.dev.PCoA.relabund.bee
   
 # Save plot
-  ggsave("Osmia_dev_PCoA_relabund_bee.png", plot = Osmia.dev.PCoA.relabund.bee)
+  ggsave("Osmia_dev_PCoA_relabund_bee.png", plot = Osmia.dev.PCoA.relabund.bee, width = 10, height = 4, units = "in")
   
 # Rarefied data
   
@@ -100,7 +100,7 @@
   Osmia.dev.PCoA.rare.bee
   
 # Save plot
-  ggsave("Osmia_dev_PCoA_rare_bee.png", plot = Osmia.dev.PCoA.rare.bee)
+  ggsave("Osmia_dev_PCoA_rare_bee.png", plot = Osmia.dev.PCoA.rare.bee, width = 10, height = 4, units = "in")
   
 ## Stacked Plot by Family ----
   
@@ -109,7 +109,7 @@
   Osmia.dev.fam.relabund
   
 # Save plot
-  ggsave("Osmia_dev_fam_relabund.png", plot = Osmia.dev.fam.relabund)
+  ggsave("Osmia_dev_fam_relabund.png", plot = Osmia.dev.fam.relabund, width = 18, height = 12, units = "in")
   
 ## Stacked Plot by Genus ----
   
