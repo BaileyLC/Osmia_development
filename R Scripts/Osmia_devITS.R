@@ -443,14 +443,14 @@
 # Plot ordination
   Osmia.dev.PCoA.fungi <- plot_ordination(ps.prop.fung, ord.pcoa.bray, color = "sample_type") + 
                             theme_bw() +
-                            theme(text = element_text(size = 16),
+                            theme(text = element_text(size = 24),
                                   legend.justification = "left") + 
                             theme(panel.grid.major = element_blank(),
                                   panel.grid.minor = element_blank()) +
-                            theme(axis.text.x = element_text(size = 12, colour = "black"),
-                                  axis.text.y = element_text(size = 12, colour = "black"),
-                                  axis.title.x = element_text(size = 14, colour = "black"),
-                                  axis.title.y = element_text(size = 14, colour = "black")) +
+                            theme(axis.text.x = element_text(size = 16, colour = "black"),
+                                  axis.text.y = element_text(size = 16, colour = "black"),
+                                  axis.title.x = element_text(size = 18, colour = "black"),
+                                  axis.title.y = element_text(size = 18, colour = "black")) +
                             geom_point(size = 4) +
                             scale_color_manual(values = dev.colors,
                                                labels = c('fresh pollen + egg', 'aged pollen', 'larvae', 'pre-wintering adults', 'dead adults')) +
@@ -688,11 +688,11 @@
 ## Stacked community plots ----
 
 # Generate colorblind friendly palette
-  Okabe.Ito <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#000000")
+  #Okabe.Ito <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#000000")
 
 # Stretch palette (define more intermediate color options)
-  okabe.ext <- unikn::usecol(Okabe.Ito, n = 98)
-  colors <- sample(okabe.ext)
+  #okabe.ext <- unikn::usecol(Okabe.Ito, n = 98)
+  #colors <- sample(okabe.ext)
 
 # Remove patterns in tax_table
   tax_table(ps7)[, colnames(tax_table(ps7))] <- gsub(tax_table(ps7)[, colnames(tax_table(ps7))], pattern = "[a-z]__", replacement = "")
@@ -700,7 +700,7 @@
 # New labels for facet_wrap
   new.labs <- c("fresh pollen + egg", "aged pollen", "larvae", "pre-wintering adults", "dead adults")
   names(new.labs) <- c("fresh pollen egg", "aged pollen", "larva", "pre-wintering adult", "dead adult")  
-  
+
 # Agglomerate taxa by Family
   y7 <- phyloseq::tax_glom(ps7, taxrank = 'Family') # agglomerate taxa
   
@@ -824,14 +824,14 @@
                                     ylim(0, 1.0) +
                                     scale_x_discrete(expand = c(0, 1.5)) +
                                     xlab("Sample") +
-                                    theme(text = element_text(size = 16)) +
+                                    theme(text = element_text(size = 24)) +
                                     theme(panel.grid.major = element_blank(), 
                                           panel.grid.minor = element_blank()) + 
                                     theme(legend.justification = "top", 
-                                          legend.title = element_text(size = 16, colour = "black"), 
-                                          legend.text = element_text(size = 12, colour = "black"),
+                                          legend.title = element_text(size = 24, colour = "black"), 
+                                          legend.text = element_text(size = 18, colour = "black"),
                                           strip.text = element_text(size = 14)) + 
-                                    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+                                    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size = 12)) +
                                     theme(panel.spacing.x = unit(0.1, "lines")) +
                                     guides(fill = guide_legend(ncol = 2)) +
                                     labs(fill = "Genera",
@@ -872,15 +872,15 @@
                                       scale_x_discrete(expand = c(0, 3)) +
                                       xlab("Sample") +
                                       theme_bw() + 
-                                      theme(text = element_text(size = 16)) +
+                                      theme(text = element_text(size = 24)) +
                                       theme(panel.grid.major = element_blank(), 
                                             panel.grid.minor = element_blank()) + 
                                       theme(legend.position = "right",
                                             legend.justification = "left", 
-                                            legend.title = element_text(size = 16, colour = "black"), 
-                                            legend.text = element_text(size = 12, colour = "black"),
-                                            strip.text = element_text(size = 14)) +
-                                      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+                                            legend.title = element_text(size = 24, colour = "black"), 
+                                            legend.text = element_text(size = 20, colour = "black"),
+                                            strip.text = element_text(size = 16)) +
+                                      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size = 12)) +
                                       theme(panel.spacing.x = unit(0.1, "lines")) +
                                       guides(fill = guide_legend(ncol = 1)) +
                                       labs(fill = "Genera",
