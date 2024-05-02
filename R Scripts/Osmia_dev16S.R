@@ -7,7 +7,7 @@
 ## Prepare work space ----
 
 # Set working directory
-  setwd("~/Downloads/Osmia_dev")
+  setwd("~/Downloads")
 
 # Load necessary packages
   library(stringr) # Version 1.5.1
