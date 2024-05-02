@@ -831,8 +831,8 @@
                                                labeller = as_labeller(new.labs, default = label_wrap_gen(multi_line = TRUE, width = 13))) +
                                     ylab("Relative abundance") + 
                                     ylim(0, 1.0) +
+                                    xlab("") +
                                     scale_x_discrete(expand = c(0, 1.5)) +
-                                    xlab("Sample") +
                                     theme(text = element_text(size = 24)) +
                                     theme(panel.grid.major = element_blank(), 
                                           panel.grid.minor = element_blank()) + 
@@ -881,8 +881,8 @@
                                       theme(legend.position = "right") +
                                       ylab("Relative abundance") + 
                                       ylim(0, 1.0) +
+                                      xlab("") +
                                       scale_x_discrete(expand = c(0, 3)) +
-                                      xlab("Sample") +
                                       theme_bw() + 
                                       theme(text = element_text(size = 24)) +
                                       theme(panel.grid.major = element_blank(), 
