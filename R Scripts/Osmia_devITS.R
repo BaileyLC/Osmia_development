@@ -735,7 +735,7 @@
     theme(text = element_text(size = 14)) +
     theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + 
     theme(legend.justification = "left", 
-          legend.title = element_text(size = 14, colour = "black"), 
+          legend.title = element_text(size = 14, colour = "black"),
           legend.text = element_text(size = 12, colour = "black")) + 
     guides(fill = guide_legend(ncol = 3)) +
     labs(title = "Fungi")
