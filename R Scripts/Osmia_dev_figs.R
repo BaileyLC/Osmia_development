@@ -71,7 +71,7 @@
   Osmia.dev.PCoA.relabund
   
 # Save plot
-  ggsave("Osmia_dev_PCoA_relabund.png", plot = Osmia.dev.PCoA.relabund, width = 10, height = 4, units = "in")
+  ggsave("Osmia_dev_PCoA_relabund.png", plot = Osmia.dev.PCoA.relabund, width = 14, height = 6, units = "in")
   
 # Rarefied data
   
@@ -118,7 +118,7 @@
   Osmia.dev.gen.relabund
   
 # Save plot
-  ggsave("Osmia_dev_gen_relabund.png", plot =  Osmia.dev.gen.relabund, width = 23, height = 30, units = "in")
+  ggsave("Osmia_dev_gen_relabund.png", plot =  Osmia.dev.gen.relabund, width = 23, height = 32, units = "in")
   
 ## Stacked Plot by Top 15 Genera ----
   
@@ -127,4 +127,4 @@
   Osmia.dev.gen.top15
   
 # Save plot
-  ggsave("Osmia_dev_gen_top15.png", plot = Osmia.dev.gen.top15, width = 15, height = 10, units = "in")
+  ggsave("Osmia_dev_gen_top15.png", plot = Osmia.dev.gen.top15, width = 18, height = 16, units = "in")
