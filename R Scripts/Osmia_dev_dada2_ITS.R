@@ -18,7 +18,7 @@
 ## Prepare samples for quality control ----
 
 # Specify the path where your FASTQ files are located
-  path <- "Osmia_dev_ITS"
+  path <- "Osmia_devITS"
   list.files(path)
   
 # Sort files to ensure forward and reverse reads are in the same order
