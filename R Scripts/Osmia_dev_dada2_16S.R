@@ -19,7 +19,7 @@
   path <- "seqs/Osmia_dev16S" # where to find the directory containing the unzipped fastq files
   list.files(path) # call files to ensure you are in the correct location
 
-# Sort files to ensure forward and reverse reads are in the same order
+# Sort files to ensure forward/reverse reads are in the same order
   fnFs <- sort(list.files(path, pattern = "_L001_R1_001.fastq.gz", full.names = TRUE))
   fnRs <- sort(list.files(path, pattern = "_L001_R2_001.fastq.gz", full.names = TRUE))
 
@@ -79,7 +79,7 @@
 # Merge denoised reads
   mergers <- mergePairs(dadaFs, filtFs, dadaRs, filtRs, verbose = TRUE)
 
-# Inspect the merger data.frame from the first sample
+# Inspect the merger df from the first sample
   head(mergers[[1]])
 
 # Organize ribosomal sequence variants (RSVs) in to a sequence table
@@ -117,9 +117,44 @@
   taxa.print <- taxa
   rownames(taxa.print) <- NULL
   head(taxa.print)
+  
+## Phylogeny ----
+  
+# Extract sequences
+  seqs <- dada2::getSequences(seqtab.nochim)
+  
+# Save sequence names
+  names(seqs) <- seqs
+  
+# Align sequences
+  alignment <- DECIPHER::AlignSeqs(DNAStringSet(seqs), anchor = NA)
+  
+# Convert to phyDat format
+  phang.align <- phangorn::phyDat(as(alignment, "matrix"), type = "DNA")
+  
+# Compute pairwise distances
+  dm <- phangorn::dist.ml(phang.align)
+  
+# Perform the neighbor-joining tree estimation
+  treeNJ <- phangorn::NJ(dm)
+  
+# Compute likelihood for the tree
+  fit <- phangorn::pml(treeNJ, data = phang.align)
+  
+# Define new model parameters
+  fitGTR <- update(fit, k = 4, inv = 0.2)
+  
+# Re-fit the model with new parameters
+  fitGTR <- phangorn::optim.pml(fitGTR,
+                                model = "GTR",
+                                optInv = TRUE,
+                                optGamma = TRUE,
+                                rearrangement = "stochastic",
+                                control = pml.control(trace = 0))
 
 ## Save output ---- 
 
 # Save files so you don't have to work through the computationally heavy work again
   saveRDS(seqtab.nochim, file = "Osmia_dev_seqs16S.rds")
   saveRDS(taxa, file = "Osmia_dev_taxa16S.rds")
+  saveRDS(fitGTR, file = "Osmia_dev_fitGTR_16S.rds")
