@@ -7,7 +7,7 @@
 ## Prepare work space ----
 
 # Set working directory
-  setwd("~/Downloads")
+  setwd("~/Downloads/Osmia_dev")
 
 # Load necessary packages
   library(stringr) # Version 1.5.1
@@ -36,6 +36,7 @@
 # Import data
   seqtab.nochim <- readRDS("Osmia_dev_seqs16S.rds")
   taxa <- readRDS("Osmia_dev_taxa16S.rds")
+  fitGTR <- readRDS("Osmia_dev_fitGTR_16S.rds")
   meta16S.dev <- read.csv("Osmia_dev_metadata - 16S_worked.csv")
 
 ## Create phyloseq object ----
@@ -61,7 +62,8 @@
 # Format your data to work with phyloseq
   ps1 <- phyloseq(otu_table(seqtab.nochim, taxa_are_rows = FALSE),
                   sample_data(sample.info), 
-                  tax_table(taxa))
+                  tax_table(taxa),
+                  phy_tree(fitGTR$tree))
   ps1
 
 # Display total number of reads, mean, and se in phyloseq obj before processing
@@ -114,6 +116,7 @@
   head(which(contamdf.comb05$contaminant))
 
 # Make phyloseq object of negative controls
+  
   ps.neg <- phyloseq::prune_samples(sample_data(ps1)$sample_or_control == "control", ps1)
 
 # Transform abundances in negative controls
@@ -167,7 +170,8 @@
 
 # Remove DNA from Legionella
   ps2 <- ps2 %>%
-    phyloseq::subset_taxa(Genus != "Legionella")
+    phyloseq::subset_taxa(Genus != "Legionella" &
+                          Genus != "Klebsiella")
   
 # Remove samples without any reads
   ps3 <- phyloseq::prune_samples(sample_sums(ps2) != 0, ps2)
@@ -317,9 +321,10 @@
   
 # Only bee samples
   
-# Subset phyloseq object to only include samples from larvae, pre-wintering adults, emerged adults, and dead adults
+# Subset phyloseq object to only include samples from larvae, pre-wintering adults, and dead adults
   ps4 <- phyloseq::subset_samples(ps3, sample_type != "fresh pollen egg")
   ps4 <- phyloseq::subset_samples(ps4, sample_type != "aged pollen")
+  ps4 <- phyloseq::subset_samples(ps4, sample_type != "emerged adult")
   ps4
   
 # Estimate Shannon index, Simpson index & observed richness
@@ -359,7 +364,9 @@
 # Save relative abundance data
   write.csv(otu_table(ps.prop.bact), "Osmia_dev_16Sotu_relabund.csv")
   
-# Create a distance matrix using Bray Curtis dissimilarity
+# Bray-Curtis dissimilarity  
+  
+# Create a distance matrix
   bact.bray <- phyloseq::distance(ps.prop.bact, method = "bray")
   
 # Convert to data frame
@@ -373,7 +380,9 @@
   bact.perm.BH <- RVAideMemoire::pairwise.perm.manova(bact.bray, sample.bact$sample_type, p.method = "BH")
   bact.perm.BH
   
-# Set permutations to deal with pseudoreplication of bee nests
+# Bray-Curtis dissimilarity with permutations to deal with pseudoreplication of bee nests
+  
+# Set permutations
   perm.relabund <- permute::how(within = Within(type = "free"),
                             plots = Plots(type = "none"),
                             blocks = sample.bact$nesting_tube,
@@ -384,16 +393,44 @@
   bact.perm.relabund.pseudo <- vegan::adonis2(bact.bray ~ sample_type, permutations = perm.relabund, data = sample.bact)
   bact.perm.relabund.pseudo
   
+# Unweighted UniFrac
+
+# Create a distance matrix
+  bact.unwt.uni <- phyloseq::distance(ps.prop.bact, method = "unifrac")
+  
+# Perform the PERMANOVA to test effects of developmental stage on bacterial community composition
+  bact.unwt.uni.perm.relabund <- vegan::adonis2(bact.unwt.uni ~ sample_type, data = sample.bact)
+  bact.unwt.uni.perm.relabund
+  
+# Follow up with pairwise comparisons - which sample types differ?
+  bact.unwt.uni.perm.BH <- RVAideMemoire::pairwise.perm.manova(bact.unwt.uni, sample.bact$sample_type, p.method = "BH")
+  bact.unwt.uni.perm.BH
+  
+# Weighed UniFrac  
+  
+# Create a distance matrix
+  bact.wt.uni <- phyloseq::distance(ps.prop.bact, method = "wunifrac")
+  
+# Perform the PERMANOVA to test effects of developmental stage on bacterial community composition
+  bact.wt.uni.perm.relabund <- vegan::adonis2(bact.wt.uni ~ sample_type, data = sample.bact)
+  bact.wt.uni.perm.relabund
+  
+# Follow up with pairwise comparisons - which sample types differ?
+  bact.wt.uni.perm.BH <- RVAideMemoire::pairwise.perm.manova(bact.wt.uni, sample.bact$sample_type, p.method = "BH")
+  bact.wt.uni.perm.BH  
+  
 # Only bee samples
   
 # Calculate the relative abundance of each otu  
   ps.prop.bact.bee <- phyloseq::transform_sample_counts(ps4, function(otu) otu/sum(otu))
   
-# Create a distance matrix using Bray Curtis dissimilarity
-  bact.bray.bee <- phyloseq::distance(ps.prop.bact.bee, method = "bray")
-  
 # Convert to data frame
   sample.bact.bee <- data.frame(sample_data(ps4))
+  
+# Bray-Curtis dissimilarity
+  
+# Create a distance matrix using Bray Curtis dissimilarity
+  bact.bray.bee <- phyloseq::distance(ps.prop.bact.bee, method = "bray")
   
 # Perform the PERMANOVA to test effects of developmental stage on bacterial community composition
   bact.perm.relabund.bee <- vegan::adonis2(bact.bray.bee ~ sample_type, data = sample.bact.bee)
@@ -403,7 +440,9 @@
   bact.perm.BH.bee <- RVAideMemoire::pairwise.perm.manova(bact.bray.bee, sample.bact.bee$sample_type, p.method = "BH")
   bact.perm.BH.bee
   
-# Set permutations to deal with pseudoreplication of bee nests
+# Bray-Curtis dissimilarity with permutations to deal with pseudoreplication of bee nests  
+  
+# Set permutations
   perm.relabund.bee <- permute::how(within = Within(type = "free"),
                                     plots = Plots(type = "none"),
                                     blocks = sample.bact.bee$nesting_tube,
@@ -414,9 +453,29 @@
   bact.perm.relabund.pseudo.bee <- vegan::adonis2(bact.bray.bee ~ sample_type, permutations = perm.relabund.bee, data = sample.bact.bee)
   bact.perm.relabund.pseudo.bee
   
+# Unweighted UniFrac
+  
+# Create a distance matrix
+  bact.unwt.uni.bee <- phyloseq::distance(ps.prop.bact.bee, method = "unifrac")
+  
+# Perform the PERMANOVA to test effects of developmental stage on bacterial community composition
+  bact.unwt.uni.perm.relabund.bee <- vegan::adonis2(bact.unwt.uni.bee ~ sample_type, data = sample.bact.bee)
+  bact.unwt.uni.perm.relabund.bee
+
+# Weighted UniFrac
+    
+# Create a distance matrix
+  bact.wt.uni.bee <- phyloseq::distance(ps.prop.bact.bee, method = "wunifrac")
+  
+# Perform the PERMANOVA to test effects of developmental stage on bacterial community composition
+  bact.wt.uni.perm.relabund.bee <- vegan::adonis2(bact.wt.uni.bee ~ sample_type, data = sample.bact.bee)
+  bact.wt.uni.perm.relabund.bee
+  
 ## Test for homogeneity of multivariate dispersion with relative abundance data ----
   
 # All pollen and bee samples  
+  
+# Bray-Curtis dissimilarity  
   
 # Calculate the average distance of group members to the group centroid
   disp.bact <- vegan::betadisper(bact.bray, sample.bact$sample_type)
@@ -430,7 +489,33 @@
   disp.bact.tHSD <- stats::TukeyHSD(disp.bact)
   disp.bact.tHSD
   
+# Unweighted UniFrac
+  
+# Calculate the average distance of group members to the group centroid
+  unwt.uni.disp.bact <- vegan::betadisper(bact.unwt.uni.bee, sample.bact.bee$sample_type)
+  unwt.uni.disp.bact
+  
+# Do any of the group dispersions differ?
+  unwt.uni.disp.bact.an <- anova(unwt.uni.disp.bact)
+  unwt.uni.disp.bact.an
+  
+# Weighed UniFrac  
+  
+# Calculate the average distance of group members to the group centroid
+  wt.uni.disp.bact <- vegan::betadisper(bact.wt.uni, sample.bact$sample_type)
+  wt.uni.disp.bact
+  
+# Do any of the group dispersions differ?
+  wt.uni.disp.bact.an <- anova(wt.uni.disp.bact)
+  wt.uni.disp.bact.an
+  
+# Which group dispersions differ?
+  wt.uni.disp.bact.tHSD <- stats::TukeyHSD(wt.uni.disp.bact)
+  wt.uni.disp.bact.tHSD
+
 # Only bee samples
+  
+# Bray-Curtis dissimilarity  
   
 # Calculate the average distance of group members to the group centroid
   disp.bact.bee <- vegan::betadisper(bact.bray.bee, sample.bact.bee$sample_type)
@@ -443,6 +528,26 @@
 # Which group dispersions differ?
   disp.bact.tHSD.bee <- stats::TukeyHSD(disp.bact.bee)
   disp.bact.tHSD.bee
+  
+# Unweighed UniFrac  
+  
+# Calculate the average distance of group members to the group centroid
+  unwt.uni.disp.bact.bee <- vegan::betadisper(bact.unwt.uni.bee, sample.bact.bee$sample_type)
+  unwt.uni.disp.bact.bee
+  
+# Do any of the group dispersions differ?
+  unwt.uni.disp.bact.an.bee <- anova(unwt.uni.disp.bact.bee)
+  unwt.uni.disp.bact.an.bee
+  
+# Weighed UniFrac  
+  
+# Calculate the average distance of group members to the group centroid
+  wt.uni.disp.bact.bee <- vegan::betadisper(bact.wt.uni.bee, sample.bact.bee$sample_type)
+  wt.uni.disp.bact.bee
+  
+# Do any of the group dispersions differ?
+  wt.uni.disp.bact.an.bee <- anova(wt.uni.disp.bact.bee)
+  wt.uni.disp.bact.an.bee
 
 ## Ordination with relative abundance data ----
   
@@ -472,6 +577,48 @@
                                  color = "Sample Type")
   Osmia.dev.PCoA.bact
 
+# PCoA using unweighted UniFrac
+  ord.pcoa.unwt.uni <- phyloseq::ordinate(ps3, method = "PCoA", distance = "unifrac", weighted = F)
+  
+# Plot ordination
+  Osmia.dev.PCoA.unwt.uni <- plot_ordination(ps3, ord.pcoa.unwt.uni, color = "sample_type") + 
+                                theme_bw() +
+                                theme(legend.position = "none",
+                                      text = element_text(size = 24)) +
+                                theme(panel.grid.major = element_blank(),
+                                      panel.grid.minor = element_blank()) +
+                                theme(axis.text.x = element_text(size = 16, colour = "black"),
+                                      axis.text.y = element_text(size = 16, colour = "black"),
+                                      axis.title.x = element_text(size = 18, colour = "black"),
+                                      axis.title.y = element_text(size = 18, colour = "black")) +
+                                geom_point(size = 4) +
+                                scale_color_manual(values = dev.colors,
+                                                   labels = c('fresh pollen + egg', 'aged pollen', 'larvae', 'pre-wintering adults', 'dead adults')) + 
+                                labs(title = "A",
+                                     color = "Sample Type")
+  Osmia.dev.PCoA.unwt.uni
+  
+# PCoA using weighted UniFrac
+  ord.pcoa.wt.uni <- phyloseq::ordinate(ps.prop.bact, method = "PCoA", distance = "unifrac", weighted = T)
+  
+# Plot ordination
+  Osmia.dev.PCoA.wt.uni <- plot_ordination(ps.prop.bact, ord.pcoa.wt.uni, color = "sample_type") + 
+                              theme_bw() +
+                              theme(legend.position = "none",
+                                    text = element_text(size = 24)) +
+                              theme(panel.grid.major = element_blank(),
+                                    panel.grid.minor = element_blank()) +
+                              theme(axis.text.x = element_text(size = 16, colour = "black"),
+                                    axis.text.y = element_text(size = 16, colour = "black"),
+                                    axis.title.x = element_text(size = 18, colour = "black"),
+                                    axis.title.y = element_text(size = 18, colour = "black")) +
+                              geom_point(size = 4) +
+                              scale_color_manual(values = dev.colors,
+                                                 labels = c('fresh pollen + egg', 'aged pollen', 'larvae', 'pre-wintering adults', 'dead adults')) + 
+                              labs(title = "A",
+                                   color = "Sample Type")
+  Osmia.dev.PCoA.wt.uni
+  
 # Only bee samples
   
 # PCoA using Bray-Curtis distance
@@ -498,6 +645,48 @@
                                        color = "Sample Type")
   Osmia.dev.PCoA.bact.bee
   
+# PCoA using unweighted UniFrac
+  ord.pcoa.unwt.uni.bee <- phyloseq::ordinate(ps4, method = "PCoA", distance = "unifrac", weighted = F)
+  
+# Plot ordination
+  Osmia.dev.PCoA.unwt.uni.bee <- plot_ordination(ps4, ord.pcoa.unwt.uni.bee, color = "sample_type") + 
+                                    theme_bw() +
+                                    theme(legend.position = "none",
+                                          text = element_text(size = 24)) +
+                                    theme(panel.grid.major = element_blank(),
+                                          panel.grid.minor = element_blank()) +
+                                    theme(axis.text.x = element_text(size = 16, colour = "black"),
+                                          axis.text.y = element_text(size = 16, colour = "black"),
+                                          axis.title.x = element_text(size = 18, colour = "black"),
+                                          axis.title.y = element_text(size = 18, colour = "black")) +
+                                    geom_point(size = 4) +
+                                    scale_color_manual(values = dev.colors,
+                                                       labels = c('larvae', 'pre-wintering adults', 'dead adults')) + 
+                                    labs(title = "A",
+                                         color = "Sample Type")
+  Osmia.dev.PCoA.unwt.uni.bee
+  
+# PCoA using weighted UniFrac
+  ord.pcoa.wt.uni.bee <- phyloseq::ordinate(ps.prop.bact.bee, method = "PCoA", distance = "unifrac", weighted = T)
+  
+# Plot ordination
+  Osmia.dev.PCoA.wt.uni.bee <- plot_ordination(ps.prop.bact.bee, ord.pcoa.wt.uni, color = "sample_type") + 
+                                  theme_bw() +
+                                  theme(legend.position = "none",
+                                        text = element_text(size = 24)) +
+                                  theme(panel.grid.major = element_blank(),
+                                        panel.grid.minor = element_blank()) +
+                                  theme(axis.text.x = element_text(size = 16, colour = "black"),
+                                        axis.text.y = element_text(size = 16, colour = "black"),
+                                        axis.title.x = element_text(size = 18, colour = "black"),
+                                        axis.title.y = element_text(size = 18, colour = "black")) +
+                                  geom_point(size = 4) +
+                                  scale_color_manual(values = dev.colors,
+                                                     labels = c('larvae', 'pre-wintering adults', 'dead adults')) + 
+                                  labs(title = "A",
+                                       color = "Sample Type")
+  Osmia.dev.PCoA.wt.uni.bee
+  
 ## Rarefaction ----
   
 # All pollen and bee samples  
@@ -518,7 +707,6 @@
                                   panel.grid.minor = element_blank(),
                                   axis.title.x = element_blank()) +
                             labs(title = "A") + 
-                            ylim(0, 15) +
                             xlab("Number of reads") +
                             ylab("Number of species")
   Osmia.dev.rare.bact
@@ -707,12 +895,12 @@
   Okabe.Ito <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#000000")
   
 # Stretch palette (define more intermediate color options)
-  okabe.ext <- unikn::usecol(Okabe.Ito, n = 111)
+  okabe.ext <- unikn::usecol(Okabe.Ito, n = 188)
   colors <- sample(okabe.ext) 
   
 # New labels for facet_wrap
-  new.labs <- c("fresh pollen + egg", "aged pollen", "larvae", "pre-wintering adults", "dead adults")
-  names(new.labs) <- c("fresh pollen egg", "aged pollen", "larva", "pre-wintering adult", "dead adult")  
+  new.labs <- c("fresh pollen + egg", "aged pollen", "larvae", "pre-wintering adults", "emerged adults", "dead adults")
+  names(new.labs) <- c("fresh pollen egg", "aged pollen", "larva", "pre-wintering adult", "emerged adult", "dead adult")  
   
 # Agglomerate taxa by Family
   y1 <- phyloseq::tax_glom(ps3, taxrank = 'Family')
@@ -733,7 +921,7 @@
   y3$Family <- as.factor(y3$Family)
   
 # Order samples on x-axis
-  y3$sample_type <- factor(y3$sample_type, levels = c("fresh pollen egg", "aged pollen", "larva", "pre-wintering adult", "dead adult"))
+  y3$sample_type <- factor(y3$sample_type, levels = c("fresh pollen egg", "aged pollen", "larva", "pre-wintering adult", "emerged adult", "dead adult"))
   
 # Plot Family by sample type
   ggplot(data = y3, aes(x = sample_type, y = Abundance, fill = Family)) + 
@@ -799,7 +987,7 @@
   y6$Genus <- as.factor(y6$Genus)
 
 # Order samples on x-axis
-  y6$sample_type <- factor(y6$sample_type, levels = c("fresh pollen egg", "aged pollen", "larva", "pre-wintering adult", "dead adult"))
+  y6$sample_type <- factor(y6$sample_type, levels = c("fresh pollen egg", "aged pollen", "larva", "pre-wintering adult", "emerged adult", "dead adult"))
 
 # Plot Genus by sample type 
   ggplot(data = y6, aes(x = sample_type, y = Abundance, fill = Genus)) + 
@@ -868,7 +1056,7 @@
   ps.top15.bact.gen.trans.melt <- phyloseq::psmelt(ps.top15.bact.gen.trans)
   
 # Order samples on x-axis
-  ps.top15.bact.gen.trans.melt$sample_type <- factor(ps.top15.bact.gen.trans.melt$sample_type, levels = c("fresh pollen egg", "aged pollen", "larva", "pre-wintering adult", "dead adult"))
+  ps.top15.bact.gen.trans.melt$sample_type <- factor(ps.top15.bact.gen.trans.melt$sample_type, levels = c("fresh pollen egg", "aged pollen", "larva", "pre-wintering adult", "emerged adult", "dead adult"))
   
 # Plot top 15 genera for each sample
   Osmia.dev.15gen.relabund.bact <- ggplot(data = ps.top15.bact.gen.trans.melt, aes(x = sampleID, y = Abundance, fill = Genus)) + 
